@@ -1,0 +1,2275 @@
+{
+  "designVersion": "S01-5037b71a01f54b2b",
+  "scope": "Static S01 only; no backend or integration verified",
+  "results": [
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 500,
+          "right": -40,
+          "top": 77,
+          "bottom": 264.5,
+          "fields": 0,
+          "clientWidth": 898,
+          "scrollWidth": 898
+        }
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 340,
+          "right": -40,
+          "top": 77,
+          "bottom": 299.25,
+          "fields": 0,
+          "clientWidth": 642,
+          "scrollWidth": 642
+        }
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "shellWidth": 390,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 347.75,
+          "fields": 0,
+          "clientWidth": 296,
+          "scrollWidth": 296
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "shellWidth": 320,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 435.25,
+          "fields": 0,
+          "clientWidth": 226,
+          "scrollWidth": 226
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 500,
+          "right": -40,
+          "top": 77,
+          "bottom": 264.5,
+          "fields": 0,
+          "clientWidth": 898,
+          "scrollWidth": 898
+        }
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 340,
+          "right": -40,
+          "top": 77,
+          "bottom": 299.25,
+          "fields": 0,
+          "clientWidth": 642,
+          "scrollWidth": 642
+        }
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "shellWidth": 390,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 347.75,
+          "fields": 0,
+          "clientWidth": 296,
+          "scrollWidth": 296
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "shellWidth": 320,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 435.25,
+          "fields": 0,
+          "clientWidth": 226,
+          "scrollWidth": 226
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "en",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 500,
+          "right": -40,
+          "top": 77,
+          "bottom": 264.5,
+          "fields": 0,
+          "clientWidth": 898,
+          "scrollWidth": 898
+        }
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "en",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 340,
+          "right": -40,
+          "top": 77,
+          "bottom": 280.5,
+          "fields": 0,
+          "clientWidth": 642,
+          "scrollWidth": 642
+        }
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "shellWidth": 390,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "en",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 347.75,
+          "fields": 0,
+          "clientWidth": 296,
+          "scrollWidth": 296
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "shellWidth": 320,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "en",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 435.25,
+          "fields": 0,
+          "clientWidth": 226,
+          "scrollWidth": 226
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "en",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 500,
+          "right": -40,
+          "top": 77,
+          "bottom": 264.5,
+          "fields": 0,
+          "clientWidth": 898,
+          "scrollWidth": 898
+        }
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "en",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 340,
+          "right": -40,
+          "top": 77,
+          "bottom": 280.5,
+          "fields": 0,
+          "clientWidth": 642,
+          "scrollWidth": 642
+        }
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "shellWidth": 390,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "en",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 347.75,
+          "fields": 0,
+          "clientWidth": 296,
+          "scrollWidth": 296
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "shellWidth": 320,
+        "shellMinWidth": "0px",
+        "overflow": [],
+        "language": "en",
+        "theme": "dark",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "External execution",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Organization",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Groups",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "When to call for help",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Handling rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Transfers and participants",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Reply templates",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Voice and calls",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "External execution",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Customer ratings",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Quality analysis",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Demo data",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 76,
+          "right": -16,
+          "top": 64,
+          "bottom": 435.25,
+          "fields": 0,
+          "clientWidth": 226,
+          "scrollWidth": 226
+        }
+      },
+      "responsiveBehavior": "Existing settings mobile route, hidden subnavigation and back header"
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "accent": "#1677ff",
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 500,
+          "right": -40,
+          "top": 77,
+          "bottom": 264.5,
+          "fields": 0,
+          "clientWidth": 898,
+          "scrollWidth": 898
+        }
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "accent": "#e8590c",
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 500,
+          "right": -40,
+          "top": 77,
+          "bottom": 264.5,
+          "fields": 0,
+          "clientWidth": 898,
+          "scrollWidth": 898
+        }
+      }
+    },
+    {
+      "check": "Static OFF switch",
+      "click": "remained OFF",
+      "keyboardSpace": "remained OFF"
+    },
+    {
+      "check": "Dedicated settings navigation",
+      "group": "service",
+      "position": "last",
+      "icon": "shared server",
+      "section": "externalExecution"
+    },
+    {
+      "check": "200% CSS review scale at original viewport 1510",
+      "geometry": {
+        "width": 2880,
+        "height": 1960,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 2880,
+        "shellMinWidth": "1024px",
+        "overflow": [],
+        "language": "ru",
+        "theme": "light",
+        "passwordFields": 0,
+        "configurationFields": 0,
+        "organizationForms": 0,
+        "retentionSections": 0,
+        "heading": "Внешнее исполнение",
+        "settingsGroups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "label": "Организация",
+                "active": false,
+                "iconPath": "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01"
+              },
+              {
+                "key": "groups",
+                "label": "Группы",
+                "active": false,
+                "iconPath": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "label": "Когда звать на помощь",
+                "active": false,
+                "iconPath": "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"
+              },
+              {
+                "key": "rules",
+                "label": "Правила обработки",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "label": "Передача и участники",
+                "active": false,
+                "iconPath": "M17 1l4 4-4 4"
+              },
+              {
+                "key": "templates",
+                "label": "Шаблоны ответов",
+                "active": false,
+                "iconPath": "M5 5h14"
+              },
+              {
+                "key": "communication",
+                "label": "Голосовые и звонки",
+                "active": false,
+                "iconPath": "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3"
+              },
+              {
+                "key": "externalExecution",
+                "label": "Внешнее исполнение",
+                "active": true,
+                "iconPath": "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01"
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "label": "Оценки клиентов",
+                "active": false,
+                "iconPath": "M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z"
+              },
+              {
+                "key": "quality",
+                "label": "Анализ качества",
+                "active": false,
+                "iconPath": "M20 6 9 17l-5-5"
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "label": "Демо-данные",
+                "active": false,
+                "iconPath": "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"
+              }
+            ]
+          }
+        ],
+        "badLinks": 0,
+        "externalCard": {
+          "left": 1000,
+          "right": -80,
+          "top": 153,
+          "bottom": 528,
+          "fields": 0,
+          "clientWidth": 898,
+          "scrollWidth": 898
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "screenshots": [
+    "S01-ru-light-1440.png",
+    "S01-ru-light-390.png",
+    "S01-en-dark-1440.png"
+  ]
+}

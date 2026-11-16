@@ -204,6 +204,9 @@ def run_agent_turn(
     """
     # Диалога здесь нет, известных значений тоже: одна карта на вектор вопроса
     # и на запрос к модели маскирует найденное шаблонами.
+    from chatballs.ai.external_agents.readiness import require_builtin
+
+    require_builtin(agent)
     pseudonymizer = Pseudonymizer()
     fragments = KnowledgeRetriever().retrieve(
         agent=agent, query=message, limit=5, pseudonymizer=pseudonymizer

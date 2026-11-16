@@ -11,6 +11,7 @@ COPY apps/backend/requirements.txt /app/apps/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/apps/backend/requirements.txt
 
 COPY apps/backend /app/apps/backend
+COPY packages/contracts/external-agent-v1 /app/packages/contracts/external-agent-v1
 # Тот же генератор секретов, что и в production-образе: сервис secrets
 # крутится на backend-образе и в dev, и в коробке.
 COPY deploy/secrets/generate-instance-secrets.sh /usr/local/bin/chatballs-generate-secrets.sh

@@ -1,0 +1,118 @@
+Accepted:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, status, externalSessionId]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId: {$ref: './common.yaml#/UUID'}
+    status: {const: accepted}
+    externalSessionId: {$ref: './common.yaml#/NullableId'}
+Pending:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, status, externalSessionId]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId: {$ref: './common.yaml#/UUID'}
+    status: {enum: [accepted, processing]}
+    externalSessionId: {$ref: './common.yaml#/NullableId'}
+Completed:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, resultId, status, externalSessionId, outcome]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId: {$ref: './common.yaml#/UUID'}
+    resultId: {$ref: './common.yaml#/UUID'}
+    status: {const: completed}
+    externalSessionId: {$ref: './common.yaml#/NullableId'}
+    outcome:
+      oneOf:
+        - $ref: '#/Reply'
+        - $ref: '#/HandoffOutcome'
+Reply:
+  type: object
+  additionalProperties: false
+  required: [type, messages]
+  properties:
+    type: {const: reply}
+    messages: {$ref: './messages.yaml#/OutgoingMessages'}
+HandoffOutcome:
+  type: object
+  additionalProperties: false
+  required: [type, reasonCode, summary]
+  properties:
+    type: {const: handoff}
+    reasonCode: {$ref: './common.yaml#/ReasonCode'}
+    summary: {type: string}
+Failed:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, resultId, status, error]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId: {$ref: './common.yaml#/UUID'}
+    resultId: {$ref: './common.yaml#/UUID'}
+    status: {const: failed}
+    error:
+      type: object
+      additionalProperties: false
+      required: [code, retryable]
+      properties:
+        code: {$ref: './common.yaml#/Code'}
+        retryable: {const: false}
+TerminalResult:
+  oneOf:
+    - $ref: '#/Completed'
+    - $ref: '#/Failed'
+UnknownOrCancelled:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, status, externalSessionId, reasonCode]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId: {$ref: './common.yaml#/UUID'}
+    status: {enum: [unknown, cancelled]}
+    externalSessionId: {$ref: './common.yaml#/NullableId'}
+    reasonCode: {$ref: './common.yaml#/Code'}
+RequestStatus:
+  oneOf:
+    - $ref: '#/Pending'
+    - $ref: '#/TerminalResult'
+    - $ref: '#/UnknownOrCancelled'
+CancelRequest:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, reason]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId: {$ref: './common.yaml#/UUID'}
+    reason: {enum: [control_revoked, expired, configuration_changed]}
+CancelResponse:
+  oneOf:
+    - $ref: '#/UnknownOrCancelled'
+    - $ref: '#/TerminalResult'
+  description: Уже завершённый failed тоже неизменяем; отмена не переписывает итог
+ProactiveMessages:
+  type: object
+  additionalProperties: false
+  required: [version, deliveryId, agentId, authorizationId, externalSessionId, messages]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    deliveryId: {$ref: './common.yaml#/UUID'}
+    agentId: {$ref: './common.yaml#/OpaqueId'}
+    authorizationId: {$ref: './common.yaml#/UUID'}
+    externalSessionId: {$ref: './common.yaml#/NullableId'}
+    messages: {$ref: './messages.yaml#/OutgoingMessages'}
+HandoffRequest:
+  type: object
+  additionalProperties: false
+  required: [version, eventId, agentId, authorizationId, externalSessionId, reasonCode, summary]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    eventId: {$ref: './common.yaml#/UUID'}
+    agentId: {$ref: './common.yaml#/OpaqueId'}
+    authorizationId: {$ref: './common.yaml#/UUID'}
+    externalSessionId: {$ref: './common.yaml#/NullableId'}
+    reasonCode: {$ref: './common.yaml#/ReasonCode'}
+    summary: {type: string}

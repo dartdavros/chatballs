@@ -1,0 +1,2769 @@
+{
+  "designVersion": "REST-54b67c04753798a0",
+  "scope": "All remaining static design states; no runtime or integration verified",
+  "screens": [
+    {
+      "id": "S07",
+      "titleRu": "Проверка: получен ответ",
+      "titleEn": "Test: reply received",
+      "group": "tests"
+    },
+    {
+      "id": "S08",
+      "titleRu": "Проверка: длительное ожидание",
+      "titleEn": "Test: extended wait",
+      "group": "tests"
+    },
+    {
+      "id": "S09",
+      "titleRu": "Проверка: ошибка внешнего сервиса",
+      "titleEn": "Test: external service error",
+      "group": "tests"
+    },
+    {
+      "id": "S10",
+      "titleRu": "Проверка: обработка прекращена после перехвата",
+      "titleEn": "Test: ended after employee takeover",
+      "group": "tests"
+    },
+    {
+      "id": "S11",
+      "titleRu": "Проверка: разрешённые тестовые данные",
+      "titleEn": "Test: permitted client data",
+      "group": "tests"
+    },
+    {
+      "id": "S12",
+      "titleRu": "Встроенный агент: возможность выключена",
+      "titleEn": "Built-in agent: feature disabled",
+      "group": "agents"
+    },
+    {
+      "id": "S13",
+      "titleRu": "Возврат к сохранённым встроенным настройкам",
+      "titleEn": "Return to retained built-in settings",
+      "group": "agents"
+    },
+    {
+      "id": "S14",
+      "titleRu": "Исполнитель ещё не готов",
+      "titleEn": "Executor not ready yet",
+      "group": "agents"
+    },
+    {
+      "id": "S15",
+      "titleRu": "Возможность выключена у внешнего агента",
+      "titleEn": "Feature disabled for an external agent",
+      "group": "agents"
+    },
+    {
+      "id": "S16",
+      "titleRu": "Внешний сервис недоступен",
+      "titleEn": "External service unavailable",
+      "group": "agents"
+    },
+    {
+      "id": "S17",
+      "titleRu": "Несовместимый внешний сервис",
+      "titleEn": "Incompatible external service",
+      "group": "agents"
+    },
+    {
+      "id": "S18",
+      "titleRu": "Не хватает разрешений",
+      "titleEn": "Required permissions missing",
+      "group": "agents"
+    },
+    {
+      "id": "S19",
+      "titleRu": "Нет необходимого согласия",
+      "titleEn": "Required consent missing",
+      "group": "agents"
+    },
+    {
+      "id": "S70",
+      "titleRu": "Внешний ответ без LLM Chatballs",
+      "titleEn": "External replies without a Chatballs LLM",
+      "group": "agents"
+    },
+    {
+      "id": "S71",
+      "titleRu": "Возможность включена, подключение выключено",
+      "titleEn": "Feature enabled, connection disabled",
+      "group": "agents"
+    },
+    {
+      "id": "S20",
+      "titleRu": "Привязки и параметры обработки",
+      "titleEn": "Bindings and processing settings",
+      "descriptionRu": "Пример сохранённой конфигурации: два агента, явно заданные сроки 120/7200/86400 секунд, инициатива выключена. Значения иллюстративные, не утверждение defaults API.",
+      "descriptionEn": "Illustrative saved configuration: two agents, explicit 120/7200/86400-second durations, proactive messages disabled. These are illustrative values, not API defaults.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S21",
+      "titleRu": "Пустые разрешения данных и каталог шаблонов",
+      "titleEn": "Empty permissions and template catalog",
+      "descriptionRu": "Полная форма: оба списка разрешений пусты, WEB-источников и доступных шаблонов нет. Это не блокирует обычный текст обращения и ответа.",
+      "descriptionEn": "Full form: both allowlists are empty; no WEB sources or available templates exist. Ordinary request text and replies remain available.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S22",
+      "titleRu": "Выбранные данные и шаблоны",
+      "titleEn": "Selected data and templates",
+      "descriptionRu": "Полная форма: разрешения для Помощника поддержки и Сервиса поддержки. Два WEB-источника различают одноимённые поля; стандартные и кастомные разрешения независимы.",
+      "descriptionEn": "Full form: grants target the Support assistant and Support service. Two WEB sources distinguish fields with matching names; standard and custom grants remain independent.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S23",
+      "titleRu": "Устаревшие разрешения",
+      "titleEn": "Stale permissions",
+      "descriptionRu": "Удалены источник и поле, изменено определение другого поля и недоступен шаблон. Старые полномочия не восстановлены.",
+      "descriptionEn": "A source and field were deleted, another definition changed, and a template is unavailable. Old authority is not restored.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S24",
+      "titleRu": "Новый ключ показан один раз",
+      "titleEn": "New key displayed once",
+      "descriptionRu": "Недействительный текстовый пример ключа. Кнопка копирует только этот пример и подтверждает копирование иконкой. Генерации ключа или реального секрета нет.",
+      "descriptionEn": "An invalid text example only. The button copies only this example and confirms copying with an icon. No key is generated and no real secret is present.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S25",
+      "titleRu": "Подтверждение замены ключа",
+      "titleEn": "Confirm key replacement",
+      "descriptionRu": "Стандартный DecisionDialog. Замена отзовёт прежний доступ; действие в макете не выполняется.",
+      "descriptionEn": "The standard DecisionDialog. Replacement revokes previous access; the design does not perform the action.",
+      "modal": true,
+      "group": "settings"
+    },
+    {
+      "id": "S26",
+      "titleRu": "Подтверждение отзыва ключа",
+      "titleEn": "Confirm key revocation",
+      "descriptionRu": "Стандартный DecisionDialog с последствиями отзыва доступа и сохранением конфигурации.",
+      "descriptionEn": "The standard DecisionDialog describes access loss and retained configuration.",
+      "modal": true,
+      "group": "settings"
+    },
+    {
+      "id": "S27",
+      "titleRu": "Проверка подключения",
+      "titleEn": "Checking the connection",
+      "descriptionRu": "Общий индикатор в выделенной области. Проверка возможностей отличается от запроса агенту.",
+      "descriptionEn": "The common loader occupies reserved space. Capability checking is separate from an agent request.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S28",
+      "titleRu": "Ошибка доступа при проверке",
+      "titleEn": "Access check failed",
+      "descriptionRu": "Не подтверждён доступ; состояние не объявляется готовым.",
+      "descriptionEn": "Access is not confirmed; the connection is not presented as ready.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S29",
+      "titleRu": "Сервис недоступен",
+      "titleEn": "Service unavailable",
+      "descriptionRu": "Сохранённая конфигурация существует, внешние ответы пока недоступны.",
+      "descriptionEn": "The saved configuration exists; external replies are currently unavailable.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S30",
+      "titleRu": "Несовместимые возможности",
+      "titleEn": "Incompatible capabilities",
+      "descriptionRu": "Не хватает обязательных возможностей. Нет выдуманной успешной проверки.",
+      "descriptionEn": "Required capabilities are missing. No successful check is invented.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S31",
+      "titleRu": "Загрузка настроек",
+      "titleEn": "Loading settings",
+      "descriptionRu": "Общий индикатор; готовность и разрешения ещё не подтверждены.",
+      "descriptionEn": "The common loader; readiness and permissions have not yet been confirmed.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S32",
+      "titleRu": "Ошибка загрузки настроек",
+      "titleEn": "Settings load failed",
+      "descriptionRu": "Сохранённые значения не подменены пустой или успешной конфигурацией.",
+      "descriptionEn": "Saved values are not replaced with an empty or successful configuration.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S33",
+      "titleRu": "Несохранённые изменения",
+      "titleEn": "Unsaved changes",
+      "descriptionRu": "Заполненная форма и доступное сохранение. Действия статические.",
+      "descriptionEn": "A completed form with an available Save action. Actions remain static.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S34",
+      "titleRu": "Сохранение настроек",
+      "titleEn": "Saving settings",
+      "descriptionRu": "Поля и сохранение недоступны на время операции; место статуса сохранено.",
+      "descriptionEn": "Fields and Save are unavailable during the operation; the status space remains reserved.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S35",
+      "titleRu": "Ошибка сохранения",
+      "titleEn": "Saving failed",
+      "descriptionRu": "Изменения не применены, прежние настройки действуют; повторное сохранение доступно.",
+      "descriptionEn": "Changes were not applied; the previous configuration remains active and saving can be retried.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S36",
+      "titleRu": "Нет прав управления",
+      "titleEn": "Management permission missing",
+      "descriptionRu": "Существующий паттерн отказа в доступе, без доступных секретов и форм изменения.",
+      "descriptionEn": "The current access-denied pattern, with no secrets or editable configuration.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S37",
+      "titleRu": "Подтверждение выключения",
+      "titleEn": "Confirm disabling",
+      "descriptionRu": "Прекращение внешних ответов и экспорта без удаления значений и автоматического встроенного ответа.",
+      "descriptionEn": "External replies and export stop without deleting values or automatically enabling built-in replies.",
+      "modal": true,
+      "group": "settings"
+    },
+    {
+      "id": "S38",
+      "titleRu": "Выключено, конфигурация сохранена",
+      "titleEn": "Disabled, configuration retained",
+      "descriptionRu": "Показаны сохранённые значения и последствия для ранее связанных агентов.",
+      "descriptionEn": "Saved values and consequences for previously bound agents remain visible.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S39",
+      "titleRu": "Повторное включение требует проверки",
+      "titleEn": "Re-enabling requires review",
+      "descriptionRu": "Старые полномочия не оживают: подключение, привязки и разрешения требуют явного пересмотра.",
+      "descriptionEn": "Old authority is not revived: the connection, bindings and permissions require explicit review.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S72",
+      "titleRu": "Включение не удалось, возможность выключена",
+      "titleEn": "Enabling failed, feature remains disabled",
+      "descriptionRu": "Полная сохранённая форма. Предложение сценария ошибки включения: переключатель остаётся выключенным, прежняя конфигурация сохранена, явное повторное включение не выполняется в макете.",
+      "descriptionEn": "The complete saved form. Proposed enable-failure flow: the switch stays off, previous configuration is retained, and explicit retry is inert in this design.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S73",
+      "titleRu": "Подключение выключено при включённой возможности",
+      "titleEn": "Connection disabled while feature is enabled",
+      "descriptionRu": "Полная форма: возможность организации включена, сохранённое подключение явно выключено. Два связанных агента не готовы к внешним ответам; это не сетевая недоступность.",
+      "descriptionEn": "The complete form: the organization feature is on while the saved connection is explicitly disabled. Its two bound agents cannot answer externally; this is not network unavailability.",
+      "modal": false,
+      "group": "settings"
+    },
+    {
+      "id": "S40",
+      "titleRu": "Чат: ожидание внешнего ответа",
+      "titleEn": "Chat: waiting for an external reply",
+      "descriptionRu": "Открытый диалог под управлением AI, обычное ожидание. Состояние не подтверждает отправку или прочтение ответа.",
+      "descriptionEn": "An open conversation controlled by AI, ordinary waiting. This state does not confirm reply sending or reading.",
+      "group": "chat"
+    },
+    {
+      "id": "S41",
+      "titleRu": "Чат: длительное ожидание",
+      "titleEn": "Chat: extended waiting",
+      "descriptionRu": "Обработка продолжается. Сотрудник может штатно перехватить диалог; таймер и процент выполнения не выдумываются.",
+      "descriptionEn": "Processing continues. An employee can take over using the standard action; no invented timer or percentage.",
+      "group": "chat"
+    },
+    {
+      "id": "S42",
+      "titleRu": "Чат: внешний ответ",
+      "titleEn": "Chat: external reply",
+      "descriptionRu": "Пример обычного ответа существующим текстовым рендером. Отметка означает отправку в канал, а не прочтение.",
+      "descriptionEn": "A sample ordinary reply using the existing text renderer. Its mark means sent to the channel, not read.",
+      "group": "chat"
+    },
+    {
+      "id": "S43",
+      "titleRu": "Чат: составной ответ и форматы",
+      "titleEn": "Chat: multipart reply and formats",
+      "descriptionRu": "Последовательные текст, изображение, файл, контакт, запрос контакта и оформленный шаблон. Это статическое содержимое, не доставка.",
+      "descriptionEn": "Sequential text, image, file, contact, contact request and formatted template. Static document content, not delivery.",
+      "group": "chat"
+    },
+    {
+      "id": "S44",
+      "titleRu": "Чат: запрос сотрудника",
+      "titleEn": "Chat: request an employee",
+      "descriptionRu": "Причина и краткое описание показаны внутренним сообщением с замком. Клиенту эти сведения не отправляются.",
+      "descriptionEn": "Reason and summary are an internal message marked with a lock. These details are not sent to the customer.",
+      "group": "chat"
+    },
+    {
+      "id": "S45",
+      "titleRu": "Чат: сотрудник перехватил диалог",
+      "titleEn": "Chat: employee takeover",
+      "descriptionRu": "Сотрудник ведёт диалог; поздний внешний ответ отсутствует среди клиентских сообщений. Событие о подавлении видно только сотруднику.",
+      "descriptionEn": "An employee controls the conversation; the late external reply is absent from customer messages. Its suppression is visible only to staff.",
+      "group": "chat"
+    },
+    {
+      "id": "S46",
+      "titleRu": "Чат: явный возврат AI",
+      "titleEn": "Chat: explicitly return to AI",
+      "descriptionRu": "Штатное событие явного возврата управления AI. Подавленные старые результаты не появляются снова.",
+      "descriptionEn": "The standard event for explicitly returning control to AI. Suppressed old results do not appear again.",
+      "group": "chat"
+    },
+    {
+      "id": "S47",
+      "titleRu": "Чат: внешний сервис недоступен",
+      "titleEn": "Chat: external service unavailable",
+      "descriptionRu": "Диалог в обычной общей очереди сотрудника. Автоматического встроенного ответа нет.",
+      "descriptionEn": "The conversation is in the standard employee queue. Built-in replies are not enabled automatically.",
+      "group": "chat"
+    },
+    {
+      "id": "S48",
+      "titleRu": "Чат: срок ожидания истёк",
+      "titleEn": "Chat: reply deadline passed",
+      "descriptionRu": "Внешняя обработка прекратила ожидание, клиент передан в штатную очередь сотрудника.",
+      "descriptionEn": "Waiting for the external request ended; the customer is in the normal employee queue.",
+      "group": "chat"
+    },
+    {
+      "id": "S49",
+      "titleRu": "Чат: неизвестный исход отправки",
+      "titleEn": "Chat: unknown sending outcome",
+      "descriptionRu": "Нет отметки успешной доставки и принудительного повтора. Сотрудник выясняет фактический результат.",
+      "descriptionEn": "There is no success mark or forced retry. An employee determines the actual outcome.",
+      "group": "chat"
+    },
+    {
+      "id": "S50",
+      "titleRu": "Чат: частичная доставка",
+      "titleEn": "Chat: partial delivery",
+      "descriptionRu": "Одна часть доставлена, исход следующей неизвестен. Уже отправленная часть показана один раз; остаток не продолжает отправляться.",
+      "descriptionEn": "One part was delivered, the next outcome is unknown. The sent part appears once; remaining parts are not sent.",
+      "group": "chat"
+    },
+    {
+      "id": "S51",
+      "titleRu": "Чат: инициативное сообщение",
+      "titleEn": "Chat: initiative message",
+      "descriptionRu": "Для этой конкретной привязки инициатива предполагается отдельно включённой. Диалог открыт и находится под управлением AI. Исходное выключенное состояние в других примерах настроек не переопределяется.",
+      "descriptionEn": "Initiative is assumed to be explicitly enabled for this specific binding. The conversation is open and controlled by AI. The default-off state in other settings examples is not overridden.",
+      "group": "chat"
+    },
+    {
+      "id": "S52",
+      "titleRu": "Голос: распознавание готово",
+      "titleEn": "Voice: transcription ready",
+      "descriptionRu": "Предложение состояния готовности распознавания. Аудиофайл отсутствует; выдуманная расшифровка и ответ на неё не показаны. Реальное распознавание и передача текста не проверялись.",
+      "descriptionEn": "A proposed transcription-ready state. No audio file is present; no invented transcript or reply based on one is shown. Real transcription and text export have not been verified.",
+      "group": "chat"
+    },
+    {
+      "id": "S53",
+      "titleRu": "Голос: распознавание недоступно или завершилось ошибкой",
+      "titleEn": "Voice: transcription unavailable or failed",
+      "descriptionRu": "Нет выдуманной расшифровки. Голосовое сохранено, исходное аудио не экспортируется, диалог ждёт сотрудника.",
+      "descriptionEn": "No invented transcript. The audio is retained, not exported; the conversation waits for an employee.",
+      "group": "chat"
+    },
+    {
+      "id": "S54",
+      "titleRu": "Чат: текстовый вариант для Telegram",
+      "titleEn": "Chat: Telegram text fallback",
+      "descriptionRu": "Пример ограничения представления: в канале Telegram выбран подготовленный текстовый вариант шаблона вместо HTML-карточки. Список, шапка, контекст и композер показывают тот же канал. Новый формат не создаётся.",
+      "descriptionEn": "A representation limitation example: Telegram uses the prepared text version of the template instead of an HTML card. The list, header, context and composer all show the same channel. No new format is introduced.",
+      "group": "chat"
+    },
+    {
+      "id": "S60",
+      "titleRu": "Клиент: требуется новая редакция согласия",
+      "titleEn": "Customer: a new consent revision is required",
+      "descriptionRu": "Проект новой редакции v2 в текущем виджете. Прежнее согласие не считается принятием этой редакции; внешний экспорт заблокирован до подтверждения. Юридическая достаточность текста и получатель не проверены.",
+      "descriptionEn": "Proposed revision v2 in the current widget. Earlier consent does not accept this revision; external export is blocked until confirmation. Legal sufficiency and the recipient have not been verified.",
+      "group": "client"
+    },
+    {
+      "id": "S61",
+      "titleRu": "Клиент: новая редакция в форме перед чатом",
+      "titleEn": "Customer: new revision in the pre-chat form",
+      "descriptionRu": "Та же предлагаемая редакция в существующей форме с именем и email. Обязательное имя не заполнено: начало чата недоступно. Отправка полей и принятие согласия не выполняются.",
+      "descriptionEn": "The same proposed revision in the existing name and email form. The required name is empty, so starting the chat is unavailable. No fields are submitted and no consent is accepted.",
+      "group": "client"
+    },
+    {
+      "id": "S62",
+      "titleRu": "Клиент: актуальная редакция принята",
+      "titleEn": "Customer: the current revision is accepted",
+      "descriptionRu": "Условное состояние после серверного подтверждения актуальной редакции: открыт штатный композер. Это не выполненное согласие; сам факт принятия не подтверждает настройки, полномочия или готовность внешнего исполнения.",
+      "descriptionEn": "Conditional state after server confirmation of the current revision: the standard composer is open. No consent was actually accepted; acceptance alone does not prove external configuration, authorization or readiness.",
+      "group": "client"
+    },
+    {
+      "id": "S63",
+      "titleRu": "Клиент: голосовое сохранено, ожидается сотрудник",
+      "titleEn": "Customer: voice message retained, waiting for an employee",
+      "descriptionRu": "Единый клиентский вид при отсутствии или сбое STT: штатный плеер голосового и ожидание сотрудника. Расшифровка и внешний ответ не придуманы. Волна и 12 секунд — иллюстрация документа; аудиофайла и воспроизведения нет.",
+      "descriptionEn": "The common customer view when STT is missing or fails: the standard voice player and employee waiting notice. No transcript or external reply is invented. The waveform and 12 seconds are document illustrations; there is no audio file or playback.",
+      "group": "client"
+    }
+  ],
+  "acceptedScreens": [
+    {
+      "folder": "settings-off",
+      "designVersion": "S01-5037b71a01f54b2b",
+      "sources": 200,
+      "manifestSha256": "cf624f108724d2df8a0cfe8b5c29dea0cc8706e2d35ba5d46617f5f00614b3a3"
+    },
+    {
+      "folder": "settings-unconfigured",
+      "designVersion": "S02-c8d1b152d7078f85",
+      "sources": 204,
+      "manifestSha256": "109e23724c1536e2a87f24bd93a83955e5e777af10a9dbef316b4dcefa1ba4f0"
+    },
+    {
+      "folder": "settings-ready",
+      "designVersion": "S03-2122cd3c3c071bf6",
+      "sources": 208,
+      "manifestSha256": "2a4f6f1fb3038d617ac4d925cbc49ce86d10845eaf90a1683e9c280f5724acc0"
+    },
+    {
+      "folder": "agent-external",
+      "designVersion": "S04-1d495df459254c46",
+      "sources": 212,
+      "manifestSha256": "23152b15e8b448ffbbb2cd518bc1937b23f534b587cbb0760ed9310913f47e7d"
+    },
+    {
+      "folder": "agent-test",
+      "designVersion": "S05-6dcaa8de64ce4db2",
+      "sources": 272,
+      "manifestSha256": "fb9f6919b746e5805f11f35e6442d4d874f5e481f0bcb7c00ba833ddef754ece"
+    },
+    {
+      "folder": "agent-test-waiting",
+      "designVersion": "S06-26b466b218854dd8",
+      "sources": 221,
+      "manifestSha256": "aa3a60b62ccf336239c428cab45661a9a57219301b34fc5be4d1a4b609adf32b"
+    }
+  ],
+  "sources": [
+    {
+      "path": "apps/internal-ui/public/hero.png",
+      "sha256": "287e857498f8213f77de50d7548164613d5cca1463e51bd4ad2b66794a297073"
+    },
+    {
+      "path": "apps/internal-ui/src/api/client.ts",
+      "sha256": "e9763f4a54a6ac01b5322239d6b5acd5b729f77c2a41a2c709607ffc5188f318"
+    },
+    {
+      "path": "apps/internal-ui/src/auth/access.ts",
+      "sha256": "7e4d15c071b25eaac42430ccc7a1852985c3edaacc059c3e7be2cbb3f8460757"
+    },
+    {
+      "path": "apps/internal-ui/src/auth/useSupervision.ts",
+      "sha256": "ccb320c0232f0b4cffd17a3c0cb234f984eb6f29e999b5f3ab28161b5246d29e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/administration/styles.css",
+      "sha256": "adaab75ce7b7063e4213faf71fbd9d02fc4ea572b9812baf1e34c9d8ea8f2e50"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/actions/actions.css",
+      "sha256": "c13a2f52919170812cf03a813cf19d5c5a295959e5c586f4dfb4ec456d963524"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/agent-tools.css",
+      "sha256": "acf55cc2166054038a8734985762728a390c52004705feec77bf4ecb1a60204a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/AgentHeader.tsx",
+      "sha256": "92a238c94c2ef32dc05bc172e15c3c2daaf7e7e901cb453e56f22a7d585231da"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/AgentKnowledgeDialog.tsx",
+      "sha256": "3f76d744e1ba5e9aad1cda163995f19979c37af43ee450c54e49d624d65c2ab2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/AgentKnowledgeGroup.tsx",
+      "sha256": "86927c36c0747d3abe75744b176b5cab72fba31a6d108a75b64fca52535e16af"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/agentKnowledgeGroups.ts",
+      "sha256": "253e9075097592ca185d6e63523b21657e36ce3901baddd002e0b77e02a824e0"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/agentTools.ts",
+      "sha256": "135c0de6f91d3f278d7751d694c4c53888aba3dc4a988cb7b3ea3a08192ebd11"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/AgentToolsCard.tsx",
+      "sha256": "68d52a509e39271ae85082c384c2d3de135369ddeb71b0eee64dfa4a3a9188ef"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/AssignmentCard.tsx",
+      "sha256": "a3c4e1de5bc59969633f4feb14ef032955e47623310cb4a181167847bf602e8d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/assistance.css",
+      "sha256": "e45f57bdabfda275875aa4230518a4515a4d443226f76e7010d83c536ae9a3b2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/ConnectionsCard.tsx",
+      "sha256": "6b308c9d754bcfdcaa86747cb6e410eded4ac92ef3aa1caa7dc1232979905cd6"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/InstructionsCard.tsx",
+      "sha256": "788a12cfa71306c19f6a02d513e3b76926ba89d6ba504a31917138291875e67c"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/KnowledgeCard.tsx",
+      "sha256": "e96ab4045c72a3c50f434a196da55960d327bc2c98829017e52a55d78de7eb6b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/model.ts",
+      "sha256": "ec8cab4a8af4cd09f016cad3a8d67306652dc6eca1f7b7021be74f478b975198"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/ModelCard.tsx",
+      "sha256": "746208c1ea88981bdf6b8a78952e072370593305f42aef0e1175b8ed5460ef8e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/SpeechSettings.tsx",
+      "sha256": "0edfefca59c2fe90ba4e49272ffe494ef4298f1a29b8e928dff2a91f4957769a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/styles.css",
+      "sha256": "a97258c2a85f1427995e744ee4ca6875e23a6c647bbd038c39ab5212435f4f15"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/SynthesisSettings.tsx",
+      "sha256": "05e5ec40c983e6ecd3e23d004ce87edea86e3fe1773e355055444568ba48e002"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/test-chat/styles.css",
+      "sha256": "9b35d8175632a632c46b781d1302a0d80587cf9b2d3ffd6a826139fd734f52ee"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/test-chat/TestActionCard.tsx",
+      "sha256": "0e737165db4cfdbfc859723bf3fd51385923e9d96f82777dc594cf6e5cb80fa7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/test-chat/TestChatFeed.tsx",
+      "sha256": "694ad09d8a854e3944fdc510c863f5ce2e92d3788d748071f4768a8fa945c524"
+    },
+    {
+      "path": "apps/internal-ui/src/features/agents/test-chat/TestClientField.tsx",
+      "sha256": "8fb4b00866f997cacb12e3f54ae630b472a68d737858689ba632b63b1902a235"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/api.ts",
+      "sha256": "4313e32e1e4d190eb2dcf4a9c13ab60f687150364db6a5c897465c315fb2e0a9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/knowledgeLibraryModel.ts",
+      "sha256": "8ecb30a63f6273b0fb5408c7f51be65974fc50b538868032a18eefea822c3051"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/knowledgeTree.ts",
+      "sha256": "85339fcd5a1c7b7b8f07997d0c9cbe3569fb8b2a109327ef537e93821e760b0a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/model.ts",
+      "sha256": "39e980c402641da9b59f79921ddc0aee885413bc5dfe48641c606e3be3db6316"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/styles-card.css",
+      "sha256": "8926ff22b506542fcf013cb8be1ac8417b1d99048246ff809f4890510e50df09"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/styles-editor.css",
+      "sha256": "50f842eab15b7c847c21324b54d50ef47c287890cc5e83f89f52acb109e89006"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/styles-library.css",
+      "sha256": "d18cfd3edae767af7e2067c86b1a1a2d1762e0e3d9ce0c07a2ec02195f22be40"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/knowledge/styles-pages.css",
+      "sha256": "b0fd20ecb1dadb7d85e2effadde30709115238d37ba04ff8cdf9237592d6e8a2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/ai/styles.css",
+      "sha256": "1efa90a6074aa34ac24046be0b7ecedd39cab6e7e56db75d69ee8e6338645fe5"
+    },
+    {
+      "path": "apps/internal-ui/src/features/auth/styles.css",
+      "sha256": "6134027176a9e51cdd120365451486f9e50f8bb56354bcdf4a97bfc9f1c43d72"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/apiTypes.ts",
+      "sha256": "7196adf8ccd66b8b12988b5eae55906634bcc1ab1a95ccbdaa7321ff81555fdf"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/assigneeOptions.tsx",
+      "sha256": "855ccac3b340b31e383d2fd408f9149a00006c8b9af440b8e70c00551f3b8695"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/AudioCallOverlay.tsx",
+      "sha256": "c502f6e3715500fef6f212e5b25541c421604bb72a20019a7d038eccfcdb12a5"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/call.css",
+      "sha256": "470009514ff068084ab940f3137a02e48bc6ed2d1d01f331f6c3e858cb78a704"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/CallOverlay.tsx",
+      "sha256": "cc323e03ed53c0f3dba4b41d5fa48b43386b1442db712170a5abcfff55da86e3"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/commentApi.ts",
+      "sha256": "e7bc5982fdecbb92378335041934b46fe779fadee7ff8509338ce2f51ccc7c30"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/Composer.tsx",
+      "sha256": "953b2ce1f5088e0f24cc86870aeb1e26e828b4a35f72ce1c64dd5db3417dbdcf"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerAttachment.tsx",
+      "sha256": "11416ed175f06c0b420587ba521585f01dbbf6d92c45ec2c98be57430e90d57e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerAudienceBar.tsx",
+      "sha256": "6947392c66bca6f43b238149283d758dda100dd8ff6e781c15b8f3e5760e1c62"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerDraftButton.tsx",
+      "sha256": "701e13da64ed7632a901a803c1158fd3fe2f7f1b7921376a4eb9f679d54e1b86"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerDraftMark.tsx",
+      "sha256": "0e2156f77c94e7195d9585e6b80d2ceb9134a4b491f126a62e4052db601d6a57"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerDraftPanel.tsx",
+      "sha256": "00c97665e4a07e836c950fdb77b8aa682de26a6fe83338cb518259712690ffd2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerFoot.tsx",
+      "sha256": "31eb4cfda59bf8c285ea5883baf7649c6a4a962427bd7de40d3697eb617388f2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerLocked.tsx",
+      "sha256": "972fba3dd641e85468cb37110c5eebf1ad93840f16d7672676ad6f85b839cb38"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerTemplatesMenu.tsx",
+      "sha256": "352c05d78efc5ae5bfe5a51a8789c6eb3fa3d2c5be6c24c59686fc6b1b162d6e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerToolbar.tsx",
+      "sha256": "58fc8e132e8311b92d4b036dc04ba27a8f797eabed3446ac709156c3751fc6a7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerVoiceRecorder.tsx",
+      "sha256": "0f9d2a66e803b812b34f5753df245cf5be655457dda938fd4cadd6ff52bec642"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ComposerWarning.tsx",
+      "sha256": "79710184b9f740dffdb2843fa9257f5374cdca1225796123f3044c1999926880"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/contact-edit.css",
+      "sha256": "49f94f8746e7e132b8ea0f48efc49bcf12f66eea01ba10e77ddebe783d5fea23"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ContactAvatar.tsx",
+      "sha256": "eb31c5d69b438459aaf5e5615578b6a08f122cc33b553e8bb9eab3b8565acedf"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/conversation-text.css",
+      "sha256": "19a4eb86adf86c6bdb80dc2adc10c4038cef154f97e740a0d19180cba7363871"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ConversationAccessLost.tsx",
+      "sha256": "a0bb534d6cb751d260bc94a0644560077512d97009e7d782140a453e04aaed5c"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ConversationActions.tsx",
+      "sha256": "34a6c098b88faaacbe97eb3a08307c6c929279bab973ef5a30052ed7b52acce9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/conversationApi.ts",
+      "sha256": "c993c55475eaa3d552a04005e5d2224eba8bdcdee482168748fb8e39ec01edf8"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ConversationComment.tsx",
+      "sha256": "96f3652b5620ecc3a1c52cedf3e3c85259f6de942d745bc8c06db77bcd61959e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ConversationMessage.tsx",
+      "sha256": "67a1727e9784ceeb27decb0ab17e6c2a4b3fd040c3942d8741eefbe482f1aaaf"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ConversationText.tsx",
+      "sha256": "f26f1a627b27fd57da9b78fa13878fd2e497614e1e492c6ba99e8b47e4581d9e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ConversationThread.tsx",
+      "sha256": "b1e02a3a5425100a0548a76cd1a062ff17968393e10cdbabb96eefe445861a65"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ConversationWorkspace.tsx",
+      "sha256": "91ccda882e17bc217c795177b5396076c7474d7d281b1b06301ea5d117700682"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/data.ts",
+      "sha256": "79c7b38817d78e6bd8b11bd6c7a98645f437791e3161943597747b94cd268c8b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/DialogList.tsx",
+      "sha256": "bab3747f7224d64f70401b2a901f2d1ad6f89552cbb90a92009c3f8f931d17f9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/DialogListItem.tsx",
+      "sha256": "e706d238a9d49fb8df1097dbc4a9ddd2450f1e955a09ebc6bef4c3a6bd118fb2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/downloadDiagnostic.ts",
+      "sha256": "4b42f0297547ec532941f01c2ae231b7fb03d5d4530f35f595ccdf4f964997a0"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/email-continuation.css",
+      "sha256": "ba1cb668132c720c35d27158d816ef9af8fd49b55a1223f99d31171c39beec1f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/emailApi.ts",
+      "sha256": "69bdb48db4441f250e8a21d4f2cb2dfc55b719d010f296e1d202a3c94429cd90"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/EmailAttemptJournal.tsx",
+      "sha256": "170d66e2ce6d274b278c285635e598bbb3e6dcd3964e038e643c081d87905007"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/EmailComposerFields.tsx",
+      "sha256": "3fbc1874585ca67df5ae09c10d2bb940001b207081e6f1d9b02a01c50d57f872"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/emailContent.ts",
+      "sha256": "d30f7b3dcc0367fcba8825f1ec4c31a42229ccd2103840c08a0f4e893e33e427"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/EmailContinuationContext.tsx",
+      "sha256": "cec8651dffe6b3643d1342490c1ed86d14e7053b89b9a48cc838f99cfb134812"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/EmailConversationMessage.tsx",
+      "sha256": "6624a690f5fdbc2b92432a8930355015bafbefef15581f06c8502b7c6117bc0e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/EmailMessageBody.tsx",
+      "sha256": "acd9d75319eb5eb64da718bd68216a52cbbbe59d16979776fd72e37f12a9a388"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/EmailMessageStatus.tsx",
+      "sha256": "9a14473c339feb01ef79f47e2cb0086bb00b38bac10fc6a232d37f845bcaa35b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/emailStatus.ts",
+      "sha256": "a397bd8ef40cda3df59e5fd9c817da0b3d4d077965282bf95eca6871126e0b39"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/EmojiPicker.tsx",
+      "sha256": "70f8f590bfad2a433b73339f6dd12b4611f830d8728a9ca9d52221e6567f3eec"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/feed.ts",
+      "sha256": "4f7a6ca394051dd34baa2f129786e83b97c0b20255f83d52a39a6eece1f9205e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/FileMessage.tsx",
+      "sha256": "236d6c5694befe2170b3ddde5e3b510fc3a092fda17b6b96551d69d49b48772a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/history-layout.css",
+      "sha256": "5068fe9e0ef3b0527ef6b237cb5bcc270569add2b62fe568e25b6d8740ffa03b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/historyScrollState.ts",
+      "sha256": "8f49b275f047678f99381daeb4d0293c46d29435ab03ca3b2bf5b2e672ab5f87"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/ImageLightbox.tsx",
+      "sha256": "6deb26f41fb52c57b5b22919fa1667dd946cce4a3b80d5bc9cbfc545f2050503"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/MessageBubble.tsx",
+      "sha256": "f75da7957882765df770972d12b88ab82689a8697c234317b011cdac6ed86042"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/model.ts",
+      "sha256": "f125aaeab7302b5a90f42d9d2252c42955580a583eb0d257540be41453057672"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/participants.css",
+      "sha256": "c386f999573e0ad3cf886b285671726f4e1739b87c30835144df199cfb0a4717"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/replyAssistanceApi.ts",
+      "sha256": "e34118971494c708a55e91c4bd00412e4f60c09819d699d04b836db8f9c80bfc"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/replyDraft.ts",
+      "sha256": "f03094368bca8795d8c5f2b5205563cefd4c2a7f496c8248109425cc5f35b218"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/small-avatar.css",
+      "sha256": "76f59b8053d2a9769a33a76890125c57a0ada22d941dc13f83f48bb056cb8a84"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/snapshot-message.css",
+      "sha256": "06510b06da795e62b61545688a6030411c847b7975d3c0b27f04f114ff48c904"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/SnapshotMessage.tsx",
+      "sha256": "02439709af2a4d3e0a70c5ec848c9e28371bd4999f911927aa690405e4bcb8c9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/supervision.css",
+      "sha256": "ff1019a0f56f4cebcf77afbe649df8c2b36cf4ba50a36c88f59be6e03424ebb4"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/supervision.ts",
+      "sha256": "42e38557726513a1beb37d2721651aba9ab27c145b796e18ba52837d11566b79"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/SupervisionRevokedBanner.tsx",
+      "sha256": "c47b618a1494c192ca148ef28b5f425e7f562ba8491f0f505169e7720014a539"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/template-picker.css",
+      "sha256": "33aa9175317135f967e7d2bf29ac3da035614456cbaae635b98c2ca02906c269"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/templateVariables.ts",
+      "sha256": "6ebcf3176e6ee2f0a55d8b17a2c0501044effe1329b3eaf9f3d483e2005d79a7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/timeline.ts",
+      "sha256": "2b9278ccf80bd83b9917c93857437d3f39122b1ec731f2e71e9b32a220f0d00e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useCommentSubmit.ts",
+      "sha256": "078dd3249617cc54ae5e29e8e60865eb18fa488e8cddfaffab51f6719bf317a7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useComposerModel.ts",
+      "sha256": "5cea5c2825256fd533983868cdf9fb926578e30316ff55e9eb3638943e462b03"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useComposerTemplates.ts",
+      "sha256": "fdfdcc6f50516a813437289a3928e45d81092cd039f69659b2db9b84a2ea6eda"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useConversationActions.ts",
+      "sha256": "363945e52130f9e05d5fd64511c3fe5585dad2f07abac7dee1e2d0dd1b2c0429"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useConversationCall.ts",
+      "sha256": "9202bacf9bd8f860390cb3d8b5ced441bcbb2052c4737c5c7365b47eeb872c92"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useConversationEmail.ts",
+      "sha256": "d66d205a05bccaad3a24a87baa0781246ecdd76647ee010e6d2deeac11ccaf26"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useConversationEvents.ts",
+      "sha256": "cb0ca7bb9086370cf45b230c2ed8da8141f4326898e45f3cc72838f6061f296d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useConversationFeed.ts",
+      "sha256": "27e1b1d97a0d79f59851337f8ad9433a40556f6f0c1cc5b0c2d3883347a79340"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useConversationList.ts",
+      "sha256": "94684271c0c458f460034eb216edb555066a213190a2d270ed9d0599dfaca7ef"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useConversationWorkspace.ts",
+      "sha256": "f8d3e2c358b1b51791672352ebc71cc77dfdccce6fc050148791c0d375a8440f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useDiagnosticDownload.ts",
+      "sha256": "6534b09714c83fd3e93d2c2fd1976f99b79dab222196f66779413441710b3ed7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useDialogKeyboardNav.ts",
+      "sha256": "72fd7d22801eb4352d49345414dfe54bcd832f753d5f402148f82817fbdab7d3"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useEmailComposerDraft.ts",
+      "sha256": "fd763817cbd10d21bf030e55520e7fcf5b7c6477c4b78a463c8af24d5ff61653"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useEvidenceMessageFocus.ts",
+      "sha256": "e000ce4c20a6c974c29816b1c6d2a858407cf21ae02396cd92fe9446d469cf3f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useHistoryScroll.ts",
+      "sha256": "feeee162389d9bef035e131a469152e6ebe2a5901cc995ee9811f9b1b240b8f6"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useHistoryWindow.ts",
+      "sha256": "5643de394f29aacf241dfe5ff227c2f7dc6fd9c092d1d8153091a3eb799d0177"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useIncomingMessageSound.ts",
+      "sha256": "7619488dbef3444edda7c71afc31abcd856bb670edd64505c535dae9d8acfa9c"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useReplyAssistance.ts",
+      "sha256": "5d49b3bf12c74953623013d31248007f49c1bb7e94c0f0b2633c6202fae36c72"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/useVoiceRecorder.ts",
+      "sha256": "81446b918fbc01536afabe38b46cfe28779634bc2df0b7f7730c78407538629c"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/VideoCallOverlay.tsx",
+      "sha256": "b6adafcc9ef2af2038a85dccd88e8235271d98233f80c3095981b9d5222046cc"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/VoiceMessage.tsx",
+      "sha256": "efae89e6b716bc33154d4e2cd69f0335711bda842455c4b0e40c062e6b15493f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/conversations/workspaceScope.ts",
+      "sha256": "f7a3d30622920bbac4bf83d8fa8ca2a9342374c34965accda939a6ab3c8516d8"
+    },
+    {
+      "path": "apps/internal-ui/src/features/employees/styles-create.css",
+      "sha256": "a6c0d8278daf5ba79e19700fbf130620fa2ca014e6828f7551c23763734cbc8f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/employees/styles-detail.css",
+      "sha256": "f4d17e6571ebbc6b3b1ab7233af52d0628cb4d47cc7905d6ee571f4d5fa8a44f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/employees/styles-list.css",
+      "sha256": "1076970c5a22f38fca7013a614b93e4dc75583b2ca3b756363c57098cd32a08f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/employees/styles.ts",
+      "sha256": "5af214342ad8aafab94231fe53e186e49c23c99c74f8183aec4c9db49c52eb71"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/entity-links/api.ts",
+      "sha256": "5a3f7c49273ef94c16311f025e6a58fc167d9598ce1714aab29ba04b4866781f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/entity-links/LinkSearch.tsx",
+      "sha256": "8c3da9d4f7e9a2099125d115beca94ef1db85532fde3362b8c8816a1debfe41e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/entity-links/useLinkSearch.ts",
+      "sha256": "3346944d48930358fc5a6e3838bc7a7c518f4b1c1e6951958778187ec69c7499"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/model.ts",
+      "sha256": "9f22575d694a4880968b5d10a61c8fd808c41e8c7fac057b40faf00baf8ffbf6"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/actionPickerModel.ts",
+      "sha256": "3d6d2c1fe45a601d4cd93fdba0af886d65a46146cb075ed95484198902804089"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ActionPickerTree.tsx",
+      "sha256": "b125956cc3c61be646e8d3d4ee1ef486c1c7e22e6f2b8d948c5b58ba70dc36f3"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ActionSearchText.tsx",
+      "sha256": "d73407dd225dd0eba100805673992b10879b2881518b2cb983ac3b088f630e03"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/api.ts",
+      "sha256": "9b113c6d390d19a94c28110f3c27c35378a433f0142e9c264c677f8f347aa56d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ApprovalEditor.tsx",
+      "sha256": "e122c2efa999e1f09d026e792924ade3b1e24ed146217d44b7b7f00b9ef42be1"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/conflict.css",
+      "sha256": "2537c4079dcb50c1bf6fad343324879678c90fcdd5d47a5a76e4000a7f06abaa"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/conversationContext.ts",
+      "sha256": "7fcfd900bf413fb77002089257a3b2ae39f6991d7db9336424ff130aea81980e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ConversationRunPanel.tsx",
+      "sha256": "b06b07e2882e9ab6d03544ad1d684c7584cb09a9786ba7e98b487855a476f005"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ConversationRunsProvider.tsx",
+      "sha256": "021ed75326aefdf4b956771f2e1baf6489c4f2582521c3182b4f57dd3065113a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/conversationSelection.ts",
+      "sha256": "ee9c63a216ca9452bf236d4a15b3370eb009a0b7ccbd1fa0a5aec9dc04d60b7c"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/feed.ts",
+      "sha256": "88c89322c3cd315f210ba4a4a1a91debd3239b12760f1c9d14cb2b4910fc93db"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/launchFields.ts",
+      "sha256": "e62730bfd3f8f777f967e960a57ab364cbc8bbb24f3f432a6409ad7a473c166a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/manual-action-menu.css",
+      "sha256": "a87b1a5c4aa64c48d86ce44f105f89299573ec687758fa9afb8b1e4a72effd20"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ManualActionItem.tsx",
+      "sha256": "6284e74fd02874271bd006a74e14a0427461ece6ae4cca0712c6211c706ee613"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ManualActionMenu.tsx",
+      "sha256": "c77cd46191fda41fa3426f6c6fcf7be0f7a5c2083e5ce9a8a35e0500538e3076"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ManualActionPicker.tsx",
+      "sha256": "f8e5c39ccbdc3fe2b666d05c493aac8a5539eae5fbaa4ec2a86c0322e9a972cd"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/ManualLaunch.tsx",
+      "sha256": "d82f7b9428ed201d58394a3c84c187c3569e5236318a65ddb3eada463fb36a91"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/RunApprovalCard.tsx",
+      "sha256": "51274ff7ac1fc33d65ec4d21d3283fda0bd004c6731f37ae63303b444b4ff2b1"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/RunConflict.tsx",
+      "sha256": "5aab697d407b0cb0a6e988b4640c53f7e56b11067103207c2bdebb98c333cf6c"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/RunDetail.tsx",
+      "sha256": "fce83d7c8a64e4f6b92674c323037cde1e71547be644033da29c2372f17f2066"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/RunFeedCard.tsx",
+      "sha256": "6ca7f6acbf8d02251e07638ab81a5fe31a2402935527db8f5811f418fbf0bcb5"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/runs.css",
+      "sha256": "70cbe99a651e5fc01e7bc0d817254ffd30d689fd8b2041ccef41ef5f4f4bb839"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/RunStatus.tsx",
+      "sha256": "4ab8ccf9082d4048b3d8433e796fe60fa0a098fe4f4cc30860d76cc69d4bf4c1"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/RunValues.tsx",
+      "sha256": "d4d8998d98a21575695fc354feea1b14e8752bcb0384de33b0384c950979908d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/useConversationRunHistory.ts",
+      "sha256": "c710f2fa19fc62d2790d4e9c5c06a81bbcb0fbf4bc431acc8d4d3d12a5b7df37"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/useConversationRunsState.ts",
+      "sha256": "3ae04259e4aabad996ba15cd8b477c9442aedc18e1f7f8c7c976595da6879115"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/useManualActionPicker.ts",
+      "sha256": "ac460e972e251cbf6f59e8d609ab765904a392ebdbe691444234f028c19dab3a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/runs/useRunDetail.ts",
+      "sha256": "72d12bb0c67c1258207b081015233e92211dd793db91650fcdc5246ede8d2254"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/AccessFields.tsx",
+      "sha256": "5f832a8c064d367cf0472821e514c552fdde0641e27b62ea19ce53170efcdda5"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/AddObjectField.tsx",
+      "sha256": "3897626075d679be36f1f6fe33372702146c673115ce85070018c16717982ca2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/aggregateOutput.ts",
+      "sha256": "145fe340b5aacec83fc123f6f6de10444cfdfd3de0c94fc6e6b075a9a9027bd6"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/api.ts",
+      "sha256": "8312ccc7226cdb21a5871c5f5d13c4d750684efddc8595bb2897332ce9f16baf"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/bindingOptions.ts",
+      "sha256": "d1036727e8c026c9260a910940314a6a70b21de3cbda89427bf9d9af45bac15b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/BlockEditor.tsx",
+      "sha256": "4dcef5cb677492c9a05d6e1ccfcbb15223b8d918a8498dadafbe8806556eeb81"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/BoundField.tsx",
+      "sha256": "e7ebccafb09993fe15defca21af54c975afecd0feb0d3dcbd1cb82d4d3beba69"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ConditionFields.tsx",
+      "sha256": "3eb4ca1798d9bb3b5ff3bfadcd9229bf8c438a3ab36ec94625e2535a28090bb7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/conditionModel.ts",
+      "sha256": "b7c3204bd7b5ff36cc0da406ba30b57bc32130bd36c5b1767d4b74906f6c2672"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ConditionsEditor.tsx",
+      "sha256": "045d56afaf949493bc9226fd112f9fb031130e856811e299f3e6c8b11a71319b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ConstantValue.tsx",
+      "sha256": "2e3fc328c5d0ee7dc1933d15f8e86caed85b53ffe7da088c9bea07397a32ef60"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/controlModel.ts",
+      "sha256": "af3e47a147474627f692b554fdd81dadc12afe0222317be649ddefce6259ed2e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/EntityLinkFields.tsx",
+      "sha256": "181133b310660ecbf12e0975a536ba6a2f92b56427e209d2d51624aaddce0178"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ExternalKeyFields.tsx",
+      "sha256": "3e3c355014ea8dc2f261addd0ed1fb7b86e7fc1dec92f65eee9fe0e0f6565cb1"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/issuePresentation.ts",
+      "sha256": "72a9c3d4b07fda15ab5c96fbc303201793d74255943fb4eff52838bdde51dc8e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/LookupValue.tsx",
+      "sha256": "4b5d25f4393f969caea1f423172c1c8f847707cc3e60047944064a4ae544d143"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/model.ts",
+      "sha256": "99cbe5452d43aefcc8e55e998abd8da99792b5dd58f7a6a7c68e8dbbe9c47350"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/referenceModel.ts",
+      "sha256": "dc60bb3cc89a87fdbf1cf20c4c2fc4e74b803088df6c512a8ccdda29f06ebc10"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ScenarioDrawer.tsx",
+      "sha256": "8a7eda9b286865f3574ab9c804252cbe083805abbf5965658f72cde0ca8f288a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/scenarios.css",
+      "sha256": "92425c0e6cf21e61ee526fa2b13997e0b14b7df0d99575de4ffe3b45651ce857"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ScenarioSections.tsx",
+      "sha256": "d09b011e9334184f02f006f2175edbd02794e62a20b88d707e7a995f066ecf6b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ScenarioSettingsValue.tsx",
+      "sha256": "ee49af9b406cfd2d95a9754f42e2f7732c7538e17dea576b3deb2b6e49228bef"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/ScheduleFields.tsx",
+      "sha256": "192e1ba2f32948c5e65f9c17f970b390191d70f9823bdf6b4c2e186afc86c772"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/StepList.tsx",
+      "sha256": "9daf3f3295de05fe8466bf6ef28fa66daac10562a3b7bb6160b72cc60e24ef77"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/stepPresentation.ts",
+      "sha256": "610953d8b6d5b3db42000f9c30748131744b22fb10b9d9e5b87fca735fc48963"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/TriggerEditor.tsx",
+      "sha256": "7ec7b9cf7bea2f2084d724a116d2880cd0fa9212b41d91e8825ef583f6c05182"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/valueFields.ts",
+      "sha256": "58f8801e9ddb5cd83225b21d69c4e0f63667db522a55f369c28e15c592710a50"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/WaitDuration.tsx",
+      "sha256": "ee525e0ade6e362e00949ecc314eac211e5d73aa1917dc6755c6d551e9a87895"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/scenarios/WaitEditor.tsx",
+      "sha256": "a25be0f3b6801588bb491150b40a93e8a0ceb6dcd8088b0ff1e61883b14d4dd6"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/api.ts",
+      "sha256": "1adbd93880f8239d81397057adecebbe1f50e54c6c793e2896705b02d26718ab"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/connect/fieldControls.tsx",
+      "sha256": "3181b5f85733a1a8f699cc67b732b38c26825dfb12f2ab3872f1a6d99146e1b0"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/connect/ServiceAlert.tsx",
+      "sha256": "8c4d2b777d0057c3292466c236fab26682c25aa4cfea7ac4a8571370cf9abcda"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/connect/StructuredObjectEntry.tsx",
+      "sha256": "f5fde0d6a13f1b179a6562d3eb7200d030701ecc27e7e36cf7f2d788af5bbd1c"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/connect/StructuredValue.tsx",
+      "sha256": "bbd6988e517de45439f0828489bdd6517123fc67715a4e90b9d05961b840a851"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/connect/structuredValues.ts",
+      "sha256": "4fefc69394efd36b49e439a9c249104b91ff45972ab51401da48ef2d6b488f35"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/lookupAccess.tsx",
+      "sha256": "d5aa82ad1714812ce0ef003d3f13f31659994ebdb29b09959c67231833277007"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/services/services.css",
+      "sha256": "63f3b201c832b3962840cf5e9f223c46c5a3eba482c4ed2ee4cc53b00e8f30c3"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/site-fields/styles.css",
+      "sha256": "47116deb1919cffabfdf91844a563639fc6e5fbbbc798e8f8d123a67731b38b9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/styles.css",
+      "sha256": "501e1fd0b8b2f619fdfb08e8f767227fb10d4cac2055cb5b1b233483be8a80af"
+    },
+    {
+      "path": "apps/internal-ui/src/features/integrations/web-integration.css",
+      "sha256": "e8ec4ba2bf441d4f23b31c0bdee9b625f59b4187b32a8a4cbf9c19c838077020"
+    },
+    {
+      "path": "apps/internal-ui/src/features/notifications/model.ts",
+      "sha256": "c79bf0ffc1bf9085eb253a1c3698c724d15ec158e27ec4e5912156ed0d8ebab8"
+    },
+    {
+      "path": "apps/internal-ui/src/features/notifications/styles.css",
+      "sha256": "41373fc6f30a659d723b1bdccf776b758320b3ea32047d05ee4b215ac71981f9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/notifications/useOpenedConversationRead.ts",
+      "sha256": "7772a6f5f242b80adfb74a95c4815d570765c994a9a0d80c7855d71317b6d4ec"
+    },
+    {
+      "path": "apps/internal-ui/src/features/onboarding/styles.css",
+      "sha256": "74a707cb17124717cff590ca8d77b02b75a6d38c88641f79b53790a3d4b45d9d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/organizations/styles.css",
+      "sha256": "c172637a21abc7e307fa59a056de1239ad5096db21554c5a348906a4c70b7882"
+    },
+    {
+      "path": "apps/internal-ui/src/features/profile/styles.css",
+      "sha256": "c85afd10a9dd98dde3a7ccc5c45b0d9f3f86f410ed911c887f72da5203b854a0"
+    },
+    {
+      "path": "apps/internal-ui/src/features/realtime/connection.ts",
+      "sha256": "6f594a1c51149184210d6a14264edcf2419903bb3f29e1af530af4c10376e6d7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/realtime/RealtimeProvider.tsx",
+      "sha256": "29002bc65fee96c5d25ba9a6a59b50a362a74f13c9fde44800672342963ecc55"
+    },
+    {
+      "path": "apps/internal-ui/src/features/realtime/subscribers.ts",
+      "sha256": "4a7b763da5da976942fe67cf43bfb6ae568488655bb51602082a29a8a4995bc9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/reply-templates/api.ts",
+      "sha256": "9752bbc0024685fab6064906ab633601156b288a686d4e00c45d99836eb42e20"
+    },
+    {
+      "path": "apps/internal-ui/src/features/reply-templates/scope-tabs.css",
+      "sha256": "3336abfceb077c592c83deb32da37d76b6c4c8f078ca77ecef620892b197c9f2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/reply-templates/TemplateScopeTabs.tsx",
+      "sha256": "82b8063fb198c70697fb8dfc1779d9370e142b426bafdadb5bf1a6129b0adb84"
+    },
+    {
+      "path": "apps/internal-ui/src/features/reply-templates/token-editor.css",
+      "sha256": "68d412e60696b091ef971830f8945122ac10aa26dcc135ad4f23d684bd01ab69"
+    },
+    {
+      "path": "apps/internal-ui/src/features/reply-templates/TokenEditor.tsx",
+      "sha256": "6466ccf69163dfb287377bd1aa86a0b910d7032fea63dd9393a21f8025dbcc88"
+    },
+    {
+      "path": "apps/internal-ui/src/features/reply-templates/tokenEditorDom.ts",
+      "sha256": "5c07a3f5988345cb2fc132c91e05cabb986badee3c2a4599d40c5d1d706b8ada"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/client-detail/styles.css",
+      "sha256": "79647344b70dedd7419b57e00c67d7d142abf1c442be21591a543863e7f621f1"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/clients/styles.css",
+      "sha256": "3f32136a2a904cc902b846a78117f8459ff601507e243777b217026b1d7aa6b9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/composer-draft.css",
+      "sha256": "fe4942e0afec007ee3bffd151e43d57958ab9e841c07fe0599013887934a3141"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/composer-head.css",
+      "sha256": "8c5e281954dd3386e1f4f705413f7a5dc7667c376d2be70cbbb7ed4f8edb3ae8"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/composer.css",
+      "sha256": "bcbcdaa7d0f8601f3952accc62e58cb8dfdd6e7a2040da9e2fc83d0da9cb6340"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/context.css",
+      "sha256": "d0557075981bd0fcacb7b85287cde23cea81a815c1156ff3a71a7568792218db"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/conversation.css",
+      "sha256": "b180c7ef738ad9cc297fece9ab3309c9a6f6ec58ee57400813c979f62851c79d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/email-message.css",
+      "sha256": "9cf04f57a7e7b259af5911a79fac63f47f0cc7a7ab85f3b6c3c784b4f0bcf975"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/feedback.css",
+      "sha256": "ed9d583581d22b9a6ba5a5260c1ebdca49056c28e1e0c08b22108d8dc1fece11"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/internal-comments.css",
+      "sha256": "e2d9bf874af03d89dcd00e02bffdf956ae63fe44e73138871d10185f926ba4c7"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/layout.css",
+      "sha256": "8ea9954f83d919e59d9ee8e0e23528d35111032ed64032641feff6fe0ef779cb"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/list.css",
+      "sha256": "b74f92b337f6b7ae3b05667d8e9ba95078ad81d118fe0dfb83dd931010d9552a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/sales/dialogs/styles.ts",
+      "sha256": "0f8517891e5ab0a87c7109ae806745250c817f70b3b9ea6f09f05d2348a90145"
+    },
+    {
+      "path": "apps/internal-ui/src/features/settings/navigation.ts",
+      "sha256": "0197b85f86a8c199e987a5f5edec95512ece5f404c9f45dfedc688525b6651c3"
+    },
+    {
+      "path": "apps/internal-ui/src/features/settings/sections.ts",
+      "sha256": "16dc9db08d3b374f66b044b78754226a59721efede140c4f30ca751d81217b6f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/settings/styles.css",
+      "sha256": "e7fe7fbe6db675e9353d7e1df76280462353c242bdf0a8798f2ee74d464f3f05"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/agent.css",
+      "sha256": "58f54497f6740f9d953f9359355f47cc1438717adcc67a621d92bd252bd9b482"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/editor.css",
+      "sha256": "915acc4a76fb82e8b196e430a5468bf2fdf03887b83b60a0031fdb345626938b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/feedback.css",
+      "sha256": "693d889eac5a31d18af5882408fe03aabf6f9fc31bdadcdff0b0c2809fbaacf2"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/library.css",
+      "sha256": "40288c5c0b2a875c0e1d62d4b63b4c4228f9c98e07e7c938f166a0477a3f4c4e"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/SkillGlyph.tsx",
+      "sha256": "8834c04402c92a1011dc16e62d10daa885a5f9d6f0ceb694bd66a55a9de880e9"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/SkillsModelWarning.tsx",
+      "sha256": "79534166ca27b160bf14e3c93bd04dcafcb437bb0d631e26a107c05ee56d2131"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/styles.ts",
+      "sha256": "c8597d306aa864b10f6126da125c2100ee04342e84c8a15151ec219c73ea8ef1"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/template-editor/FieldDialog.tsx",
+      "sha256": "30ee80c0e17cf95f07360559f53947f2c49ecc854fcee20e8a97bb141f3018da"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/template-editor/schema.ts",
+      "sha256": "830a07d1fbb9b65606c1084afa1f18a8a1c314f3a0b1d013a7a77758743f3d61"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/template-editor/schemaOrder.ts",
+      "sha256": "53d29c091b2867e2d598293e0334491f05776006f90697d506b1d53d4d39932a"
+    },
+    {
+      "path": "apps/internal-ui/src/features/skills/templates.css",
+      "sha256": "eb5c11833fd50005d046ddc3d49e0f604ed5205d4695c6deeb6fccbaafabb8f8"
+    },
+    {
+      "path": "apps/internal-ui/src/features/support-portals/api.ts",
+      "sha256": "1053bef9a2770f3394dfc3048cac98e2e39e86efb06306cd1a1758cbe661df9b"
+    },
+    {
+      "path": "apps/internal-ui/src/features/support-portals/sections.ts",
+      "sha256": "48b2e070f2a8643a9f21144f0731c79bdc08704a4d2f7539f08bee1876dd9704"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/api.ts",
+      "sha256": "d5c40fa8d27aee674473ebe94c2729451bb68868a3d15a97e38a9da0356e2469"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/MobileTransferRecipients.tsx",
+      "sha256": "ce3bf68b521fa2991cf3514b29329ea86923c9d7f5f7feb5e215b38acc7a3808"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/styles.css",
+      "sha256": "9c8c4031ca69e34f8230de5152c0afffe7363bc7685189a813f487aa317b0c3d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/TransferAction.tsx",
+      "sha256": "8bf56f28310a3669de5bea80254ce42f671212a234382ea503df0c49a1fb2d7d"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/TransferDialog.tsx",
+      "sha256": "d2eb54d256f7347a5d965f841a18834a718b04072c9a8167ffe3833704470812"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/TransferRecipientPerson.tsx",
+      "sha256": "feb35ccff7f5ad465caaf93120ec7491d5428644dc4ee148b1c7b83b3d825fbc"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/TransferRecipients.tsx",
+      "sha256": "0c35913eed34a2763a5f9c51dda5b81ae3af3035c2c2697e85ab8f042d4bcb34"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/TransferTimelineEvent.tsx",
+      "sha256": "c343670f674bed06a568085cdb506eb445249ce76544d98ffb05e0f86b5b44cb"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/useConversationTransfer.tsx",
+      "sha256": "aed94d2ec9ef620d40219f18bf0b277135a46b17372482dffd8414c6662e0468"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/useTransferDialog.ts",
+      "sha256": "afc7605f31aa3034a02d63a047ef34865f16de8dedaac87837de4789f568a6db"
+    },
+    {
+      "path": "apps/internal-ui/src/features/transfers/WorkStatusBadge.tsx",
+      "sha256": "c36bc209aab4fc4d74884670de92f2701d0b757865d5271c60f96d91edb1c010"
+    },
+    {
+      "path": "apps/internal-ui/src/features/updates/styles.css",
+      "sha256": "e01ce9b84a306bba676957ec230be213c13f2842d19b2ac561e41c31063c613f"
+    },
+    {
+      "path": "apps/internal-ui/src/features/work-status/model.ts",
+      "sha256": "a20d581866969f13c91b4e65f6580722ec4f3adf8ecd6649016e389637a723fe"
+    },
+    {
+      "path": "apps/internal-ui/src/features/work-status/styles.css",
+      "sha256": "702660f3897611ede728ec9c269500c306c148bd78a2a29bcf8a38e259965fdc"
+    },
+    {
+      "path": "apps/internal-ui/src/features/work-status/WorkStatusLabel.tsx",
+      "sha256": "c2ebed4744a170fada1c87cc2e5ad193b81bca1501193d6468cc1007f4b10736"
+    },
+    {
+      "path": "apps/internal-ui/src/features/work-status/WorkStatusSelector.tsx",
+      "sha256": "a64c0071afcefdb62e8f5c0520a60faf2dcf6d384ab0db455491537df7875a0d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/agent-actions.en.ts",
+      "sha256": "bbc905a025cf99891e098472db697ea066955e4904f169b277cb908e2611bdef"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/agent-actions.ru.ts",
+      "sha256": "6a10b95a0ebb20d10a0f5c42bdc25ef3552a33c3b5ff5cbbe8c835387d50c57a"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/agent-assistance.en.ts",
+      "sha256": "6a30b34fe587f86dd872dd3be3e6f31ab629cd95377beac79073fb20f70472b3"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/agent-assistance.ru.ts",
+      "sha256": "1a9d74dd7ae3db155a2660982deb9a171d56d57adcee063a7ac1c4ccf4cfc657"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/agent-test.en.ts",
+      "sha256": "aa4c08e295273649207600b45ede0cd9ddf550dc3b4ee2a89f7bb1f491beb3c3"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/agent-test.ru.ts",
+      "sha256": "9238744fa64c02afb33f56e974d28d83305dd1be01201c3427289f024b0f3d91"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/diagnostics.en.ts",
+      "sha256": "b02a620bd94d7bc017ac5ecdf690eda812e98820a20ab280ee82408778527dfa"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/diagnostics.ru.ts",
+      "sha256": "8afca76e2bf1616f2a7bdd649a8002740358b2b06f5687173644e2d38083c82e"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/email-continuation.en.ts",
+      "sha256": "d2a9b5ab8b2428b0479bf11d6275023e6e1b2c6753f6b2c2ca67eaa30c49977b"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/email-continuation.ru.ts",
+      "sha256": "9d2c6d241c906ade405c36f9c6aa4aecd7e40a11e87e72780ec0e8d6ae0a30a7"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/en.ts",
+      "sha256": "b0320c53b7600dbde8143f8ef1417a151c0232cad805a30925e54831cb05d69f"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/external-servers.en.ts",
+      "sha256": "4d49c5fed0c4dfd1cebaeca2b3b9ce189010a004c5e05012fe56f1006bab6525"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/external-servers.ru.ts",
+      "sha256": "98164762f108e3afc565c3da691098bbb3c490bd1e91ab21c37a5a193e96449d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/handling-rules.en.ts",
+      "sha256": "3b9748021e997a604afe1ff5ff13399c2e6933e1e0cf7755ecde1e973e029e83"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/handling-rules.ru.ts",
+      "sha256": "408a09cd9f70fbef1f25f217f75ed36086efe89ffd6eff46a0a9921e26bbea55"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/index.ts",
+      "sha256": "ef70e2226117129bcc5ebe36f03ad48e090fc7cf4f147702d24f80838e5bc3e5"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/internal-comments.en.ts",
+      "sha256": "4ac8d7a1f48cb87ac77bf68e506927cf47b04ac478dfcc69e473c031f4e43090"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/internal-comments.ru.ts",
+      "sha256": "cc88378899d0a0a6c97969b533ba811e0addab818c953f03ab12798f15c5c4d1"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/navigation.en.ts",
+      "sha256": "c705d974c0f6254e9b75b4de26bb73988bab26676fd3ae60e9875dd8eb8275ce"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/navigation.ru.ts",
+      "sha256": "d17d8fe08ca73259da49970619a6b44d98c4bc7c6295572da927d50f76d4f99e"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/operation-modes.en.ts",
+      "sha256": "9a4a92929f75ffaf14799dea4f98131908b31655705e63c4e497fa53d998c89d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/operation-modes.ru.ts",
+      "sha256": "b75cc7648bc878dc373fdb29e716d9bec74ac00391c428c5dfe939997d5b5d26"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/page-titles.en.ts",
+      "sha256": "4a23c72c53c7e157d6874fe8ba3f88be5ad3a4a2638b8361ac43a7fb2206a882"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/page-titles.ru.ts",
+      "sha256": "ca7e35dbba9409b2de4126722bfbd8035059ec0afb2543300b406042eb13095d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/participants.en.ts",
+      "sha256": "65b07621323f9ee69c8522a91d6dfce247f33e6622e0dda8c8a19e32fa232eb7"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/participants.ru.ts",
+      "sha256": "89b8ed77dd849e738c4361887738dc7291a5888d85287c15d60e8fb75d01ec35"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/pre-chat.en.ts",
+      "sha256": "d2338d4060a509e70cfe0f6e3d79b714d026c2a287200c10d6e9cb6067566818"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/pre-chat.ru.ts",
+      "sha256": "3c896bdd224572837aca1d6bbc60b89bafe54b81e0d0c401a5a86edb2fce386e"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/quality.en.ts",
+      "sha256": "9b5ebb05c5a25f265171781854485ab544b7ef995ac78a08584e06590920bac3"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/quality.ru.ts",
+      "sha256": "f441ec3f26a80d289074bdc83a734a0081a98d78a8b7fd405d33275c2e3528d4"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/ratings.en.ts",
+      "sha256": "bc984749a7a51cecb8d9376e75f3c884ad6424e5a9f15cf0e7e7edd70130711b"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/ratings.ru.ts",
+      "sha256": "9f37482dbdb4511e55acb1fdc58ba1d59a2d790183ba4cc5405641b069f0b618"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/reply-templates.en.ts",
+      "sha256": "8e4660ef303d22dcd0424646e8a8ff5e69839d1857186a04bd60b15d8fada397"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/reply-templates.ru.ts",
+      "sha256": "83a71ed8f55440c177a17356049db81afd1e8ff4b8fdeaf4f539edde77171b83"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/ru.ts",
+      "sha256": "68d786cd36a8ec0adb52af9e210f27cb3480c6ee33d494dac0c3de0dd0623b31"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/run-action-picker.en.ts",
+      "sha256": "fc8fbb7cb58c6e2d469f8e489ddf3d6209b8911a91c91db3c2945a670733716b"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/run-action-picker.ru.ts",
+      "sha256": "6754e39de2b00cbf28bb3c0770f977ae78d1421a153bb60df6c102a54232f812"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/runs.en.ts",
+      "sha256": "3d4e4d7732bb480854335f8ba465d3a51a6d9e064ce4d4bd206f2492c1da8070"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/runs.ru.ts",
+      "sha256": "b0c2509909a87713557a5f328717e5ed5b599900c4e3898d1e9059331fffcd81"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/scenarios.en.ts",
+      "sha256": "42b4b7d83332ba9ad53f687a3e22af4c181e630c7aff3a04233cd41441be24c0"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/scenarios.ru.ts",
+      "sha256": "868609e7f0ae2793cd3d09cba344e23b4b55fd0fd3dfecec36d4f6fc7d9a5c77"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/services.en.ts",
+      "sha256": "3950b047c024b9c09beb4a66946f36c2f30f81403281733333f3d9cbd0329f41"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/services.ru.ts",
+      "sha256": "782f2d9bc0bb9380400108d8b8480928fa392c3080682b6175696a9b1b3e1a90"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/site-events.en.ts",
+      "sha256": "57b778d244d4230412ee176bd2b5979357b2e51e676fda2749476d83f068f840"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/site-events.ru.ts",
+      "sha256": "381cbf5d32c977260c03167e17653cf71db08ad1c0e0d4b887a6f60ca90b4ef5"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/site-fields.en.ts",
+      "sha256": "2cb134d5ce15a54c3dd8ecaf7c2844aaa1a21ae9e8da9bcb5957b6dd99b92970"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/site-fields.ru.ts",
+      "sha256": "c1ba8c3ec8b5cee4c089da6929d61c9b4c363ebbf198f32361858569962233d2"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/skill-templates.en.ts",
+      "sha256": "bf68ba305a9d9106a156181b17210d4e9128d82a2472f134368284ea1b644708"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/skill-templates.ru.ts",
+      "sha256": "55512e9b2b795b7c91a1ad80fe3094b73c8de578fb5ac5433f37be0ebbdc78d5"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/skills.en.ts",
+      "sha256": "5cb52856273a261ae2868a50989d7af9f0c6f37d16d6d4b0e887dab79ba78e9d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/skills.ru.ts",
+      "sha256": "a013891210222833cc38758191310270d19b256dc287ea5f4ad85ce9a102ad5d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/snapshots.en.ts",
+      "sha256": "504f465cfb0281535be0b8c95651e0ff7fefd0093f352c6dc4affbb0ac6f6cb2"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/snapshots.ru.ts",
+      "sha256": "abe18d5d3a36260da605fc21ffa1f35237fa9bd835b563a702b4dc521b994225"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/speech.en.ts",
+      "sha256": "578c7721e8e451d0e2aa9d0cb6fd1deb97c3181d698a2c5139e53a452e7820ba"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/speech.ru.ts",
+      "sha256": "005abc6a96c947746f15f5893e4ba8587ae4f135a86005aee98e0c2cdf636234"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/supervision.en.ts",
+      "sha256": "98427a90f501c1915bf43e75a46c5cab7bc848d5120d8a1c48dd261d8b815ab2"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/supervision.ru.ts",
+      "sha256": "7221511a2e00009ed1bbda382355ae61fc71e8e5998c53825d4d1048eb510e07"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/support-feedback.en.ts",
+      "sha256": "5450178c98258838ad67c6844c62fd2e4a4daac8908907e098b918915f2273a8"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/support-feedback.ru.ts",
+      "sha256": "42e8ffebb8ca3ff7f49e4494604cc186a01587588468243468aa36f77517329b"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/support-reports.en.ts",
+      "sha256": "8fa7a501a79211057767d162cf2e6b3bf42744c925d657e2c429c00debbcd333"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/support-reports.ru.ts",
+      "sha256": "51b9b47aa33e3531d57407340708f5cbb53a0f9860ef760a142e75131ee10b02"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/tool-calls.en.ts",
+      "sha256": "0efcd025c07d0ac48eac74bbe65e27c367818d33bf28d772d3ba97ddee153e86"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/tool-calls.ru.ts",
+      "sha256": "79b2c15516121c9cf8e4a467ddeb8f89fd8b0ec5cd82985460dd1b5f0d147b99"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/transfers.en.ts",
+      "sha256": "7b79da0418c13767167e989a980930e8b70fb36496fe01af5465cf64381291a8"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/transfers.ru.ts",
+      "sha256": "f5a0517d08e9da66a3fd151df5977f04c72305099a30ea7a8809247745bf393d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/widget-appearance.en.ts",
+      "sha256": "59707bff867896eb59793e20a0f587707be50dfce7922277e173ff21420f3ec6"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/widget-appearance.ru.ts",
+      "sha256": "11282988bf38c40517908452e8c42209bfdce7e75fb4ce2488a18dcd7cc2793a"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/work-status.en.ts",
+      "sha256": "0336a90a45e89862f624041be15d874dbe3340b3c045378e4f2b60c356ef407d"
+    },
+    {
+      "path": "apps/internal-ui/src/i18n/work-status.ru.ts",
+      "sha256": "1cd59288329e2f5ccf87c9a44e31ed4dd7f583122c5246613623ff653619f4b0"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/chat-scope-icons.css",
+      "sha256": "de43c4b0418e99646399150d4e34b4f9bacdfbdef9713b0490edb5d9f3cae02b"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/ChatScopeTree.tsx",
+      "sha256": "2b82d14c5357c894261d40701b6c20a4414ee2369c8aa7a6e8b1029262fd554c"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/NavigationIcon.tsx",
+      "sha256": "06e6e68cb9344917e1361e45486814877b7ee7978322149f9a6098a7b806df68"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/OrganizationSwitcher.tsx",
+      "sha256": "c6ebfcb12583b979970d272226d74b5a17b39676160fd70a48c775db4f5e1111"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/page.css",
+      "sha256": "19259bf08672e3dd2c343f7d5e099e9dbf1c27ecbf770a3354c6cf24d75609d0"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/sidebar-navigation.css",
+      "sha256": "2add4ae121067e17e6ac38ba6c4a5035d4e96c7101ea46d27cf86b25e08682d1"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/SidebarHelpLink.tsx",
+      "sha256": "29e139782c7f0479d930b017435cd0d0c31a7d485889062313efc9d970c7eb13"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/SidebarNavigation.tsx",
+      "sha256": "2e69af876d81982809cdcdc31677a9a4c23e2053f2e41c991bf2f734d44028f9"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/SidebarUserMenu.tsx",
+      "sha256": "bc750dac3164f6871acf7e958692bae554d2f3defba67429315915c4d36053ec"
+    },
+    {
+      "path": "apps/internal-ui/src/layout/styles.css",
+      "sha256": "f31e1cba7c79aec9c98f30fe57d6af286c7d4e49681fdd3cc920cfc43542a2d7"
+    },
+    {
+      "path": "apps/internal-ui/src/router.ts",
+      "sha256": "4a74483a2780fa6cbfd7550a5d33d960da405d6c63da5178515eaf740ecabf26"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/allPages.ts",
+      "sha256": "6c8e098e2cafa21da5c84054a95fedceef678d44ecaebb73fda83d3eb8de0362"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/appearance.ts",
+      "sha256": "33f729196ef4ccb7bea65ceeee218f2e33bf4fac32d80c67d8857053323658f5"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/badges.tsx",
+      "sha256": "4f9e26228db8e583326033f603d6712141a69e03132215db41077ed199b690a6"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/branding/logo-sunset.svg",
+      "sha256": "a1d06836efd2ce96b49604e8ffaa3dbcb59e33d53b747ba3ed6ea636092f5ce4"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/branding/LogoIcon.tsx",
+      "sha256": "52050d2011148641cd73e3af27fc25b79d59ff61f6c39e87b6ae5cbda9a8ca03"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/branding/styles.css",
+      "sha256": "336e796a6ceabad189337b7763e688f433c9cd22d5cd4fba0eab8adf9fdb77bb"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/ChannelNavigationMenu.tsx",
+      "sha256": "0f2fac5466af3944a44cdca29d6679a789bbdd5dff822624976f34db4b2524da"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/content-library/styles.css",
+      "sha256": "bcd0520bebb1692e98970c8994a0381247bdd5c93e6c84f95abcff0977265703"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/DecisionDialog.tsx",
+      "sha256": "c06f6479b39a167db3691b6c4db294458c42647587d101a8aea68e2239ea99a4"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/design-components.css",
+      "sha256": "637ee597c8c91b998f1eccf4b5cc4122cb923b54bc13cc290a0fe385b9506439"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/filter-dropdown.css",
+      "sha256": "1f8cdd4805b6c81221f0c6e7076bc64afd67bbd57980dcdbb2814d3ea3fb2a66"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/form-controls.css",
+      "sha256": "7157480d4f3b395135e44bbe78fdca7837abd537c266d50cc9d3e0b57f8354c2"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/form-controls.tsx",
+      "sha256": "8ac8d87bd3bc5c6a20722b65a7cbbf4d3766ab05ff284ac3db2c4b95c2013032"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/help.ts",
+      "sha256": "425baa5648851a11fd78ede358ff79e9dffe549d2dd4165dfc5032427c20d15b"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/icons.tsx",
+      "sha256": "9450a1680527dd90675fb7000fd55fa8730e23d3b115146672d7438e5048f5fb"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/links.css",
+      "sha256": "556482d8ee4a0db161e9c032a728c3f2a8f45bc335b30f6ea56a8fe67105adbd"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/menu.css",
+      "sha256": "03a055ed4015b8a9fa84fd40cdc6857392a588ade6ab225b44be2a8c045fed53"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/providers.ts",
+      "sha256": "f2d9b89d658598b225c0221cee890cc8cd37604bc0c4dd59f98e6bcc3e2db7f4"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/search-input.css",
+      "sha256": "e641499a2fdb24fcf71d18db0f2d6a7299846bffb8ccf3609941d6f43e5fc15b"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/SearchInput.tsx",
+      "sha256": "97c715922db2245a4b769e0e1f577127b385d7d0df3897b414c7515893dbceae"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/searchShortcut.ts",
+      "sha256": "00dacc19a7d468b1e8336fec0fa11e332da190eb72814f776bdc87dcc3255842"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/section-menu.css",
+      "sha256": "56657b219cc2880b2e968ca93379101a850f0b1eaef2c0e21854eec275d2cec2"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/state.css",
+      "sha256": "1eb036e298c2d4b9d8b4de6b7970bfb4798b25ece8f022801e1fccb2f0a926bb"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/table-controls.css",
+      "sha256": "906b13bb5f7c510174828152ebf31b50e1834e720f85b2135de98caef8e7709e"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/tool-calls/model.ts",
+      "sha256": "1d5da575bd3be060cbf992ee07d221fd7984d49905459292dfdade0b39b699a9"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/tool-calls/styles.css",
+      "sha256": "b56efae2d2d8a5a7af38d403dd103c932af0a043fa4863ff8578b766c052464b"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/tool-calls/ToolCallChip.tsx",
+      "sha256": "6d9c0466923f51dcf47bc9f0171ce0de801053df1ff4a1219e82256dbbc5225b"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/ui-controls.css",
+      "sha256": "4b53494f04767b56248a4a901bfc385251dbcdac37dd1f0d6d807262a08e8a7f"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/ui-controls.tsx",
+      "sha256": "8f199cb169641393843fd2b22549f63f808d1f5ce34b262eb650155e1e44bc1e"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/ui.tsx",
+      "sha256": "ea78abbe3b45b3f1cb0f489584d6ac82c410d6840a8551cd3336bf3c7f5518bb"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/useDebounced.ts",
+      "sha256": "fbf81ff4f3926073dbf9df8b8eac1ac262fd8a3fb1363d59f92f76a8481055cf"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/useMediaQuery.ts",
+      "sha256": "4cbc0a1e1047871184449736d33c606da961d92e5ce0b71daefc5e95f0f24565"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/useResizableWidth.ts",
+      "sha256": "24734bc929dbae8d4388ee55c0a37cb2000742f0ffdf3f49cc62909da39282e9"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/useSearchShortcut.ts",
+      "sha256": "cc3034cb27773acef66e71d8383adcf273c0b9f1522d79e4d98eb2d9095e1de0"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/utils.ts",
+      "sha256": "888b71103431745a3698aeb8776a662cf67b3c769d70942d583285e751d2867e"
+    },
+    {
+      "path": "apps/internal-ui/src/shared/wallpaper.css",
+      "sha256": "111db18ece05333d1e18109546268d574bd4f0852e8d9c620eb9792b1c0336bf"
+    },
+    {
+      "path": "apps/internal-ui/src/styles.ts",
+      "sha256": "f6cfe31d6ae9ca0798452a9f2d9298d3c3a098200c2beaa3c41f379d7c64dca9"
+    },
+    {
+      "path": "apps/internal-ui/src/styles/base.css",
+      "sha256": "96ffc80c24f894f744fdb9437586612c49716653bef17c84004d79425f375e32"
+    },
+    {
+      "path": "apps/web-chat/src/BotIcon.tsx",
+      "sha256": "7a2c2568ee742c761d0f68b18551031d7f2d1824658941c5e441367210e86feb"
+    },
+    {
+      "path": "apps/web-chat/src/BrandFooter.tsx",
+      "sha256": "da22efddd9ef1906f47201f20bee3cfdfaae1f9dc1a159ea30b56d6a186d5b76"
+    },
+    {
+      "path": "apps/web-chat/src/ChatAttachment.tsx",
+      "sha256": "30a6e1c9bbec229c077cb60f4f78743b37d2a399bc9e56c0f5aed0d76524cfe9"
+    },
+    {
+      "path": "apps/web-chat/src/ChatBody.tsx",
+      "sha256": "b99d122a7f5333b78ccf311d839f7855c9a763589ed10eea2dcf7829fded72eb"
+    },
+    {
+      "path": "apps/web-chat/src/ChatComposer.tsx",
+      "sha256": "017d577c58a877f6e244b05f336dc56aa70f2b04fdac8c8e031e9a202cc129f2"
+    },
+    {
+      "path": "apps/web-chat/src/chatFormat.ts",
+      "sha256": "cc8f951558b3fd33236079e3517a6af3cb972fbc13dd49df2ec6b97f8ccca890"
+    },
+    {
+      "path": "apps/web-chat/src/ChatHeader.tsx",
+      "sha256": "3c9f5767383ef5323dff1c01f0c6050aefbac0f31c592aa9766ab6fefd7f7c9e"
+    },
+    {
+      "path": "apps/web-chat/src/ChatMessages.tsx",
+      "sha256": "2bdd365eb65ff2c45757f1cdf7dfb98619880a70532f1c12a0d387e5ff002db1"
+    },
+    {
+      "path": "apps/web-chat/src/consent.css",
+      "sha256": "ae9e8dec8e86fbca196c88a93e94cfdddfa74fd2bf7d3b0b280a2d98e3cb9d62"
+    },
+    {
+      "path": "apps/web-chat/src/ConsentText.tsx",
+      "sha256": "d1e063a6b6e067022f3b639308ed639d6a411616a1e0da74c4e6571ae56a192e"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/en.ts",
+      "sha256": "575dc8e3d963d18880dae71875573db6f589c11c7177084370e3cde4653a327c"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/index.ts",
+      "sha256": "490515a67f1c423e591e0d957de6f3be9e8123a2b6f17320518a5cd3aa6c9b9e"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/ratings.en.ts",
+      "sha256": "a835bf17fa5b7bb73e7e2e9521105a76bce2450b41bc503bc8d1058f6a0464fb"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/ratings.ru.ts",
+      "sha256": "81a22823f79a976958fe059a6400b9bd9eaa5a458c21f29ef8f5824c782a9dae"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/ru.ts",
+      "sha256": "3735d690d480e679d700aa1bd0b8fbd47908f1cd43556e9c92910d1a2610a617"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/site-events.en.ts",
+      "sha256": "ba530d27c1445e70be34428d07fac5213b4886bbd092dcfc37784b589fe41666"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/site-events.ru.ts",
+      "sha256": "00f6b6434876e2a652996ad89fff1d1e0cd6bd7448a60975ffb0b3aa82f5e7b5"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/speech.en.ts",
+      "sha256": "22c5e0ba85a0c18404d0e5c69c55d17d3c3999ce9b359c3fa542d3aec10c7e40"
+    },
+    {
+      "path": "apps/web-chat/src/i18n/speech.ru.ts",
+      "sha256": "bb6079aeea18bafd65054250a3a246ca7d5506a06a1e6e123785b0a2d1a3a0d9"
+    },
+    {
+      "path": "apps/web-chat/src/PhoneForm.tsx",
+      "sha256": "d473957827ab08ed254d66bcae57c6d9c55d1b2ff67ca4385b76fb3a75db281c"
+    },
+    {
+      "path": "apps/web-chat/src/phoneFormat.ts",
+      "sha256": "eba56f99fbe6ac7af2ead2cdf9d820d1585d1dd8d0c9c530986900e1f8cfacc1"
+    },
+    {
+      "path": "apps/web-chat/src/preChat.css",
+      "sha256": "9d26c08410875e38991e214a450e2edff612315cd6b1b79fb805ed84cff15db2"
+    },
+    {
+      "path": "apps/web-chat/src/PreChatField.tsx",
+      "sha256": "687972d48d940e955bb2c8bb1bd79194acb229039b74be01d75c1021d58ce660"
+    },
+    {
+      "path": "apps/web-chat/src/PreChatForm.tsx",
+      "sha256": "97fdf8be2a8b64d563a4035bcbe46bff65bf4bee1717e4d51045d96071da820b"
+    },
+    {
+      "path": "apps/web-chat/src/preChatModel.ts",
+      "sha256": "82f62d90789d3a3a6365088866daa0c46b8d086f259426ad4ea4adc3b159d36a"
+    },
+    {
+      "path": "apps/web-chat/src/proactivity/ProactiveStatus.tsx",
+      "sha256": "6b07e31b0efa50b67db1e06e9b1a74073114efa33005902def72ce44f265b3f1"
+    },
+    {
+      "path": "apps/web-chat/src/proactivity/styles.css",
+      "sha256": "5f7101361427171274117daa91cd69ee5adc704c6a4b85bc73cb2e8f0a78ecb5"
+    },
+    {
+      "path": "apps/web-chat/src/ratings/handoff.ts",
+      "sha256": "eebb9561027d312e869448f6aacca288d94ec1e58b2460ef460b8d38db3942a0"
+    },
+    {
+      "path": "apps/web-chat/src/ratings/rating.css",
+      "sha256": "08ba62404497a5bb980b76a17bff9db8dc447f359cb2c24e16d7ed63d9410b4e"
+    },
+    {
+      "path": "apps/web-chat/src/ratings/RatingRequestCard.tsx",
+      "sha256": "eab16362136f5930bd90597dadbde2898467b57367052cb30460b33d7f61d30d"
+    },
+    {
+      "path": "apps/web-chat/src/ratings/requestText.ts",
+      "sha256": "76bccfc028c5f1b457c4ca0ddbc2d661cbdf3e2fbaedfc205a3f1fc1bcdd92a2"
+    },
+    {
+      "path": "apps/web-chat/src/ratings/Stars.tsx",
+      "sha256": "d2a76b337e55d4ed2030f26cf95aa2003ea2341897c3ce99bc8c8d849cfb27f5"
+    },
+    {
+      "path": "apps/web-chat/src/speech/AnswerPlayback.tsx",
+      "sha256": "99e42af9234c888016fd25b8ed6cd98ff87ff6f51ff5ff76ff6413b94417274b"
+    },
+    {
+      "path": "apps/web-chat/src/speech/audioFocus.ts",
+      "sha256": "2b517f956100a1db0ae6bf1a0883180f42f47de0284969aa1da3ba892cda841e"
+    },
+    {
+      "path": "apps/web-chat/src/speech/dictation.css",
+      "sha256": "d703699017c4ab4654a2034187b7ccd944dc349dbe258dcb6e8dcb563d96f5e4"
+    },
+    {
+      "path": "apps/web-chat/src/speech/DictationStatus.tsx",
+      "sha256": "6147c20aaa8ce072a75335ab7069abb984efbe673d94e49edd7acc8cd201ff57"
+    },
+    {
+      "path": "apps/web-chat/src/speech/playback.css",
+      "sha256": "bf32190debd0ab2d6696d8390111aa0cc34f53f78f19d505ab4a1f7ab144e816"
+    },
+    {
+      "path": "apps/web-chat/src/speech/SpeechIcon.tsx",
+      "sha256": "76222840a2949c6751ab94850e8e59f5963b4da16795e65df135361ce6a51b8f"
+    },
+    {
+      "path": "apps/web-chat/src/StartChatFooter.tsx",
+      "sha256": "8fbfa5ae5b56c9da4dccc4e3c1e3d96561cc2af89056d0ed6fc015d155da3a77"
+    },
+    {
+      "path": "apps/web-chat/src/styles.css",
+      "sha256": "51d8220f3997caf81e5a192b6010424eab903e9debbbd08d12c763ce4af968d4"
+    },
+    {
+      "path": "apps/web-chat/src/VoiceMessage.tsx",
+      "sha256": "76a7c609a4b4d5ee157f01d61bc7d4774465bec4714b342ebd0a6825f28a77c5"
+    },
+    {
+      "path": "apps/web-chat/src/widget.css",
+      "sha256": "c27ef58eebf02279c4280eb5410220a1b2e19466a8b29514035dae1a8ee48ce0"
+    },
+    {
+      "path": "apps/web-chat/src/widgetClasses.ts",
+      "sha256": "911515758d30f0430a88d30357c24a5baf5c9ae346fe1f02042944c71f335aed"
+    },
+    {
+      "path": "apps/web-chat/src/WidgetStyles.tsx",
+      "sha256": "aee222cb6e3ddf4d4b8ee20a21f5981f1162057ca81c5ae4cb9b5d81ad90b7ef"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-external/AgentWorkbenchSidebar.tsx",
+      "sha256": "6ecb2289018a56adcec476e6acd5a87dbe65e18d3c48b585a48f3e4cde7e597c"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-external/copy.ts",
+      "sha256": "654f8c26a0dae4e0a25ac0fca0f24708525ab502c2c678e6be129cf71bea56ef"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-external/design-data.ts",
+      "sha256": "412051846a24e75825af7905ecf2c1b79b213db54546d0485b1e8778bcf23ee3"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-external/ResponseLanguageCard.tsx",
+      "sha256": "bd26c0dcf7d97fb7bd600f44d1dbed8c228c3f84d2786f2e1a437dae264280ae"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-external/SpeechCard.tsx",
+      "sha256": "5ca34bb57e20c7185903ec296167194233c172e08d3a59181b88fdcdc69da0d6"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-test-waiting/copy.ts",
+      "sha256": "17c68d448b0269992088a50812050baef5f61278c1c026160339bb2a022e5294"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-test-waiting/waiting.css",
+      "sha256": "d0fb0a844ea9464527cb15a193c71b6c7a17bbf0151fe3abfa84011ad40879ce"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-test-waiting/WaitingTestClientData.tsx",
+      "sha256": "a28f66f09d1b35239f16442320be9bf40eabf456e71adc0dfa5a45cf5b556d9f"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-test/copy.ts",
+      "sha256": "a68858dac56b3ad7a187215d974ae727d2726eed6cf4e8ac11c2d444b51cda16"
+    },
+    {
+      "path": "design/baseline/external-agent/agent-test/ExternalTestClientData.tsx",
+      "sha256": "2b514d7182bc21964e543b0a9c9031a9a29dfa6f628147cb47bb1d684b30aa88"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/AgentSuite.tsx",
+      "sha256": "7c0a0446902663aab444ff39b0241bc5a70bd48201e5db475374cb2b6c2ca1e7"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/AssistanceView.tsx",
+      "sha256": "7ab018c9854295a9d82ee06fdff636680e48bcbf7ccb448bf43008f5a7f89b70"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/BuiltinViews.tsx",
+      "sha256": "536890f34fec6a77c16c71fac25516473d1177cfdf334aa563c2136bcf7a2b48"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/cases.ts",
+      "sha256": "b3bb6e80796f9ce5a567a64bee325cb4ced003bcc205403d032d0ad9f0326247"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/copy.ts",
+      "sha256": "62547962500c802e8023f693c6ec76762066f17638837f0dee7d85b9e744e350"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/data.ts",
+      "sha256": "47b66370228027f2cb93700c17ab262f7fe07d41a5ab3caa9259e60a150779fe"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/ExecutionState.tsx",
+      "sha256": "1e445cfc8098242564670e88848666983b57f11f3b2c593a02d0f67d748d1146"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/GuardedAgentHeader.tsx",
+      "sha256": "cfe1c253ab87790242787f1fea8b04f4a64d8270c3cd1d52c8bc2bd933f15544"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/TestClientFields.tsx",
+      "sha256": "070f7ff5ea9aaa2c50994da7aba9bf4450e374177e03fe928f81ba595c46a4b7"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/TestVariantFeed.tsx",
+      "sha256": "381632fd220aa43ca3ac249e6792e5d0e6fe32a5bc24f0c45c9ed96c1205542d"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/agent/TestVariantPanel.tsx",
+      "sha256": "8f12521c228c2444cb16ff1c6e2307e9003ad85e93632fc2dfadb3afd01b0fe1"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/build.mjs",
+      "sha256": "941e7fe81cabf26214ec5ec004afe01a42df092f16f93c88fe9d0bb50532311d"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/cases.ts",
+      "sha256": "f0c7ee1b7b80823c56196623c0640db3f127d54d0684b320f0ef7008675e2f10"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/chat.css",
+      "sha256": "1445c1502b6d54552b4e4a214b448b21cd25f94762fd9a46afa4a52a70d46fdc"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatComposer.tsx",
+      "sha256": "1b68b67e48f6e60a43de004bf363ddc5330ab61b313c6c20fc23cc3e70bf592b"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatContext.tsx",
+      "sha256": "750c5cf5d89f296d4482f12a89eb67a4bbc2d505dde19595d666ba0e41cb147b"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatFeed.tsx",
+      "sha256": "6a95c58ef681f51b16abb1cb5554e614e1c2c579408d2266fcddcd59d43270c5"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatHead.tsx",
+      "sha256": "4c9af22b3eb7ecac3dfadc20a3b8605257dea136afc84126848d728e1277743e"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatList.tsx",
+      "sha256": "5c963f2e737f3906dff2dad390ca8b2b785bb7d77f11bfe7e0b75bb4cee2d1e7"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatMessages.tsx",
+      "sha256": "b6c96a451bc824603763ad1a6c25e54ea467f654d42f57dbbb5f5f7cd1150279"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatSidebar.tsx",
+      "sha256": "9c3b90132630b2e2a6ead21817f23e99ae9c56ea45bc9741d3f92fe0688bc25c"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/ChatSuite.tsx",
+      "sha256": "d9fc18e315a4b6910df9a804f836437477d1a0981a56a995b5dbcfd3d6f88779"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/copy.ts",
+      "sha256": "37f6acb4358a1d2da332b1504a94e36bd2e676cd70d79dbf84880c3cd6523817"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/data.ts",
+      "sha256": "dea3fd129ea23a9db3d7966a8fd719478dd7d74d6432b8151af3a792d69b7942"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/MultipartReply.tsx",
+      "sha256": "264ebc3fed74cbeeb62a96fc7784581300e108b10bbd05e86a7c0afb61968bb6"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/template-data.ts",
+      "sha256": "2249d2341bd1922a91bdb0a27b0d16cd18a652b9b5c3cf0ca147fd1cf217c2ac"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/chat/VoiceBody.tsx",
+      "sha256": "84bca7329b97cef05603a9426039140449f92d9f878f70ecfb26d2850526256d"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/check-browser.mjs",
+      "sha256": "d5ea427c679f4cb6d6b1966b82d2b697a79f49c973d3a23d595a11556d654974"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/check-revision.mjs",
+      "sha256": "1faf8feeeaea52252ec47ddf597e1663b43368a3361e1a9116e5a769e545e70c"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/client/cases.ts",
+      "sha256": "8acbb9bc84ae7ddee32de0cc40eae66ffbf55bab7efc192347652e1d1e157917"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/client/ClientDocument.tsx",
+      "sha256": "0c3fc7bc91a4ce0895af66e8c87cfe9d8f5884d49a2ffbcafd1d3f64fb73a987"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/client/ClientSuite.tsx",
+      "sha256": "f6c1b11fac427d0d38276dc2650388f9164af5fb21c8ba115ff734f0ccbfcbe6"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/client/ClientVoiceBody.tsx",
+      "sha256": "3bd6a566495ec710bdb31955b1fd6d68721426ee1c88d4d713de2ffbd3e0c1a9"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/client/copy.ts",
+      "sha256": "1bab6ec2738d1c9f465bdd08cf4ac8aed2e91407bf7ed1faf83b8cb4e4b6cb25"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/client/model.ts",
+      "sha256": "0d432768f21ffb27386e47a8681a6f5aa118538fb6323d4162368db454aa98a1"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/external-only/build-review.mjs",
+      "sha256": "ce4c398a239319784b67f41c400c800ec80be123df9aef5900715d2cc3c016dc"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/external-only/check-review.mjs",
+      "sha256": "a02640d4bed08685072ee49943094146cd4350af7863d20739f6b0f440c193dc"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/scripts/assert-screen.mjs",
+      "sha256": "d25bda4f57053fc2515a0cc0df1d26e1efa75dc73c7419fa16b1292f7ae6597b"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/scripts/build-support.mjs",
+      "sha256": "e2e4cb75842ca129a003f40cf3acb15bb04571359d666483346a59d006f6f56f"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/scripts/measure.mjs",
+      "sha256": "0c030b410b210c505ba128bb2849363121792b4708b52acd4ae127e635b0b0bb"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/scripts/quality-checks.mjs",
+      "sha256": "af9de9123b868536edf669b20acbec2e40732a0ab9542641f09d01918b628ead"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/scripts/revision-checks.mjs",
+      "sha256": "b4699a48e292dc173474bad510cf5878b46eedf2e34c87f5bbaa268a3e6e3ebc"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/binding-copy.ts",
+      "sha256": "ee5709824152d62de357a05d4b7abe151f1a5b44af6deac7fa97c120c4abb579"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/BindingAddDialog.tsx",
+      "sha256": "76c42643bd398cb0a6be65d30c6697d1d7148c4ee37f033c023cde4a6d316fbc"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/BindingCard.tsx",
+      "sha256": "4cffb757ca6dbce73461b4c71947bde2b1e8a6d6333e9800274d1453017187d1"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/BindingModel.ts",
+      "sha256": "edd4974a4ee2e17021212b6390677491ae148560143279e027f2bd6d19e593ce"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/BindingRemoveDialog.tsx",
+      "sha256": "63f58f15d1667b4bb1af28fa9895a2176593dcf2c86f24cb7566635b026aab1d"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/BindingRow.tsx",
+      "sha256": "cba4ea5c52ef3e73369f4814d88d9aef434fafb7242575bf324bb7c7309f4b99"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/cases.ts",
+      "sha256": "2d827e4902e87a6e04cb0b4ce1cfcd19f3f6e0b91ffe915b37157c42619f614d"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/ConnectionCard.tsx",
+      "sha256": "a15d0e4b2aee8d253474dde87dd4ed0ab5f2b4b9250742b795475655b5669e14"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/copy.cases.ts",
+      "sha256": "545d146968d6a6961f0c985a79929ab29d8e636e7e4af6a9fcfd3b6168b573e4"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/copy.core.ts",
+      "sha256": "2aee094486f315b502d031964d8e18f3513e4b1abe13483c1edb2428b7bff81f"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/copy.feedback.ts",
+      "sha256": "ce52175ed73dad84543b85047c8a3561eb29d793f79e6843e8232a11d7de2887"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/copy.policy.ts",
+      "sha256": "7aaa1c985b590f5bb225bcc13a6be9e31438c3382a8b52b410f072357b232dd7"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/copy.ts",
+      "sha256": "5ad45f2ef37096f34cd236c03678281da47155bff38a1e3f6d3d418d9ab8ff8f"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/DataPolicyCard.tsx",
+      "sha256": "a879cc4cd2fa39085f0788aaa8a022332021c301e1578a4586d55bdf6e9f2cd6"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/FeatureCard.tsx",
+      "sha256": "0e16775095785420ae363c5e5dd4e97d5bbc8f583ca4519c2a4de39869e5ba87"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/form-spacing.css",
+      "sha256": "6688c5c4f9f57f69911c834f8507ad1bb75b8f29b5a91492fc2aee4931585eb0"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/key-actions.css",
+      "sha256": "bcd2b7c11df58a010aaf6f3225d1488791526f174cc668fff498f83d2e055fea"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/KeyCopyButton.tsx",
+      "sha256": "fb565e665f4485ad16c98d1939e73f7587177500470cd94f29e8433b332ef785"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/PolicyTarget.tsx",
+      "sha256": "815214d3436f4120252e3b8af400a8d313a52e82288b667cda8e15db6d766739"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/ProcessingCard.tsx",
+      "sha256": "ee6f3ae384ca58027eea7a0fc8f577a73ed1d20a488231503e69536e453041b6"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/SecurityStates.tsx",
+      "sha256": "97046a50ed5c36601cf413199b496c66aeb4749472cbe9272a8d1f7b6f752abd"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/SettingsBody.tsx",
+      "sha256": "dfb94e52a0825b20cde523ae061e748519032438ff0e3b0eacbb9391213d529b"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/SettingsLoadState.tsx",
+      "sha256": "e2e5b1f99ccc55b11ceb70760a08bd7dbb79649cf7447d601ffc1046b42536e3"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/SettingsSaveFooter.tsx",
+      "sha256": "15f0f730ef8740804f1831f22c35db4fdbe1634046168caf0086334a11fb66bf"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/SettingsSuite.tsx",
+      "sha256": "a0c3f2ca7dd0c6fedb046d07ff081c1c109bfbe5995d159594f7064f478c3e14"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/state-layout.css",
+      "sha256": "329e83957ae3f700663f7668af9d18332abb24b6d684c6b0e9355562d98dbaa2"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/TemplateMessageLink.tsx",
+      "sha256": "3aa4c79e82d97190da3f3a3f2bc643f06fca0d6c282f6c25eb52d3e3f4caedb9"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/settings/TemplatePolicyCard.tsx",
+      "sha256": "5ad9ef93ba4aebb84a6ea7b6b58da806b4bef90a30f5d31c558676029f8f943c"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/canvas.tsx",
+      "sha256": "9f0b7b500917cd423cbe101342cfb15ef1540cc38bff0bf9e8ad17492b38a8a9"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/copy.ts",
+      "sha256": "45622b654caad709e5ec86427650fc4ea574d25eaf5dc0cb360e680fc1511a35"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/design-system.css",
+      "sha256": "56c6fc5c6a4549c2da5b7ec59a0bb1bd2f50ccbfab2de8af819273b88d99066c"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/help-copy.ts",
+      "sha256": "7cd1fee6654723d0c86dbef2d2ec2acb0fb5f8207485f1fa23e05abac845710f"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/help.css",
+      "sha256": "529f420079c9ecaa278856de9700a977a6a3c9ed6977579b558e55ad5d13822c"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/HelpTrigger.tsx",
+      "sha256": "7418c4ea122cb13c32f6429faa696e9c04b6610f92771e2417f836910b822479"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/metadata.ts",
+      "sha256": "24d1dfd667005df6f3bc998da4987c55e8f87f0f16efa63aff4e69a2f47ed96f"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/registry.tsx",
+      "sha256": "aa402ca7bebfb3df980f24df04e1c86d9469964e23f0125028b8e0ebd53ad457"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/runtime.tsx",
+      "sha256": "021bb65e66c62bc6e91dd8097a527a742a38b5b32a1bc2fc581456101f30f4cb"
+    },
+    {
+      "path": "design/baseline/external-agent/remainder/shared/TemplatePreview.tsx",
+      "sha256": "c1faaa6b8e7baebc0d255a1ce5de083b75ccbf68296a48c653189fcad73ab538"
+    },
+    {
+      "path": "design/baseline/external-agent/settings-off/baseline.css",
+      "sha256": "615d88ff6a70635f0b33849bae1a554906eccb56f474edb0b37e99259a0005cf"
+    },
+    {
+      "path": "design/baseline/external-agent/settings-off/copy.ts",
+      "sha256": "d64c4c25e3e4f8490e3b36796984f4d6c292ffcdc7ca85e5088db46235a67d58"
+    },
+    {
+      "path": "design/baseline/external-agent/settings-off/design-data.ts",
+      "sha256": "d6031022a89098b22267b2d68a15af7c149b6625c62e2a521a62ba376bf2a485"
+    },
+    {
+      "path": "design/baseline/external-agent/settings-off/ExternalSettingsNavigation.tsx",
+      "sha256": "21e79bb0812318f3d4a25184a2bfe8758962ab00ba115f0cd1910e615111d66d"
+    },
+    {
+      "path": "design/baseline/external-agent/settings-off/WorkbenchSidebar.tsx",
+      "sha256": "95600b23842da32a726150853fcae34b94f43af188fab39ed2ba347d0469842f"
+    },
+    {
+      "path": "design/baseline/platform-expansion/support.js",
+      "sha256": "8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe"
+    },
+    {
+      "path": "packages/shared/src/callRtc.ts",
+      "sha256": "9d900e18904f48378777ad80353f4d574b489b56d20f7014635238851eb0cdf5"
+    },
+    {
+      "path": "packages/shared/src/clientFields.ts",
+      "sha256": "5f96168af2121bb093ffe240f7355b8fdcb928b10313876035590355ea0a8224"
+    },
+    {
+      "path": "packages/shared/src/i18n/current.ts",
+      "sha256": "21b9c5b15888506051f306f2e138ec1712d454c31907543246154deeee7f8a17"
+    },
+    {
+      "path": "packages/shared/src/i18n/engine.ts",
+      "sha256": "024f826fc8be40c72a05564cf14f62962d142fad77c9912c4a4755f6f34ef66e"
+    },
+    {
+      "path": "packages/shared/src/i18n/formats.ts",
+      "sha256": "4fefaf1c9740dc770ff462e6ee9577d2d68fc2dc801d5d2975597bb88240cd50"
+    },
+    {
+      "path": "packages/shared/src/i18n/index.ts",
+      "sha256": "287b84a67e7028c20cb8e911e562adb72fca5d9109358bbf40ab2381c394b58c"
+    },
+    {
+      "path": "packages/shared/src/index.ts",
+      "sha256": "136a25dcc211f9f4811375340b28188e350cd1126fb0cb09f1749108eb17ddbb"
+    },
+    {
+      "path": "packages/shared/src/phoneFormat.ts",
+      "sha256": "44b90b9eb0481fcffbc2c51d42c69bc208626e06c151f05231847b085cc5f0a9"
+    },
+    {
+      "path": "packages/ui/src/AgentIcon.tsx",
+      "sha256": "f90f7dbb32b177b0c036e045a86d918ccf48eb4800124c3eae24c672fbd9a8e5"
+    },
+    {
+      "path": "packages/ui/src/audio/useAudio.ts",
+      "sha256": "67fad1ae4172240380db5ffeefb508522a94039120dec1a5b9a287097e5466fd"
+    },
+    {
+      "path": "packages/ui/src/BotIcon.tsx",
+      "sha256": "9365d5eb5fa3540df06f30a79f2bac2dba76fee9ce613cbe8f2685557ad1b6ed"
+    },
+    {
+      "path": "packages/ui/src/call/audio-call.css",
+      "sha256": "ab165ba992b33eda4d1b2223f6ba0d61fe7bc4e67f08f1deed739a174df78d68"
+    },
+    {
+      "path": "packages/ui/src/call/AudioCallIcons.tsx",
+      "sha256": "38f7d9b9533af7a7116b5dd3df2668635248a6572e825be3fa68c06d4ca76e95"
+    },
+    {
+      "path": "packages/ui/src/call/audioCallStates.ts",
+      "sha256": "67060934986b625af4c2d34477deb582fc88581faad26cfeb6394b764cb747a6"
+    },
+    {
+      "path": "packages/ui/src/call/AudioCallView.tsx",
+      "sha256": "03e565ea53ae3b70326888f00a97db57b7aa5c83950e7fcb26e80973df764081"
+    },
+    {
+      "path": "packages/ui/src/call/AudioCallWaveform.tsx",
+      "sha256": "5349ab1f5fba1a04a27365b239d4f913f2b13a702915edb48c07818dbf82ad07"
+    },
+    {
+      "path": "packages/ui/src/call/call-view.css",
+      "sha256": "5dbe13fe657eba37c3c23423be0a86bc6b1d44f553681a95805e57c63f9fd82f"
+    },
+    {
+      "path": "packages/ui/src/call/CallIcons.tsx",
+      "sha256": "5c125fb20a82a765066aec051ee0441cc32b9acd0fd85a77b71d0c3574c87b33"
+    },
+    {
+      "path": "packages/ui/src/call/CallView.tsx",
+      "sha256": "adbf3b8ce52520adc79a1aae6ebb0ad0fe219ca1090eb91229f923e66960e050"
+    },
+    {
+      "path": "packages/ui/src/call/useCallRtcSession.ts",
+      "sha256": "237b28a3107bad474e74adfca7f8411a8a64ecd53b3f213a31999c6f206cd141"
+    },
+    {
+      "path": "packages/ui/src/fields/ClientFieldControl.tsx",
+      "sha256": "6a2f890c606410798452ed4d7642e72049f30ece236307d63278e2131cff0af6"
+    },
+    {
+      "path": "packages/ui/src/i18n/en.ts",
+      "sha256": "c9d1c227595a94cc3bad5e120f17f6babdb707d197e8eb236187a4680e168a40"
+    },
+    {
+      "path": "packages/ui/src/i18n/index.ts",
+      "sha256": "407894aa668f409e7844e9c38fe76b510cf67e10d9735d617956409741bc5321"
+    },
+    {
+      "path": "packages/ui/src/i18n/ru.ts",
+      "sha256": "ae52ebd2338ed9ed8bcd066f287196f1346fe225f5fcc6e366e6db397d21114e"
+    },
+    {
+      "path": "packages/ui/src/index.ts",
+      "sha256": "e5a566849b7233061953482c9feb82a653bfe969cb6d143e3bc89425ab977639"
+    },
+    {
+      "path": "packages/ui/src/loader/loader.css",
+      "sha256": "6733c4c6c9980b4df36cfaef96dce8254d170da33111aebaff8e636ca83d5f0e"
+    },
+    {
+      "path": "packages/ui/src/loader/Loader.tsx",
+      "sha256": "44895a0d97d1cd08abf0aaaa29a2a255d6ade92237ccb7b14f1f68f0018c2a66"
+    },
+    {
+      "path": "packages/ui/src/loader/loaderFrames.ts",
+      "sha256": "ab156bc3e595d286f2325ead62ce4e637df56863902407a54c56ce418a5ddf10"
+    },
+    {
+      "path": "packages/ui/src/messages/prepared-message.css",
+      "sha256": "b799959c81d1a36355197c5505550bcb4a488d3be0f8ef9456dc130b39abb873"
+    },
+    {
+      "path": "packages/ui/src/messages/PreparedMessage.tsx",
+      "sha256": "1e88e84ed5bcc18b6466815fd180691377020db2e88358b272c8eecf299893ee"
+    },
+    {
+      "path": "packages/ui/src/messages/preserveSnapshotScroll.ts",
+      "sha256": "4ee1b7d1face601fbb18b8d15b255291eb01f80af8df0856f9a6c2bd2ed1cd87"
+    },
+    {
+      "path": "packages/ui/src/messages/snapshot.ts",
+      "sha256": "b94d26706dc26fa05f9df867b5d9c66722ccc5cc5c24b1b6b3b8478e554284aa"
+    },
+    {
+      "path": "packages/ui/src/theme.ts",
+      "sha256": "ac7b59286dffe7d7a13b1317f24cacfdbe9fb0055b61db9bf9576dea36c38850"
+    },
+    {
+      "path": "packages/ui/src/voice/voiceWave.ts",
+      "sha256": "a1f3b607d2cad20302732cd3166005305de30e88b46ed054c50977ee3bd059a3"
+    }
+  ],
+  "authoredLineCounts": {
+    "agent/AgentSuite.tsx": 42,
+    "agent/AssistanceView.tsx": 20,
+    "agent/BuiltinViews.tsx": 32,
+    "agent/cases.ts": 20,
+    "agent/copy.ts": 59,
+    "agent/data.ts": 10,
+    "agent/ExecutionState.tsx": 32,
+    "agent/GuardedAgentHeader.tsx": 30,
+    "agent/TestClientFields.tsx": 20,
+    "agent/TestVariantFeed.tsx": 24,
+    "agent/TestVariantPanel.tsx": 33,
+    "build.mjs": 43,
+    "chat/cases.ts": 13,
+    "chat/chat.css": 8,
+    "chat/ChatComposer.tsx": 33,
+    "chat/ChatContext.tsx": 41,
+    "chat/ChatFeed.tsx": 44,
+    "chat/ChatHead.tsx": 30,
+    "chat/ChatList.tsx": 31,
+    "chat/ChatMessages.tsx": 33,
+    "chat/ChatSidebar.tsx": 30,
+    "chat/ChatSuite.tsx": 31,
+    "chat/copy.ts": 105,
+    "chat/data.ts": 37,
+    "chat/MultipartReply.tsx": 34,
+    "chat/template-data.ts": 17,
+    "chat/VoiceBody.tsx": 18,
+    "check-browser.mjs": 92,
+    "check-revision.mjs": 125,
+    "client/cases.ts": 25,
+    "client/ClientDocument.tsx": 44,
+    "client/ClientSuite.tsx": 35,
+    "client/ClientVoiceBody.tsx": 24,
+    "client/copy.ts": 25,
+    "client/model.ts": 30,
+    "external-only/build-review.mjs": 51,
+    "external-only/check-review.mjs": 40,
+    "scripts/assert-screen.mjs": 30,
+    "scripts/build-support.mjs": 36,
+    "scripts/measure.mjs": 41,
+    "scripts/quality-checks.mjs": 128,
+    "scripts/revision-checks.mjs": 205,
+    "settings/binding-copy.ts": 21,
+    "settings/BindingAddDialog.tsx": 30,
+    "settings/BindingCard.tsx": 54,
+    "settings/BindingModel.ts": 14,
+    "settings/BindingRemoveDialog.tsx": 15,
+    "settings/BindingRow.tsx": 23,
+    "settings/cases.ts": 9,
+    "settings/ConnectionCard.tsx": 51,
+    "settings/copy.cases.ts": 51,
+    "settings/copy.core.ts": 79,
+    "settings/copy.feedback.ts": 17,
+    "settings/copy.policy.ts": 71,
+    "settings/copy.ts": 13,
+    "settings/DataPolicyCard.tsx": 52,
+    "settings/FeatureCard.tsx": 23,
+    "settings/form-spacing.css": 6,
+    "settings/key-actions.css": 16,
+    "settings/KeyCopyButton.tsx": 46,
+    "settings/PolicyTarget.tsx": 15,
+    "settings/ProcessingCard.tsx": 20,
+    "settings/SecurityStates.tsx": 33,
+    "settings/SettingsBody.tsx": 35,
+    "settings/SettingsLoadState.tsx": 15,
+    "settings/SettingsSaveFooter.tsx": 21,
+    "settings/SettingsSuite.tsx": 39,
+    "settings/state-layout.css": 10,
+    "settings/TemplateMessageLink.tsx": 17,
+    "settings/TemplatePolicyCard.tsx": 23,
+    "shared/canvas.tsx": 31,
+    "shared/copy.ts": 13,
+    "shared/design-system.css": 6,
+    "shared/help-copy.ts": 41,
+    "shared/help.css": 12,
+    "shared/HelpTrigger.tsx": 24,
+    "shared/metadata.ts": 15,
+    "shared/registry.tsx": 19,
+    "shared/runtime.tsx": 9,
+    "shared/TemplatePreview.tsx": 14
+  },
+  "remappedMediaQueries": 36
+}

@@ -35,6 +35,7 @@ from dataclasses import replace
 from django.conf import settings
 
 from chatballs.ai.diagnostic_snapshot import diagnostic_context
+from chatballs.ai.external_agents.readiness import require_builtin
 from chatballs.ai.invocation import (
     EmbeddingJob,
     prepare_chat,
@@ -84,12 +85,13 @@ def turn_pseudonymizer(conversation: Conversation | None) -> Pseudonymizer:
 
 
 def plan_query_embedding(
-    *, agent: AIAgent, query: str, pseudonymizer: Pseudonymizer
+    *, agent: AIAgent, query: str, pseudonymizer: Pseudonymizer, assistance: bool = False
 ) -> EmbeddingJob | None:
     """Шаг в транзакции: чем считать вектор вопроса. None — считать нечем.
 
     Вопрос уходит в модель эмбеддингов под маской той же карты хода.
     """
+    require_builtin(agent, assistance=assistance)
     if not query.strip():
         return None
     try:
@@ -139,6 +141,7 @@ def plan_chat(
     action_preview: bool = True,
     action_turn_id=None,
     site_event_launch_id=None,
+    assistance: bool = False,
 ) -> TurnPlan:
     """Шаг в транзакции: поиск знаний, сборка промпта, выбор модели и инструментов.
 
@@ -149,6 +152,7 @@ def plan_chat(
     она собирается из контакта диалога. Данные клиента для привязанных
     параметров инструментов (`client`) по умолчанию тоже берутся из диалога.
     """
+    require_builtin(agent, assistance=assistance)
     if pseudonymizer is None:
         pseudonymizer = turn_pseudonymizer(conversation)
     embedding = embedding or QueryEmbedding()

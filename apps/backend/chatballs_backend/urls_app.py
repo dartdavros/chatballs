@@ -4,10 +4,15 @@ from rest_framework.schemas import get_schema_view
 from chatballs.identity.demo_views import DemoMediaView
 from chatballs.integrations.automation_events.api import ScenarioTriggerView
 from chatballs.integrations.automation_events.views import ServiceEventView
-from chatballs.integrations.service_connections.oauth_views import ServiceOAuthCallbackView
+from chatballs.integrations.service_connections.oauth_views import (
+    ServiceOAuthCallbackView,
+)
 from chatballs.webchat.loader_views import WidgetLoaderView
 
 urlpatterns = [
+    path("api/v1/external-agent/", include("chatballs.ai.external_agents.urls")),
+    path("api/v1/organizations/<uuid:organization_public_id>/settings/external-execution/",
+         include("chatballs.ai.external_agents.config_urls")),
     path("api/v1/scenario-triggers/<uuid:public_id>/", ScenarioTriggerView.as_view(), name="scenario-trigger"),
     path("api/v1/service-events/<int:connection_id>/<str:event_key>/", ServiceEventView.as_view(), name="service-event-ingress"),
     path("chat-widget.js", WidgetLoaderView.as_view(), name="chat-widget-loader"),

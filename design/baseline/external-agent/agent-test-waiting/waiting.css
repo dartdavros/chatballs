@@ -1,0 +1,2 @@
+/* Reserve space for a wrapped waiting title and explanation in the existing waiting-row pattern. */
+.agent-test-feed [data-external-waiting] { min-height: 88px; }

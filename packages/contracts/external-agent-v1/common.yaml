@@ -1,0 +1,126 @@
+Version:
+  type: string
+  const: '1'
+UUID:
+  type: string
+  format: uuid
+OpaqueId:
+  type: string
+  minLength: 1
+  description: Непрозрачный идентификатор; знание значения не даёт доступа
+UTC:
+  type: string
+  format: date-time
+  pattern: 'Z$'
+  description: RFC 3339 UTC с суффиксом Z
+NullableUTC:
+  oneOf:
+    - $ref: '#/UTC'
+    - type: 'null'
+NullableId:
+  oneOf:
+    - $ref: '#/OpaqueId'
+    - type: 'null'
+Digest:
+  type: string
+  pattern: '^[0-9a-f]{64}$'
+Cursor:
+  type: string
+  minLength: 1
+  maxLength: 4096
+Code:
+  type: string
+  pattern: '^[a-z][a-z0-9_]{0,63}$'
+Error:
+  type: object
+  additionalProperties: false
+  required: [version, error]
+  properties:
+    version: {$ref: '#/Version'}
+    error:
+      type: object
+      additionalProperties: false
+      required: [code, retryable, traceId]
+      properties:
+        code:
+          enum: [invalid_request, unsupported_version, invalid_credentials,
+            permission_denied, proactive_disabled, resource_not_found,
+            idempotency_conflict, result_conflict, control_changed,
+            conversation_busy, channel_restricted, template_revision_changed,
+            snapshot_expired, history_content_unavailable, payload_too_large, unsupported_content,
+            rate_limited, temporarily_unavailable]
+        retryable: {type: boolean}
+        traceId: {$ref: '#/OpaqueId'}
+ErrorResponse:
+  description: >-
+    Ошибка без HTTP-тел внешних систем, секретов и персональных сведений.
+    400 схема/версия; 401 ключ; 403 полномочия; 404 отсутствие или чужой объект;
+    409 конфликт/состояние/курсор; 413 размер; 422 формат; 429/503 временный отказ.
+    Retry-After применяется только к 429/503 и не продлевает deadlineAt.
+  headers:
+    Retry-After:
+      description: Целое число секунд ожидания для 429/503
+      schema: {type: string, pattern: '^[0-9]+$'}
+  content:
+    application/json:
+      schema: {$ref: '#/Error'}
+RequestId:
+  name: requestId
+  in: path
+  required: true
+  schema: {$ref: '#/UUID'}
+ConnectionId:
+  name: connectionId
+  in: path
+  required: true
+  schema: {$ref: '#/OpaqueId'}
+ConversationId:
+  name: conversationId
+  in: path
+  required: true
+  schema: {$ref: '#/OpaqueId'}
+DeliveryId:
+  name: deliveryId
+  in: path
+  required: true
+  schema: {$ref: '#/UUID'}
+FileId:
+  name: fileId
+  in: path
+  required: true
+  schema: {$ref: '#/OpaqueId'}
+AuthorizationId:
+  name: authorizationId
+  in: query
+  required: true
+  description: Текущее разрешение диалога, дополнительно к Bearer-ключу
+  schema: {$ref: '#/UUID'}
+IdempotencyKey:
+  name: Idempotency-Key
+  in: header
+  required: true
+  description: Равен requestId, deliveryId, eventId или uploadId операции
+  schema: {$ref: '#/UUID'}
+SnapshotCursor:
+  name: snapshotCursor
+  in: query
+  required: true
+  schema: {$ref: '#/Cursor'}
+PageCursor:
+  name: pageCursor
+  in: query
+  required: false
+  description: Отсутствует на первой странице; связан со snapshotCursor
+  schema: {$ref: '#/Cursor'}
+PageSize:
+  name: pageSize
+  in: query
+  required: false
+  schema: {type: integer, minimum: 1, maximum: 200, default: 50}
+ReasonCode:
+  enum: [customer_requested, agent_requested, cannot_answer, service_failed,
+    external_outcome_unknown, unsupported_content, transcription_failed,
+    context_too_large, deadline_exceeded]
+SuppressionCode:
+  enum: [control_revoked, expired, configuration_changed, connection_disabled,
+    policy_changed, conversation_closed, agent_disabled]

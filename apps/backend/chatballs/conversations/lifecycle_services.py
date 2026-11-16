@@ -63,6 +63,9 @@ def delete_conversation(*, context: TenantContext, conversation: Conversation) -
     require_conversation_action(context, conversation, "settings.manage")
     conversation_id = conversation.id
     organization_id = conversation.organization_id
+    from chatballs.ai.external_agents.file_cleanup import release_conversation
+
+    release_conversation(context, conversation_id)
     for message in conversation.messages.exclude(audio="", attachment=""):
         if message.audio:
             message.audio.delete(save=False)

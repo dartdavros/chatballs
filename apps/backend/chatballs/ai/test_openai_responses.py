@@ -7,7 +7,13 @@ from unittest import mock
 from django.test import SimpleTestCase
 
 from chatballs.ai.provider import openai_http, openai_responses, openai_tools
-from chatballs.ai.provider.base import ChatMessage, ProviderError, ProviderRejected, ToolCall, ToolSpec
+from chatballs.ai.provider.base import (
+    ChatMessage,
+    ProviderError,
+    ProviderRejected,
+    ToolCall,
+    ToolSpec,
+)
 from chatballs.ai.provider.custom import CustomProvider
 from chatballs.ai.provider.openai import OpenAIProvider
 from chatballs.ai.provider.openrouter import OpenRouterProvider

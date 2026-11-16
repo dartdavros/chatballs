@@ -1,0 +1,124 @@
+Capabilities:
+  type: object
+  additionalProperties: false
+  required: [versions, contentTypes, directions, durableIdempotency, statusLookup,
+    callbacks, cancel, dedupRetentionSeconds, maxJsonBytes]
+  properties:
+    versions:
+      type: array
+      minItems: 1
+      uniqueItems: true
+      contains: {const: '1'}
+      items: {type: string}
+    contentTypes:
+      type: array
+      minItems: 6
+      uniqueItems: true
+      items: {enum: [text, file, image, contact, contact_request, formatted]}
+    directions:
+      type: object
+      additionalProperties: false
+      required: [fromChatballs, toChatballs]
+      properties:
+        fromChatballs:
+          type: array
+          minItems: 6
+          uniqueItems: true
+          items: {enum: [text, file, image, contact, contact_request, formatted]}
+        toChatballs:
+          type: array
+          minItems: 5
+          uniqueItems: true
+          items: {enum: [text, file, image, contact_request, formatted]}
+    durableIdempotency: {const: true}
+    statusLookup: {const: true}
+    callbacks: {const: true}
+    cancel: {const: true}
+    dedupRetentionSeconds: {type: integer, minimum: 2592000}
+    maxJsonBytes: {const: 262144}
+  description: >-
+    contentTypes равен объединению directions. Для полной совместимости v1 нужны
+    все перечисленные форматы соответствующего направления; текущий канал
+    дополнительно сужает исходящие types. Проверка не запускает LLM/действий.
+DeliveryConstraints:
+  type: object
+  additionalProperties: false
+  required: [types, maxFileBytes, maxTextCharacters]
+  properties:
+    types:
+      type: array
+      uniqueItems: true
+      items: {enum: [text, file, image, contact_request, formatted]}
+    maxFileBytes: {type: integer, minimum: 0, maximum: 20971520}
+    maxTextCharacters: {type: [integer, 'null'], minimum: 1}
+  description: >-
+    null — нет отдельного объявленного предела символов, но действуют JSON и
+    штатная проверка конкретного транспорта/представления. Число считается в
+    Unicode code points; отдельные ограничения транспорта не обходятся.
+    types — пересечение разрешений, реализации канала и возможностей сервиса.
+HistoryPage:
+  type: object
+  additionalProperties: false
+  required: [version, items, snapshotCursor, nextCursor, hasMore, dataPolicyRevision]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    items:
+      type: array
+      maxItems: 200
+      items: {$ref: './messages.yaml#/HistoryMessage'}
+    snapshotCursor: {$ref: './common.yaml#/Cursor'}
+    nextCursor:
+      oneOf:
+        - $ref: './common.yaml#/Cursor'
+        - type: 'null'
+    hasMore: {type: boolean}
+    dataPolicyRevision: {type: integer, minimum: 1}
+  description: >-
+    Пагинация назад от границы, внутри страницы прямой логический порядок.
+    hasMore равен наличию nextCursor. pageSize — максимум, JSON может уменьшить
+    страницу, но не обрезать сообщение. Неумещающийся один элемент — 413.
+Upload:
+  type: object
+  additionalProperties: false
+  required: [uploadId, authorizationId, file, sha256]
+  properties:
+    uploadId: {$ref: './common.yaml#/UUID'}
+    authorizationId: {$ref: './common.yaml#/UUID'}
+    file: {type: string, format: binary}
+    sha256: {$ref: './common.yaml#/Digest'}
+UploadReceipt:
+  type: object
+  additionalProperties: false
+  required: [version, fileId, mimeType, size, filename, sha256, expiresAt]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    fileId: {$ref: './common.yaml#/OpaqueId'}
+    mimeType: {type: string, minLength: 1}
+    size: {type: integer, minimum: 1, maximum: 20971520}
+    filename: {type: string, minLength: 1, maxLength: 255}
+    sha256: {$ref: './common.yaml#/Digest'}
+    expiresAt: {$ref: './common.yaml#/UTC'}
+TemplateCatalog:
+  type: object
+  additionalProperties: false
+  required: [version, items]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    items:
+      type: array
+      items: {$ref: '#/Template'}
+Template:
+  type: object
+  additionalProperties: false
+  required: [id, revision, purpose, dataSchema, representations]
+  properties:
+    id: {$ref: './common.yaml#/OpaqueId'}
+    revision: {type: integer, minimum: 1}
+    purpose: {type: string, minLength: 1, maxLength: 500}
+    dataSchema: {$ref: './template-schema.yaml#/ObjectNode'}
+    representations:
+      type: array
+      minItems: 1
+      uniqueItems: true
+      items: {enum: [text, html]}
+  description: Ревизия монотонная, повышается при изменении определения; исходники не выдаются

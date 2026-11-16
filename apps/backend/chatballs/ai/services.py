@@ -201,6 +201,9 @@ def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool)
     активных агентов не ограничено; активация требует настроенного провайдера."""
     if agent.channel.organization_id != context.organization_id:
         raise ValidationError({"agent": t("ai.agent_other_organization")})
+    from chatballs.identity.operation_modes import lock_organization
+
+    organization = lock_organization(context.organization_id)
     locked = AIAgent.objects.select_for_update().get(
         pk=agent.id, organization_id=context.organization_id
     )
@@ -209,7 +212,12 @@ def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool)
         return locked
     if locked.status == AIAgentStatus.ARCHIVED:
         raise ValidationError({"agent": t("ai.archived_agent_state")})
-    if is_active and locked.provider_integration_id is None:
+    if is_active and locked.execution_mode == "external":
+        from chatballs.ai.external_agents.readiness import ready
+
+        if not ready(locked, organization):
+            raise ValidationError({"executionMode": t("external.not_ready")})
+    if is_active and locked.execution_mode == "builtin" and locked.provider_integration_id is None:
         raise ValidationError(
             {"providerIntegrationId": t("ai.pick_provider_first")}
         )

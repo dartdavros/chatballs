@@ -1,0 +1,7 @@
+/* New external-waiting status uses the current service waiting row; reserve wrapped text space. */
+.sales-timeline [data-external-waiting] { min-height: 88px; }
+/* Current header text already uses this truncation pattern; constrain metadata to its flex share too. */
+[data-staff-chat] .sales-conversation-person { flex: 1; overflow: hidden; }
+[data-staff-chat] .sales-conversation-person > div { flex: 1; min-width: 0; }
+[data-staff-chat] .sales-conversation-person p { overflow: hidden; }
+[data-staff-chat] .sales-conversation-person p > span:last-child { display: block; overflow: hidden; text-overflow: ellipsis; min-width: 0; }

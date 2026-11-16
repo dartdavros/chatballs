@@ -30,6 +30,7 @@ from chatballs.testing import ai_answer, run_pending_ai_turns
 
 class AiTurnQueueTests(TestCase):
     def setUp(self) -> None:
+        self.enterContext(mock.patch("chatballs.conversations.transports.download_avatar", return_value=None))
         bootstrap_owner(email="owner@example.com", password="temporary-password")
         self.organization = Organization.objects.get(slug="demo")
         self.channel = Channel.objects.create(

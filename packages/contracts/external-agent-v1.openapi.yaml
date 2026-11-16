@@ -1,0 +1,87 @@
+openapi: 3.1.1
+info:
+  title: Chatballs ↔ GoCoStack — внешний автономный агент
+  version: 1.0.0-proposal.1
+  description: >-
+    Предложение от 14.11.2026 к SPEC-0041 и ADR-0041. Версия протокола в JSON — "1".
+    Документ не заявляет наличие реализованных методов. Нормативная семантика,
+    ограничения, канонизация и порядок обработки описаны в external-agent-v1/README.md.
+    Все адреса example.invalid заменяются настройками установки; сетевых проверок нет.
+    Уточнение 15.11.2026: редкая возможность внешнего исполнения исходно выключена.
+    Включение, подключение исполнителя и его параметры находятся вместе в настройках
+    организации; только после включения агент выбирает подготовленное исполнение.
+    Каталог CRM-интеграций этого допуска не даёт. Включение проверяет сервер;
+    форматы и пути данного протокола от размещения настроек не меняются.
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+x-status: proposed
+x-json-max-bytes: 262144
+x-contract-examples: ./external-agent-v1/examples.yaml
+x-canonicalization-vectors: ./external-agent-v1/canonicalization.yaml
+servers:
+  - url: https://chatballs.example.invalid
+    description: Настроенный публичный HTTPS-адрес Chatballs
+security:
+  - ChatballsBearer: []
+tags:
+  - name: GoCoStack
+    description: Методы внешнего сервиса, вызываемые Chatballs
+  - name: Chatballs
+    description: Методы Chatballs, вызываемые внешним сервисом
+paths:
+  /chatballs-agent/v1/capabilities:
+    $ref: './external-agent-v1/paths-gocostack.yaml#/Capabilities'
+  /chatballs-agent/v1/requests:
+    $ref: './external-agent-v1/paths-gocostack.yaml#/Requests'
+  /chatballs-agent/v1/requests/{requestId}:
+    $ref: './external-agent-v1/paths-gocostack.yaml#/RequestStatus'
+  /chatballs-agent/v1/requests/{requestId}/cancel:
+    $ref: './external-agent-v1/paths-gocostack.yaml#/Cancel'
+  /api/v1/external-agent/connections/{connectionId}/requests/{requestId}/result/:
+    $ref: './external-agent-v1/paths-chatballs.yaml#/Result'
+  /api/v1/external-agent/connections/{connectionId}/conversations/{conversationId}/messages/:
+    $ref: './external-agent-v1/paths-chatballs.yaml#/Messages'
+  /api/v1/external-agent/connections/{connectionId}/conversations/{conversationId}/handoff/:
+    $ref: './external-agent-v1/paths-chatballs.yaml#/Handoff'
+  /api/v1/external-agent/connections/{connectionId}/deliveries/{deliveryId}/:
+    $ref: './external-agent-v1/paths-chatballs.yaml#/Delivery'
+  /api/v1/external-agent/connections/{connectionId}/conversations/{conversationId}/history/:
+    $ref: './external-agent-v1/paths-chatballs.yaml#/History'
+  /api/v1/external-agent/connections/{connectionId}/conversations/{conversationId}/reply-templates/:
+    $ref: './external-agent-v1/paths-files.yaml#/Templates'
+  /api/v1/external-agent/connections/{connectionId}/conversations/{conversationId}/files/:
+    $ref: './external-agent-v1/paths-files.yaml#/Upload'
+  /api/v1/external-agent/connections/{connectionId}/conversations/{conversationId}/files/{fileId}/:
+    $ref: './external-agent-v1/paths-files.yaml#/Download'
+components:
+  securitySchemes:
+    GoCoStackBearer:
+      type: http
+      scheme: bearer
+      description: Секрет GoCoStack для направления Chatballs → GoCoStack
+    ChatballsBearer:
+      type: http
+      scheme: bearer
+      description: Отдельный ключ Chatballs одного подключения, не сессия сотрудника
+  schemas:
+    AgentRequest:
+      $ref: './external-agent-v1/request.yaml#/AgentRequest'
+    TerminalResult:
+      $ref: './external-agent-v1/result.yaml#/TerminalResult'
+    RequestStatus:
+      $ref: './external-agent-v1/result.yaml#/RequestStatus'
+    DeliveryReceipt:
+      $ref: './external-agent-v1/receipts.yaml#/Receipt'
+    DeliveryStatus:
+      $ref: './external-agent-v1/receipts.yaml#/DeliveryStatus'
+    CustomFieldsSnapshot:
+      $ref: './external-agent-v1/fields.yaml#/CustomFieldsSnapshot'
+    FieldValue:
+      $ref: './external-agent-v1/fields.yaml#/FieldValue'
+    ProactiveMessages:
+      $ref: './external-agent-v1/result.yaml#/ProactiveMessages'
+    HandoffRequest:
+      $ref: './external-agent-v1/result.yaml#/HandoffRequest'
+    Capabilities:
+      $ref: './external-agent-v1/catalogs.yaml#/Capabilities'
+    Error:
+      $ref: './external-agent-v1/common.yaml#/Error'

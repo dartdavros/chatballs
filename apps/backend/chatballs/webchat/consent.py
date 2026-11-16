@@ -12,12 +12,24 @@ from chatballs.webchat.pre_chat import pre_chat_payload
 
 
 def current_version(widget) -> str:
-    return str(widget.consent_config.get("consent_version") or "v1")
+    from chatballs.ai.external_agents.consent import external_disclosure
+
+    base = str(widget.consent_config.get("consent_version") or "v1")
+    disclosure = external_disclosure(widget)
+    if disclosure:
+        encoded = json.dumps({"base": base, "disclosure": disclosure}, sort_keys=True, separators=(",", ":"))
+        return "external-" + hashlib.sha256(encoded.encode()).hexdigest()
+    return base
 
 
 def form_revision(widget) -> str:
     config = widget.integration.config
     policy = {"form": pre_chat_payload(config), "fields": config.get("fields", [])}
+    from chatballs.ai.external_agents.consent import external_disclosure
+
+    disclosure = external_disclosure(widget)
+    if disclosure:
+        policy["externalExecution"] = disclosure
     if config.get("answerPlaybackEnabled", False):
         policy["answerPlaybackDisclosure"] = 1
     encoded = json.dumps(policy, ensure_ascii=True, sort_keys=True, separators=(",", ":"))

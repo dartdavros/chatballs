@@ -1,0 +1,145 @@
+AgentRequest:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, createdAt, deadlineAt, agent, conversation,
+    trigger, context, permissions, deliveryConstraints, callbacks]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId: {$ref: './common.yaml#/UUID'}
+    createdAt: {$ref: './common.yaml#/UTC'}
+    deadlineAt: {$ref: './common.yaml#/UTC'}
+    agent:
+      type: object
+      additionalProperties: false
+      required: [id, externalAgentId]
+      properties:
+        id: {$ref: './common.yaml#/OpaqueId'}
+        externalAgentId: {$ref: './common.yaml#/OpaqueId'}
+    conversation:
+      type: object
+      additionalProperties: false
+      required: [id, externalSessionId, authorizationId, turnSequence]
+      properties:
+        id: {$ref: './common.yaml#/OpaqueId'}
+        externalSessionId: {$ref: './common.yaml#/NullableId'}
+        authorizationId: {$ref: './common.yaml#/UUID'}
+        turnSequence: {type: integer, minimum: 1}
+    trigger: {$ref: '#/Trigger'}
+    context: {$ref: '#/Context'}
+    permissions:
+      type: object
+      additionalProperties: false
+      required: [reply, handoff, proactive]
+      properties:
+        reply: {type: boolean}
+        handoff: {type: boolean}
+        proactive: {type: boolean}
+    deliveryConstraints: {$ref: './catalogs.yaml#/DeliveryConstraints'}
+    callbacks:
+      type: object
+      additionalProperties: false
+      required: [resultUrl]
+      properties:
+        resultUrl: {type: string, format: uri, pattern: '^https://'}
+Trigger:
+  type: object
+  additionalProperties: false
+  required: [messageId, createdAt, type, text, wasVoice, attachments]
+  properties:
+    messageId: {$ref: './common.yaml#/OpaqueId'}
+    createdAt: {$ref: './common.yaml#/UTC'}
+    type: {enum: [text, file, image, contact]}
+    text: {type: string}
+    wasVoice: {type: boolean}
+    attachments:
+      type: array
+      items: {$ref: './messages.yaml#/FileContent'}
+    source:
+      type: object
+      additionalProperties: false
+      required: [kind, durationSeconds]
+      properties:
+        kind: {const: voice}
+        durationSeconds: {type: integer, minimum: 0}
+  allOf:
+    - if: {properties: {wasVoice: {const: true}}}
+      then:
+        required: [source]
+        properties:
+          type: {const: text}
+          text: {minLength: 1}
+          attachments: {maxItems: 0}
+      else: {not: {required: [source]}}
+    - if: {properties: {type: {enum: [file, image]}}}
+      then: {properties: {attachments: {minItems: 1}}}
+Context:
+  type: object
+  additionalProperties: false
+  required: [history, customer, dataPolicy, language]
+  properties:
+    history:
+      type: object
+      additionalProperties: false
+      required: [mode, snapshotCursor, truncated, messages, historyUrl, nextCursor]
+      properties:
+        mode: {const: window}
+        snapshotCursor: {$ref: './common.yaml#/Cursor'}
+        truncated: {type: boolean}
+        messages:
+          type: array
+          maxItems: 200
+          items: {$ref: './messages.yaml#/HistoryMessage'}
+        historyUrl: {type: string, format: uri, pattern: '^https://'}
+        nextCursor:
+          oneOf:
+            - $ref: './common.yaml#/Cursor'
+            - type: 'null'
+      description: >-
+        Сообщения по возрастанию логического порядка. nextCursor — продолжение
+        назад перед самым старым inline-сообщением; страницы возвращаются в
+        прямом порядке и добавляются перед окном. При пустом окне и наличии
+        истории nextCursor задаёт первую доступную страницу. truncated равен
+        наличию nextCursor; всё чтение привязано к фиксированному снимку.
+    customer:
+      type: object
+      additionalProperties: false
+      required: [id, fields, customFields]
+      properties:
+        id: {$ref: './common.yaml#/NullableId'}
+        fields: {$ref: '#/StandardFields'}
+        customFields: {$ref: './fields.yaml#/CustomFieldsSnapshot'}
+    dataPolicy:
+      type: object
+      additionalProperties: false
+      required: [revision, mode, fields, customFields]
+      properties:
+        revision: {type: integer, minimum: 1}
+        mode: {const: agreed_original}
+        fields:
+          type: array
+          uniqueItems: true
+          items: {enum: [name, email, phone]}
+        customFields:
+          type: array
+          uniqueItems: true
+          items: {$ref: './fields.yaml#/FieldRef'}
+    language:
+      type: object
+      additionalProperties: false
+      required: [mode, organization, requested]
+      properties:
+        mode: {enum: [mirror, organization, fixed]}
+        organization: {type: string, minLength: 2}
+        requested: {type: [string, 'null'], minLength: 2}
+      allOf:
+        - if: {properties: {mode: {const: fixed}}}
+          then: {properties: {requested: {type: string}}}
+          else: {properties: {requested: {type: 'null'}}}
+StandardFields:
+  type: object
+  additionalProperties: false
+  description: Только выбранные name/email/phone из Contact; не выбранные ключи отсутствуют
+  properties:
+    name: {type: string}
+    email: {type: string}
+    phone: {type: string}

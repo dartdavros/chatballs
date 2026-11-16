@@ -35,6 +35,10 @@ export type AgentCard = {
   groupName: string | null;
   groupColor: string;
   aiStatus: AgentAiStatus;
+  executionMode?: "builtin" | "external";
+  externalExecutionEnabled?: boolean;
+  externalExecution?: { available: boolean; connectionId: number | null; name: string;
+    reason: "disabled" | "notReady" | "unavailable" | "incompatible" | "permission" | "connectionDisabled" | null };
   assistanceEnabled: boolean;
   model: string;
   /** Модель ответов; пусто — как в интеграции. */
@@ -75,6 +79,7 @@ export type AgentCard = {
 export const HISTORY_LIMIT_MAX = 200;
 
 export type AgentPatch = Partial<{
+  executionMode: "builtin" | "external";
   assistanceEnabled: boolean;
   name: string;
   groupId: number | null;

@@ -12,6 +12,8 @@ from chatballs.i18n.messages import (
     email_continuation_en,
     email_continuation_ru,
     en,
+    external_agents_en,
+    external_agents_ru,
     media_errors_en,
     media_errors_ru,
     native_actions_en,
@@ -101,6 +103,7 @@ from chatballs.i18n.messages import (
 
 CATALOG: dict[str, dict[str, object]] = {
     "ru": {
+        **external_agents_ru.MESSAGES,
         **site_events_ru.MESSAGES,
         **ru.MESSAGES,
         **responses_ru.MESSAGES,
@@ -151,6 +154,7 @@ CATALOG: dict[str, dict[str, object]] = {
         **speech_ru.MESSAGES,
     },
     "en": {
+        **external_agents_en.MESSAGES,
         **site_events_en.MESSAGES,
         **en.MESSAGES,
         **responses_en.MESSAGES,

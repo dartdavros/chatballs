@@ -19,6 +19,7 @@ import { ReplyTemplateLibrary } from "../reply-templates/ReplyTemplateLibrary";
 import type { SettingsSectionKey } from "./sections";
 import { t } from "../../i18n";
 import { RunRetention } from "../integrations/runs/RunRetention";
+import { ExternalAgentSettings } from "../agents/external/ExternalAgentSettings";
 
 export function SettingsSectionBody({ section, user, onUserUpdated, reload, groups, onTemplatesChanged, openJournal }: {
   section: SettingsSectionKey; user: SessionUser; onUserUpdated: (user: SessionUser) => void; reload: () => void;
@@ -27,6 +28,7 @@ export function SettingsSectionBody({ section, user, onUserUpdated, reload, grou
   openJournal: () => void;
 }): ReactNode {
   if (section === "organization") return <OrganizationSection user={user} onUserUpdated={onUserUpdated} />;
+  if (section === "external") return <ExternalAgentSettings key={user.organizationPublicId} organization={user.organizationPublicId} />;
   if (section === "groups") return <GroupsSettingsCard groups={groups} reload={reload} />;
   if (section === "ratings") return <RatingSettingsCard key={user.organizationPublicId} />;
   if (section === "rules") return <RuleSettingsCard key={user.organizationPublicId} openJournal={openJournal} />;

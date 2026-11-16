@@ -83,6 +83,7 @@ def agent_card_payload(
     """
     from chatballs.ai import tool_support
     from chatballs.ai.agent_tools import agent_tools_payload
+    from chatballs.ai.external_agents.agent_projection import execution_projection
 
     agent: AIAgent = channel.ai_agent
     connections = _connections_payload(channel)
@@ -100,6 +101,9 @@ def agent_card_payload(
         # Цвет группы задаётся в настройках — точка у названия (кадры G1/G3).
         "groupColor": channel.group.color if channel.group_id else "",
         "aiStatus": agent.status,
+        "executionMode": agent.execution_mode,
+        "externalExecutionEnabled": channel.organization.external_execution_enabled,
+        "externalExecution": execution_projection(agent, channel.organization),
         "assistanceEnabled": agent.assistance_enabled,
         # Модели агента: пустая строка означает «как в интеграции», и тогда
         # карточка показывает модель интеграции подсказкой в поле.
@@ -111,13 +115,13 @@ def agent_card_payload(
         "synthesisVoice": agent.synthesis_voice,
         "providerModel": _integration_model(agent.provider_integration, "default_model"),
         "transcriptionProviderModel": _integration_model(
-            agent.transcription_integration or agent.provider_integration,
+            agent.transcription_integration or (agent.provider_integration if agent.execution_mode == "builtin" else None),
             "transcription_model",
         ),
         # Вызывает ли модель ответов инструменты; null — пока неизвестно.
         "modelSupportsTools": (
             tool_support.resolve_tool_support(agent)
-            if check_tool_support
+            if check_tool_support and agent.execution_mode == "builtin"
             else tool_support.cached_tool_support(agent)
         ),
         "providerIntegrationId": agent.provider_integration_id,

@@ -1,0 +1,5 @@
+/* Match the existing 18px header inset on the content side of its divider. */
+.ea-screen[data-suite="settings"] .settings-card-head { margin-bottom: 18px; }
+.ea-screen[data-suite="settings"] .settings-card-head + .service-connection-access { margin-top: 0; }
+.ea-screen[data-suite="settings"] .administration-message + .administration-fields { margin-top: 16px; }
+.ea-screen[data-suite="settings"] [data-policy-agent] { margin-bottom: 16px; }

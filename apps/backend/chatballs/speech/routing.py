@@ -9,7 +9,7 @@ def selected_integration(channel):
     if agent is None:
         raise SpeechError("unavailable")
     integration = getattr(agent, "transcription_integration", None)
-    if integration is None:
+    if integration is None and getattr(agent, "execution_mode", "builtin") != "external":
         integration = getattr(agent, "provider_integration", None)
     if (
         integration is None or integration.organization_id != channel.organization_id

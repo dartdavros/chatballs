@@ -1,0 +1,442 @@
+[
+  {
+    "id": "S07",
+    "titleRu": "Проверка: получен ответ",
+    "titleEn": "Test: reply received",
+    "group": "tests"
+  },
+  {
+    "id": "S08",
+    "titleRu": "Проверка: длительное ожидание",
+    "titleEn": "Test: extended wait",
+    "group": "tests"
+  },
+  {
+    "id": "S09",
+    "titleRu": "Проверка: ошибка внешнего сервиса",
+    "titleEn": "Test: external service error",
+    "group": "tests"
+  },
+  {
+    "id": "S10",
+    "titleRu": "Проверка: обработка прекращена после перехвата",
+    "titleEn": "Test: ended after employee takeover",
+    "group": "tests"
+  },
+  {
+    "id": "S11",
+    "titleRu": "Проверка: разрешённые тестовые данные",
+    "titleEn": "Test: permitted client data",
+    "group": "tests"
+  },
+  {
+    "id": "S12",
+    "titleRu": "Встроенный агент: возможность выключена",
+    "titleEn": "Built-in agent: feature disabled",
+    "group": "agents"
+  },
+  {
+    "id": "S13",
+    "titleRu": "Возврат к сохранённым встроенным настройкам",
+    "titleEn": "Return to retained built-in settings",
+    "group": "agents"
+  },
+  {
+    "id": "S14",
+    "titleRu": "Исполнитель ещё не готов",
+    "titleEn": "Executor not ready yet",
+    "group": "agents"
+  },
+  {
+    "id": "S15",
+    "titleRu": "Возможность выключена у внешнего агента",
+    "titleEn": "Feature disabled for an external agent",
+    "group": "agents"
+  },
+  {
+    "id": "S16",
+    "titleRu": "Внешний сервис недоступен",
+    "titleEn": "External service unavailable",
+    "group": "agents"
+  },
+  {
+    "id": "S17",
+    "titleRu": "Несовместимый внешний сервис",
+    "titleEn": "Incompatible external service",
+    "group": "agents"
+  },
+  {
+    "id": "S18",
+    "titleRu": "Не хватает разрешений",
+    "titleEn": "Required permissions missing",
+    "group": "agents"
+  },
+  {
+    "id": "S19",
+    "titleRu": "Нет необходимого согласия",
+    "titleEn": "Required consent missing",
+    "group": "agents"
+  },
+  {
+    "id": "S70",
+    "titleRu": "Внешний ответ без LLM Chatballs",
+    "titleEn": "External replies without a Chatballs LLM",
+    "group": "agents"
+  },
+  {
+    "id": "S71",
+    "titleRu": "Возможность включена, подключение выключено",
+    "titleEn": "Feature enabled, connection disabled",
+    "group": "agents"
+  },
+  {
+    "id": "S20",
+    "titleRu": "Привязки и параметры обработки",
+    "titleEn": "Bindings and processing settings",
+    "descriptionRu": "Пример сохранённой конфигурации: два агента, явно заданные сроки 120/7200/86400 секунд, инициатива выключена. Значения иллюстративные, не утверждение defaults API.",
+    "descriptionEn": "Illustrative saved configuration: two agents, explicit 120/7200/86400-second durations, proactive messages disabled. These are illustrative values, not API defaults.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S21",
+    "titleRu": "Пустые разрешения данных и каталог шаблонов",
+    "titleEn": "Empty permissions and template catalog",
+    "descriptionRu": "Полная форма: оба списка разрешений пусты, WEB-источников и доступных шаблонов нет. Это не блокирует обычный текст обращения и ответа.",
+    "descriptionEn": "Full form: both allowlists are empty; no WEB sources or available templates exist. Ordinary request text and replies remain available.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S22",
+    "titleRu": "Выбранные данные и шаблоны",
+    "titleEn": "Selected data and templates",
+    "descriptionRu": "Полная форма: разрешения для Помощника поддержки и Сервиса поддержки. Два WEB-источника различают одноимённые поля; стандартные и кастомные разрешения независимы.",
+    "descriptionEn": "Full form: grants target the Support assistant and Support service. Two WEB sources distinguish fields with matching names; standard and custom grants remain independent.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S23",
+    "titleRu": "Устаревшие разрешения",
+    "titleEn": "Stale permissions",
+    "descriptionRu": "Удалены источник и поле, изменено определение другого поля и недоступен шаблон. Старые полномочия не восстановлены.",
+    "descriptionEn": "A source and field were deleted, another definition changed, and a template is unavailable. Old authority is not restored.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S24",
+    "titleRu": "Новый ключ показан один раз",
+    "titleEn": "New key displayed once",
+    "descriptionRu": "Недействительный текстовый пример ключа. Кнопка копирует только этот пример и подтверждает копирование иконкой. Генерации ключа или реального секрета нет.",
+    "descriptionEn": "An invalid text example only. The button copies only this example and confirms copying with an icon. No key is generated and no real secret is present.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S25",
+    "titleRu": "Подтверждение замены ключа",
+    "titleEn": "Confirm key replacement",
+    "descriptionRu": "Стандартный DecisionDialog. Замена отзовёт прежний доступ; действие в макете не выполняется.",
+    "descriptionEn": "The standard DecisionDialog. Replacement revokes previous access; the design does not perform the action.",
+    "modal": true,
+    "group": "settings"
+  },
+  {
+    "id": "S26",
+    "titleRu": "Подтверждение отзыва ключа",
+    "titleEn": "Confirm key revocation",
+    "descriptionRu": "Стандартный DecisionDialog с последствиями отзыва доступа и сохранением конфигурации.",
+    "descriptionEn": "The standard DecisionDialog describes access loss and retained configuration.",
+    "modal": true,
+    "group": "settings"
+  },
+  {
+    "id": "S27",
+    "titleRu": "Проверка подключения",
+    "titleEn": "Checking the connection",
+    "descriptionRu": "Общий индикатор в выделенной области. Проверка возможностей отличается от запроса агенту.",
+    "descriptionEn": "The common loader occupies reserved space. Capability checking is separate from an agent request.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S28",
+    "titleRu": "Ошибка доступа при проверке",
+    "titleEn": "Access check failed",
+    "descriptionRu": "Не подтверждён доступ; состояние не объявляется готовым.",
+    "descriptionEn": "Access is not confirmed; the connection is not presented as ready.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S29",
+    "titleRu": "Сервис недоступен",
+    "titleEn": "Service unavailable",
+    "descriptionRu": "Сохранённая конфигурация существует, внешние ответы пока недоступны.",
+    "descriptionEn": "The saved configuration exists; external replies are currently unavailable.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S30",
+    "titleRu": "Несовместимые возможности",
+    "titleEn": "Incompatible capabilities",
+    "descriptionRu": "Не хватает обязательных возможностей. Нет выдуманной успешной проверки.",
+    "descriptionEn": "Required capabilities are missing. No successful check is invented.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S31",
+    "titleRu": "Загрузка настроек",
+    "titleEn": "Loading settings",
+    "descriptionRu": "Общий индикатор; готовность и разрешения ещё не подтверждены.",
+    "descriptionEn": "The common loader; readiness and permissions have not yet been confirmed.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S32",
+    "titleRu": "Ошибка загрузки настроек",
+    "titleEn": "Settings load failed",
+    "descriptionRu": "Сохранённые значения не подменены пустой или успешной конфигурацией.",
+    "descriptionEn": "Saved values are not replaced with an empty or successful configuration.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S33",
+    "titleRu": "Несохранённые изменения",
+    "titleEn": "Unsaved changes",
+    "descriptionRu": "Заполненная форма и доступное сохранение. Действия статические.",
+    "descriptionEn": "A completed form with an available Save action. Actions remain static.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S34",
+    "titleRu": "Сохранение настроек",
+    "titleEn": "Saving settings",
+    "descriptionRu": "Поля и сохранение недоступны на время операции; место статуса сохранено.",
+    "descriptionEn": "Fields and Save are unavailable during the operation; the status space remains reserved.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S35",
+    "titleRu": "Ошибка сохранения",
+    "titleEn": "Saving failed",
+    "descriptionRu": "Изменения не применены, прежние настройки действуют; повторное сохранение доступно.",
+    "descriptionEn": "Changes were not applied; the previous configuration remains active and saving can be retried.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S36",
+    "titleRu": "Нет прав управления",
+    "titleEn": "Management permission missing",
+    "descriptionRu": "Существующий паттерн отказа в доступе, без доступных секретов и форм изменения.",
+    "descriptionEn": "The current access-denied pattern, with no secrets or editable configuration.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S37",
+    "titleRu": "Подтверждение выключения",
+    "titleEn": "Confirm disabling",
+    "descriptionRu": "Прекращение внешних ответов и экспорта без удаления значений и автоматического встроенного ответа.",
+    "descriptionEn": "External replies and export stop without deleting values or automatically enabling built-in replies.",
+    "modal": true,
+    "group": "settings"
+  },
+  {
+    "id": "S38",
+    "titleRu": "Выключено, конфигурация сохранена",
+    "titleEn": "Disabled, configuration retained",
+    "descriptionRu": "Показаны сохранённые значения и последствия для ранее связанных агентов.",
+    "descriptionEn": "Saved values and consequences for previously bound agents remain visible.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S39",
+    "titleRu": "Повторное включение требует проверки",
+    "titleEn": "Re-enabling requires review",
+    "descriptionRu": "Старые полномочия не оживают: подключение, привязки и разрешения требуют явного пересмотра.",
+    "descriptionEn": "Old authority is not revived: the connection, bindings and permissions require explicit review.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S72",
+    "titleRu": "Включение не удалось, возможность выключена",
+    "titleEn": "Enabling failed, feature remains disabled",
+    "descriptionRu": "Полная сохранённая форма. Предложение сценария ошибки включения: переключатель остаётся выключенным, прежняя конфигурация сохранена, явное повторное включение не выполняется в макете.",
+    "descriptionEn": "The complete saved form. Proposed enable-failure flow: the switch stays off, previous configuration is retained, and explicit retry is inert in this design.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S73",
+    "titleRu": "Подключение выключено при включённой возможности",
+    "titleEn": "Connection disabled while feature is enabled",
+    "descriptionRu": "Полная форма: возможность организации включена, сохранённое подключение явно выключено. Два связанных агента не готовы к внешним ответам; это не сетевая недоступность.",
+    "descriptionEn": "The complete form: the organization feature is on while the saved connection is explicitly disabled. Its two bound agents cannot answer externally; this is not network unavailability.",
+    "modal": false,
+    "group": "settings"
+  },
+  {
+    "id": "S40",
+    "titleRu": "Чат: ожидание внешнего ответа",
+    "titleEn": "Chat: waiting for an external reply",
+    "descriptionRu": "Открытый диалог под управлением AI, обычное ожидание. Состояние не подтверждает отправку или прочтение ответа.",
+    "descriptionEn": "An open conversation controlled by AI, ordinary waiting. This state does not confirm reply sending or reading.",
+    "group": "chat"
+  },
+  {
+    "id": "S41",
+    "titleRu": "Чат: длительное ожидание",
+    "titleEn": "Chat: extended waiting",
+    "descriptionRu": "Обработка продолжается. Сотрудник может штатно перехватить диалог; таймер и процент выполнения не выдумываются.",
+    "descriptionEn": "Processing continues. An employee can take over using the standard action; no invented timer or percentage.",
+    "group": "chat"
+  },
+  {
+    "id": "S42",
+    "titleRu": "Чат: внешний ответ",
+    "titleEn": "Chat: external reply",
+    "descriptionRu": "Пример обычного ответа существующим текстовым рендером. Отметка означает отправку в канал, а не прочтение.",
+    "descriptionEn": "A sample ordinary reply using the existing text renderer. Its mark means sent to the channel, not read.",
+    "group": "chat"
+  },
+  {
+    "id": "S43",
+    "titleRu": "Чат: составной ответ и форматы",
+    "titleEn": "Chat: multipart reply and formats",
+    "descriptionRu": "Последовательные текст, изображение, файл, контакт, запрос контакта и оформленный шаблон. Это статическое содержимое, не доставка.",
+    "descriptionEn": "Sequential text, image, file, contact, contact request and formatted template. Static document content, not delivery.",
+    "group": "chat"
+  },
+  {
+    "id": "S44",
+    "titleRu": "Чат: запрос сотрудника",
+    "titleEn": "Chat: request an employee",
+    "descriptionRu": "Причина и краткое описание показаны внутренним сообщением с замком. Клиенту эти сведения не отправляются.",
+    "descriptionEn": "Reason and summary are an internal message marked with a lock. These details are not sent to the customer.",
+    "group": "chat"
+  },
+  {
+    "id": "S45",
+    "titleRu": "Чат: сотрудник перехватил диалог",
+    "titleEn": "Chat: employee takeover",
+    "descriptionRu": "Сотрудник ведёт диалог; поздний внешний ответ отсутствует среди клиентских сообщений. Событие о подавлении видно только сотруднику.",
+    "descriptionEn": "An employee controls the conversation; the late external reply is absent from customer messages. Its suppression is visible only to staff.",
+    "group": "chat"
+  },
+  {
+    "id": "S46",
+    "titleRu": "Чат: явный возврат AI",
+    "titleEn": "Chat: explicitly return to AI",
+    "descriptionRu": "Штатное событие явного возврата управления AI. Подавленные старые результаты не появляются снова.",
+    "descriptionEn": "The standard event for explicitly returning control to AI. Suppressed old results do not appear again.",
+    "group": "chat"
+  },
+  {
+    "id": "S47",
+    "titleRu": "Чат: внешний сервис недоступен",
+    "titleEn": "Chat: external service unavailable",
+    "descriptionRu": "Диалог в обычной общей очереди сотрудника. Автоматического встроенного ответа нет.",
+    "descriptionEn": "The conversation is in the standard employee queue. Built-in replies are not enabled automatically.",
+    "group": "chat"
+  },
+  {
+    "id": "S48",
+    "titleRu": "Чат: срок ожидания истёк",
+    "titleEn": "Chat: reply deadline passed",
+    "descriptionRu": "Внешняя обработка прекратила ожидание, клиент передан в штатную очередь сотрудника.",
+    "descriptionEn": "Waiting for the external request ended; the customer is in the normal employee queue.",
+    "group": "chat"
+  },
+  {
+    "id": "S49",
+    "titleRu": "Чат: неизвестный исход отправки",
+    "titleEn": "Chat: unknown sending outcome",
+    "descriptionRu": "Нет отметки успешной доставки и принудительного повтора. Сотрудник выясняет фактический результат.",
+    "descriptionEn": "There is no success mark or forced retry. An employee determines the actual outcome.",
+    "group": "chat"
+  },
+  {
+    "id": "S50",
+    "titleRu": "Чат: частичная доставка",
+    "titleEn": "Chat: partial delivery",
+    "descriptionRu": "Одна часть доставлена, исход следующей неизвестен. Уже отправленная часть показана один раз; остаток не продолжает отправляться.",
+    "descriptionEn": "One part was delivered, the next outcome is unknown. The sent part appears once; remaining parts are not sent.",
+    "group": "chat"
+  },
+  {
+    "id": "S51",
+    "titleRu": "Чат: инициативное сообщение",
+    "titleEn": "Chat: initiative message",
+    "descriptionRu": "Для этой конкретной привязки инициатива предполагается отдельно включённой. Диалог открыт и находится под управлением AI. Исходное выключенное состояние в других примерах настроек не переопределяется.",
+    "descriptionEn": "Initiative is assumed to be explicitly enabled for this specific binding. The conversation is open and controlled by AI. The default-off state in other settings examples is not overridden.",
+    "group": "chat"
+  },
+  {
+    "id": "S52",
+    "titleRu": "Голос: распознавание готово",
+    "titleEn": "Voice: transcription ready",
+    "descriptionRu": "Предложение состояния готовности распознавания. Аудиофайл отсутствует; выдуманная расшифровка и ответ на неё не показаны. Реальное распознавание и передача текста не проверялись.",
+    "descriptionEn": "A proposed transcription-ready state. No audio file is present; no invented transcript or reply based on one is shown. Real transcription and text export have not been verified.",
+    "group": "chat"
+  },
+  {
+    "id": "S53",
+    "titleRu": "Голос: распознавание недоступно или завершилось ошибкой",
+    "titleEn": "Voice: transcription unavailable or failed",
+    "descriptionRu": "Нет выдуманной расшифровки. Голосовое сохранено, исходное аудио не экспортируется, диалог ждёт сотрудника.",
+    "descriptionEn": "No invented transcript. The audio is retained, not exported; the conversation waits for an employee.",
+    "group": "chat"
+  },
+  {
+    "id": "S54",
+    "titleRu": "Чат: текстовый вариант для Telegram",
+    "titleEn": "Chat: Telegram text fallback",
+    "descriptionRu": "Пример ограничения представления: в канале Telegram выбран подготовленный текстовый вариант шаблона вместо HTML-карточки. Список, шапка, контекст и композер показывают тот же канал. Новый формат не создаётся.",
+    "descriptionEn": "A representation limitation example: Telegram uses the prepared text version of the template instead of an HTML card. The list, header, context and composer all show the same channel. No new format is introduced.",
+    "group": "chat"
+  },
+  {
+    "id": "S60",
+    "titleRu": "Клиент: требуется новая редакция согласия",
+    "titleEn": "Customer: a new consent revision is required",
+    "descriptionRu": "Проект новой редакции v2 в текущем виджете. Прежнее согласие не считается принятием этой редакции; внешний экспорт заблокирован до подтверждения. Юридическая достаточность текста и получатель не проверены.",
+    "descriptionEn": "Proposed revision v2 in the current widget. Earlier consent does not accept this revision; external export is blocked until confirmation. Legal sufficiency and the recipient have not been verified.",
+    "group": "client"
+  },
+  {
+    "id": "S61",
+    "titleRu": "Клиент: новая редакция в форме перед чатом",
+    "titleEn": "Customer: new revision in the pre-chat form",
+    "descriptionRu": "Та же предлагаемая редакция в существующей форме с именем и email. Обязательное имя не заполнено: начало чата недоступно. Отправка полей и принятие согласия не выполняются.",
+    "descriptionEn": "The same proposed revision in the existing name and email form. The required name is empty, so starting the chat is unavailable. No fields are submitted and no consent is accepted.",
+    "group": "client"
+  },
+  {
+    "id": "S62",
+    "titleRu": "Клиент: актуальная редакция принята",
+    "titleEn": "Customer: the current revision is accepted",
+    "descriptionRu": "Условное состояние после серверного подтверждения актуальной редакции: открыт штатный композер. Это не выполненное согласие; сам факт принятия не подтверждает настройки, полномочия или готовность внешнего исполнения.",
+    "descriptionEn": "Conditional state after server confirmation of the current revision: the standard composer is open. No consent was actually accepted; acceptance alone does not prove external configuration, authorization or readiness.",
+    "group": "client"
+  },
+  {
+    "id": "S63",
+    "titleRu": "Клиент: голосовое сохранено, ожидается сотрудник",
+    "titleEn": "Customer: voice message retained, waiting for an employee",
+    "descriptionRu": "Единый клиентский вид при отсутствии или сбое STT: штатный плеер голосового и ожидание сотрудника. Расшифровка и внешний ответ не придуманы. Волна и 12 секунд — иллюстрация документа; аудиофайла и воспроизведения нет.",
+    "descriptionEn": "The common customer view when STT is missing or fails: the standard voice player and employee waiting notice. No transcript or external reply is invented. The waveform and 12 seconds are document illustrations; there is no audio file or playback.",
+    "group": "client"
+  }
+]

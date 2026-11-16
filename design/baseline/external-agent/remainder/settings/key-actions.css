@@ -1,0 +1,15 @@
+/* Current DS button variants own appearance; this row only wraps direct key actions. */
+.ea-key-field { align-self: start; }
+.ea-key-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ui-icon-button.is-bare.ea-key-copy { width: 30px; height: 30px; padding: 0; color: var(--n-4); }
+.ui-icon-button.is-bare.ea-key-copy,
+.ui-icon-button.is-bare.ea-key-copy:hover,
+.ui-icon-button.is-bare.ea-key-copy:focus,
+.ui-icon-button.is-bare.ea-key-copy:focus-visible,
+.ui-icon-button.is-bare.ea-key-copy:active,
+.ui-icon-button.is-bare.ea-key-copy:disabled,
+.ui-icon-button.is-bare.ea-key-copy.is-copied { background: transparent; border: 0; outline: 0; box-shadow: none; }
+.ui-icon-button.is-bare.ea-key-copy:hover,
+.ui-icon-button.is-bare.ea-key-copy:focus,
+.ui-icon-button.is-bare.ea-key-copy:focus-visible,
+.ui-icon-button.is-bare.ea-key-copy.is-copied { color: var(--accent); }

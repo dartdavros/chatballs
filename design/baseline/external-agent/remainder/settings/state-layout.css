@@ -1,0 +1,11 @@
+.ea-screen .external-load-error { display: grid; gap: 14px; }
+.ea-screen .external-save-footer { display: grid; gap: 12px; margin-top: 18px; }
+.ea-screen .external-save-footer > .administration-actions { position: static; min-height: 34px; margin: 0; padding: 0; border: 0; background: none; }
+.ea-screen .external-save-footer .primary-button > span:has(.logo-spinner) { display: inline-flex; align-items: center; }
+/* Existing busy-button treatment from features/support-reports/export.css. */
+.ea-screen .external-save-footer[aria-busy="true"] .primary-button:disabled { opacity: 1; background: color-mix(in srgb, var(--primary) 70%, var(--surface-card)); color: var(--on-primary); }
+.ea-screen .external-feature-state { display: grid; gap: 12px; }
+.ea-screen .external-feature-state > .settings-section-note { margin: 0; color: var(--n-3); }
+.ea-screen .external-feature-state > .status-pill { justify-self: start; margin: 0; }
+.ea-screen .external-feature-state .settings-risk-note { align-items: flex-start; }
+.ea-screen .external-feature-state .settings-risk-note > svg { margin-top: 2px; }

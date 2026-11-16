@@ -1,0 +1,77 @@
+Templates:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/ConversationId'
+    - $ref: './common.yaml#/AuthorizationId'
+  get:
+    operationId: getExternalAgentTemplates
+    tags: [Chatballs]
+    summary: Получить текущие разрешённые схемы шаблонов без исходников
+    responses:
+      '200':
+        description: Каталог с монотонными ревизиями и штатной схемой Chatballs
+        content:
+          application/json:
+            schema: {$ref: './catalogs.yaml#/TemplateCatalog'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+Upload:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/ConversationId'
+  post:
+    operationId: uploadExternalAgentFile
+    tags: [Chatballs]
+    summary: Потоково загрузить файл без публикации сообщения
+    parameters: [{$ref: './common.yaml#/IdempotencyKey'}]
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema: {$ref: './catalogs.yaml#/Upload'}
+          encoding:
+            file:
+              contentType: application/octet-stream
+    responses:
+      '201':
+        description: Файл проверен и полностью сохранён в staging
+        content:
+          application/json:
+            schema: {$ref: './catalogs.yaml#/UploadReceipt'}
+      '200':
+        description: Совпадающий повтор, тот же файл и исходный expiresAt без продления
+        content:
+          application/json:
+            schema: {$ref: './catalogs.yaml#/UploadReceipt'}
+      '409': {$ref: './common.yaml#/ErrorResponse'}
+      '413': {$ref: './common.yaml#/ErrorResponse'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+Download:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/ConversationId'
+    - $ref: './common.yaml#/FileId'
+    - $ref: './common.yaml#/AuthorizationId'
+  get:
+    operationId: downloadExternalAgentFile
+    tags: [Chatballs]
+    summary: Читать разрешённый файл, исключая исходное голосовое
+    description: >-
+      Только fileId, выданный данному разрешению в trigger/истории либо собственной
+      завершённой загрузке. Не произвольный публичный файл того же диалога.
+      Голосовое аудио и неразрешённые будущие вложения недоступны.
+      В v1 Range не объявляется: запрос без него, полный поток 200.
+    responses:
+      '200':
+        description: Полный бинарный поток с реальным безопасным Content-Type
+        headers:
+          Content-Disposition:
+            description: attachment с безопасным именем, без CR/LF
+            schema: {type: string}
+          X-Content-Type-Options:
+            schema: {type: string, const: nosniff}
+          Cache-Control:
+            schema: {type: string, const: no-store}
+        content:
+          application/octet-stream:
+            schema: {type: string, format: binary}
+      default: {$ref: './common.yaml#/ErrorResponse'}

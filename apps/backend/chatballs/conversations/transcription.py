@@ -32,7 +32,7 @@ class TranscriptionJob:
     content_type: str
 
 
-def prepare_transcription(channel, message: Message) -> TranscriptionJob | None:
+def prepare_transcription(channel, message: Message, *, timeout=None) -> TranscriptionJob | None:
     """Шаг в транзакции: провайдер организации, модель и байты аудио."""
     from chatballs.ai.provider.factory import get_transcription_provider
     from chatballs.ai.provider.routing import (
@@ -46,7 +46,7 @@ def prepare_transcription(channel, message: Message) -> TranscriptionJob | None:
         raise ProviderError(t("ai.agent_without_llm_integration"))
     if not message.audio:
         return None
-    provider = get_transcription_provider(channel=channel)
+    provider = get_transcription_provider(channel=channel, timeout=timeout)
     try:
         model = resolve_transcription_model(channel)
     except ProviderError:

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Внешнее исполнение · S01 · Дизайн</title>
+<script>
+window.__resources = {};
+const designLanguage = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'ru';
+localStorage.setItem('chatballs.language', designLanguage);
+document.documentElement.lang = designLanguage;
+</script>
+<script src="./generated/runtime.js"></script>
+<script src="../../platform-expansion/support.js"></script>
+</head><body><x-dc><helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="./generated/runtime.css">
+<link rel="stylesheet" href="./baseline.css">
+</helmet>{{ canvas }}</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return { canvas: window.React.createElement(window.ExternalSettingsCanvas) }; }
+}
+</script></body></html>

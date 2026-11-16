@@ -1,0 +1,38 @@
+Node:
+  oneOf:
+    - $ref: '#/ScalarNode'
+    - $ref: '#/ObjectNode'
+    - $ref: '#/ListNode'
+ScalarNode:
+  type: object
+  additionalProperties: false
+  required: [type]
+  properties:
+    type: {enum: [string, number, boolean]}
+    required: {type: boolean, default: false}
+    description: {type: string, maxLength: 500}
+    order: {type: integer, minimum: 0}
+ObjectNode:
+  type: object
+  additionalProperties: false
+  required: [type, properties]
+  properties:
+    type: {const: object}
+    required: {type: boolean, default: false}
+    description: {type: string, maxLength: 500}
+    order: {type: integer, minimum: 0}
+    properties:
+      type: object
+      propertyNames: {pattern: '^[A-Za-z][A-Za-z0-9_]{0,63}$'}
+      additionalProperties: {$ref: '#/Node'}
+  description: Штатная схема Chatballs, не JSON Schema; действуют лимиты skill_templates/schema.py
+ListNode:
+  type: object
+  additionalProperties: false
+  required: [type, items]
+  properties:
+    type: {const: list}
+    required: {type: boolean, default: false}
+    description: {type: string, maxLength: 500}
+    order: {type: integer, minimum: 0}
+    items: {$ref: '#/Node'}

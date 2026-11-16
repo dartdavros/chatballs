@@ -1,0 +1,11 @@
+.external-help-title { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.external-help-title > strong { min-width: 0; }
+.service-oauth-waiting > div > .external-help-title { display: flex; width: fit-content; }
+.external-help-trigger.ui-icon-button.is-bare { flex: none; width: 24px; height: 24px; padding: 3px; border-radius: 50%; color: var(--n-4); }
+.external-help-trigger.ui-icon-button.is-bare:hover { color: var(--accent); background: var(--primary-bg); }
+.external-help-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.external-help-modal .ant-modal-title { padding-right: 28px; }
+.external-help-modal .agent-create-lead { margin-top: 12px; color: var(--n-3); }
+.external-help-example { display: grid; gap: 10px; min-width: 0; }
+.external-help-example > small { color: var(--n-4); font-size: 12px; }
+.external-help-modal [data-message-preview] { margin-top: 8px; }

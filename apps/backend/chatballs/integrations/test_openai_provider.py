@@ -10,7 +10,12 @@ from chatballs.ai.provider.openai import OpenAIProvider
 from chatballs.ai.provider.routing import provider_for_integration
 from chatballs.ai.provider_selection import configure_agent_provider, configure_agent_transcription
 from chatballs.integrations import checking, checks
-from chatballs.integrations.models import PROVIDER_KIND, Integration, IntegrationKind, IntegrationProvider
+from chatballs.integrations.models import (
+    PROVIDER_KIND,
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+)
 from chatballs.integrations.openai_urls import DEFAULT_OPENAI_BASE_URL, DEFAULT_OPENAI_MODEL
 from chatballs.integrations.services import _normalized_config, _validate_provider
 from chatballs.speech.contracts import capabilities

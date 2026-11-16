@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "status": "owner_approved_corrections",
+  "approvedDate": "2026-11-15",
+  "timezone": "Europe/Moscow",
+  "ownerStatement": "Эти правки принимаю.",
+  "designVersion": "REST-66e46e103944410c",
+  "reviewVersion": "EXTERNAL-df04211862cdb726",
+  "representativeScreens": [
+    "S20",
+    "S24",
+    "S32",
+    "S34",
+    "S72"
+  ],
+  "scope": [
+    "Связи: добавление в DS-модалке, удаление с DS-подтверждением, отмена без изменения данных",
+    "Общий стиль ссылок и пунктирное подчёркивание при наведении",
+    "Правое выравнивание колонки и самих переключателей",
+    "Копирование: иконка 18 px без фона/рамок/outline, акцент и check на 3 секунды",
+    "Штатные алерты ошибок, компактное единственное состояние сохранения и безопасные отступы",
+    "Применение этих общих компонентов к повторяющимся состояниям текущего комплекта"
+  ],
+  "fullPackageApproved": false,
+  "previouslyApprovedScreens": [
+    "S01",
+    "S02",
+    "S03",
+    "S04",
+    "S05",
+    "S06"
+  ],
+  "remainingCaseSpecificReviews": {
+    "permissions": [
+      "S21",
+      "S22",
+      "S23"
+    ],
+    "keysAndConnection": [
+      "S25",
+      "S26",
+      "S27",
+      "S28",
+      "S29",
+      "S30"
+    ],
+    "disableAndRestore": [
+      "S37",
+      "S38",
+      "S39",
+      "S73"
+    ],
+    "agentReadiness": [
+      "S14",
+      "S15",
+      "S16",
+      "S17",
+      "S18",
+      "S19",
+      "S70",
+      "S71"
+    ],
+    "testPanel": [
+      "S08",
+      "S09",
+      "S10",
+      "S11"
+    ],
+    "staffChat": [
+      "S40",
+      "S41",
+      "S44",
+      "S45",
+      "S46",
+      "S47",
+      "S48",
+      "S49",
+      "S50"
+    ],
+    "consent": [
+      "S60"
+    ]
+  },
+  "resourceHashes": {
+    "generated/sources.json": "98ad16b419e69aa78120fecd4d95fff020179541d0545e46a67ceff4ec0dfb39",
+    "generated/cases.json": "3bb1ec1a9a70c0b01454dc915f9ee50e75bedbf10fa234aec98fabfe06b3f392",
+    "generated/runtime.js": "926c4358a4a03d354bafa5d53548428b301a331cc7b117485bd46992a7235454",
+    "generated/runtime.css": "6143f2c2da6b51e88ffffdc641f88306fb03108d3205e0b7c31937b3aef944c6"
+  }
+}

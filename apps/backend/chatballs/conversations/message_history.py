@@ -14,7 +14,7 @@ MESSAGE_WINDOW_SIZE = 50
 
 def message_history(conversation, params):
     limit = window_size(params, default=MESSAGE_WINDOW_SIZE)
-    messages = conversation_messages(conversation)
+    messages = conversation_messages(conversation).select_related("externalagentdeliveryitem__delivery__request")
     after = cursor_id(params, "after")
     if after is not None:
         payload = window_payload(
@@ -36,4 +36,3 @@ def message_history(conversation, params):
     add_template_updates(payload["items"], organization_id=conversation.organization_id)
     payload["items"].reverse()
     return payload
-

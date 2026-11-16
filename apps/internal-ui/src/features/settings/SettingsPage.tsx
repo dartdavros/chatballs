@@ -52,7 +52,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
               )}
               <div>
                 <h2>{journal ? t("handling_rules.journal_title") : current.heading}</h2>
-                {!journal && <p>{current.lead}</p>}
+                {!journal && current.lead && <p>{current.lead}</p>}
               </div>
             </header>}
             {journal ? <RuleJournalCard key={user.organizationPublicId} openConversation={openConversation} /> : <SettingsSectionBody

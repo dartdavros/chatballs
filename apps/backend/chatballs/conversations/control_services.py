@@ -110,7 +110,8 @@ def release_to_ai(*, context: TenantContext, conversation_id: int) -> Conversati
         conversation=conversation,
         author_type=MessageAuthor.SYSTEM,
         system_event=SystemEvent.RETURNED_TO_AI,
-        text="Диалог возвращён AI",
+        system_params={"externalExecution": getattr(getattr(conversation.channel, "ai_agent", None), "execution_mode", "builtin") == "external"},
+        text="",
     )
     return conversation
 

@@ -1,0 +1,5 @@
+/* Owner-requested common design rules; the product and accepted archived bundles stay unchanged. */
+.ea-screen .link:not(.is-strong):not(.is-mono) { font-size: 12.5px; font-weight: 500; }
+.ea-screen .link:hover:not(:disabled) { text-decoration-line: underline; text-decoration-style: dotted; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.ea-screen .ui-switch-column, .ea-screen .ui-switch-cell { text-align: right; }
+.ea-screen .ui-switch-cell > .ui-switch { margin-inline-start: auto; margin-inline-end: 0; vertical-align: middle; }

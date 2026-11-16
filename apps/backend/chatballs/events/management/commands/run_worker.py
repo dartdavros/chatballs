@@ -6,6 +6,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from chatballs.ai.external_agents.retention import cleanup as cleanup_external_agent_data
 from chatballs.calls.maintenance import expire_stale_calls
 from chatballs.conversations.escalation import sweep_waiting_conversations
 from chatballs.conversations.maintenance import close_stale_conversations
@@ -168,6 +169,7 @@ class Command(BaseCommand):
                     logger.exception("Update check cycle failed")
                 self._for_each_tenant(close_stale_conversations, "Maintenance cycle failed")
                 self._for_each_tenant(cleanup_scenario_data, "Scenario retention cycle failed")
+                self._for_each_tenant(cleanup_external_agent_data, "External agent retention cycle failed")
                 try:
                     # Просроченные сессии Django сам не удаляет, а их накопление
                     # утяжеляет карточку сотрудника: владельца сессии видно

@@ -97,6 +97,7 @@ export function ShellRouteContent({ settingsSection, openSettings, chatScope, se
           openServers={() => setRoute("integrationServers")}
           openServer={openServer}
           openAiProvider={() => setRoute("aiProviders")}
+          openExternalSettings={() => openSettings("external")}
           setRoute={setRoute}
           onLoaded={onAgentLoaded}
         />

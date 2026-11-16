@@ -1,0 +1,124 @@
+TextContent:
+  type: object
+  additionalProperties: false
+  required: [type, text]
+  properties:
+    type: {const: text}
+    text: {type: string, minLength: 1}
+FileContent:
+  type: object
+  additionalProperties: false
+  required: [type, fileId, filename, mimeType, size, sha256, caption]
+  properties:
+    type: {enum: [file, image]}
+    fileId: {$ref: './common.yaml#/OpaqueId'}
+    filename: {type: string, minLength: 1, maxLength: 255}
+    mimeType: {type: string, minLength: 1}
+    size: {type: integer, minimum: 1, maximum: 20971520}
+    sha256: {$ref: './common.yaml#/Digest'}
+    caption: {type: string}
+  description: >-
+    Метаданные сверяются с реальным хранилищем, каналом и разрешённым снимком.
+    Исходное голосовое недоступно даже при подмене MIME/имени. Внешних URL нет.
+ContactContent:
+  type: object
+  additionalProperties: false
+  required: [type, text]
+  properties:
+    type: {const: contact}
+    text: {type: string}
+  description: >-
+    Сохранённое публичное содержание Message.text без выдуманных полей vCard.
+    Стандартные поля контакта передаются только отдельным allowlist в customer.fields.
+ContactRequestContent:
+  type: object
+  additionalProperties: false
+  required: [type]
+  properties:
+    type: {const: contact_request}
+  description: >-
+    Штатная команда без пользовательской формы и текста. Chatballs подставляет
+    словарный текст на языке организации. WEB — существующая форма; TG/MAX —
+    существующая кнопка; VK/email — штатная текстовая просьба при объявленной поддержке.
+FormattedContent:
+  type: object
+  additionalProperties: false
+  required: [type, templateId, templateRevision, data]
+  properties:
+    type: {const: formatted}
+    templateId: {$ref: './common.yaml#/OpaqueId'}
+    templateRevision: {type: integer, minimum: 1}
+    data: {type: object}
+  description: data дополнительно проверяется штатной схемой выбранного шаблона
+PublicFormattedContent:
+  type: object
+  additionalProperties: false
+  required: [type, text, templateId, templateRevision]
+  properties:
+    type: {const: formatted}
+    text: {type: string}
+    templateId: {$ref: './common.yaml#/NullableId'}
+    templateRevision: {type: [integer, 'null'], minimum: 1}
+  description: >-
+    Только сохранённое публичное текстовое представление. Оба поля шаблона null,
+    если у старого сообщения нет подтверждённой привязки; HTML/CSS/srcDoc не экспортируются.
+HistoryContactRequest:
+  type: object
+  additionalProperties: false
+  required: [type, text]
+  properties:
+    type: {const: contact_request}
+    text: {type: string}
+OutgoingContent:
+  oneOf:
+    - $ref: '#/TextContent'
+    - $ref: '#/FileContent'
+    - $ref: '#/ContactRequestContent'
+    - $ref: '#/FormattedContent'
+PublicContent:
+  oneOf:
+    - $ref: '#/TextContent'
+    - $ref: '#/FileContent'
+    - $ref: '#/ContactContent'
+    - $ref: '#/HistoryContactRequest'
+    - $ref: '#/PublicFormattedContent'
+OutgoingItem:
+  type: object
+  additionalProperties: false
+  required: [itemId, content]
+  properties:
+    itemId: {$ref: './common.yaml#/UUID'}
+    content: {$ref: '#/OutgoingContent'}
+OutgoingMessages:
+  type: array
+  minItems: 1
+  items: {$ref: '#/OutgoingItem'}
+  description: itemId уникален в наборе; порядок элементов значим; общий JSON ≤256 KiB
+HistoryMessage:
+  type: object
+  additionalProperties: false
+  required: [id, author, createdAt, content, wasVoice]
+  properties:
+    id: {$ref: './common.yaml#/OpaqueId'}
+    author: {enum: [customer, employee, agent]}
+    createdAt: {$ref: './common.yaml#/UTC'}
+    content: {$ref: '#/PublicContent'}
+    wasVoice: {type: boolean}
+    source:
+      type: object
+      additionalProperties: false
+      required: [kind, durationSeconds]
+      properties:
+        kind: {const: voice}
+        durationSeconds: {type: integer, minimum: 0}
+  allOf:
+    - if: {properties: {wasVoice: {const: true}}}
+      then:
+        required: [source]
+        properties: {content: {$ref: '#/TextContent'}}
+      else: {not: {required: [source]}}
+  description: >-
+    Аудио не экспортируется. Для голосового нужна сохранённая штатная стенограмма;
+    если она недоступна, подготовка страницы завершается history_content_unavailable
+    без скрытого пропуска сообщения. trigger без STT передаётся сотруднику.
+    Комментарии и системные записи не входят.

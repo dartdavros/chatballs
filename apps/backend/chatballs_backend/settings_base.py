@@ -270,7 +270,10 @@ CHATBALLS_PUBLIC_BASE_URL = os.environ.get("CHATBALLS_PUBLIC_BASE_URL", "http://
 
 # Установленные адаптеры сервисов (SPEC-0037 R-3): доверенные модули этой
 # версии приложения. Каталог «Интеграции → Сервисы» показывает только их.
-CHATBALLS_SERVICE_ADAPTERS = ["chatballs.integrations.adapters.bitrix24"]
+CHATBALLS_SERVICE_ADAPTERS = [
+    "chatballs.integrations.adapters.bitrix24",
+    "chatballs.ai.external_agents.adapter",
+]
 CHATBALLS_SERVICE_EXTENSIONS: list[str] = []
 # Приложения OAuth, зарегистрированные администратором установки у сервисов:
 # {"<ключ адаптера>": {"client_id": "...", "client_secret": "..."}}.

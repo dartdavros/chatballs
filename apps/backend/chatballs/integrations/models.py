@@ -102,6 +102,8 @@ class Integration(models.Model):
     # Версия runtime-настроек LLM. Event-workers держат circuit breaker в своей
     # памяти и заменяют его после исправления конфигурации провайдера.
     runtime_revision = models.PositiveBigIntegerField(default=1)
+    # Durable WEB definition generation; independent of LLM/SPEECH runtime.
+    web_schema_generation = models.PositiveBigIntegerField(default=1, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

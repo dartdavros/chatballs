@@ -26,14 +26,17 @@ import { useConversationRuns } from "../integrations/runs/conversationContext";
 import { ManualActionMenu } from "../integrations/runs/ManualActionMenu";
 import { RunFeedCard } from "../integrations/runs/RunFeedCard";
 import { mergeRunFeed } from "../integrations/runs/feed";
+import { withExternalNotices } from "./externalFeed";
+import { ExternalExecutionNotice, ExternalExecutionWaiting } from "./ExternalExecutionNotice";
 
 export function ConversationThread({ controlMode, dialog, detail, feed, isOwner = false, onClaim, onRelease, onClose, onSpam, onReturnQueue, canDelete = false, onDelete, onDiagnosticError, onToggleContext, onMobileBack, onExpandList, viewerId = null, onUpdated, onRefresh, retainsReplyAfterTransfer = false, revocation, onBack }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; feed: ConversationFeed; isOwner?: boolean; onClaim: () => void; onRelease: () => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; canDelete?: boolean; onDelete: () => Promise<boolean>; onDiagnosticError: (error: string) => void; onToggleContext?: () => void; onMobileBack?: () => void; onExpandList?: () => void; viewerId?: number | null; onUpdated: (next: ApiConversation) => void; onRefresh: () => void; retainsReplyAfterTransfer?: boolean; revocation?: SupervisionRevocation | null; onBack?: () => void }) {
   const transfer = useConversationTransfer(detail, onUpdated, onRefresh, retainsReplyAfterTransfer);
   const timelineRef = useRef<HTMLDivElement>(null);
   // Сообщения переписки и внутренние комментарии — одна лента по времени.
   const services = useConversationRuns();
-  const rows = useMemo(() => mergeRunFeed(feed.rows, services?.runs ?? [], feed.hasOlder, services?.hasMore ?? false), [feed.rows, feed.hasOlder, services?.runs, services?.hasMore]);
-  const entries = useMemo(() => rows.map((row) => ({ key: row.key, own: row.kind !== "service_run" && isOwnFeedRow(row, viewerId) })), [rows, viewerId]);
+  const rows = useMemo(() => withExternalNotices(mergeRunFeed(feed.rows, services?.runs ?? [], feed.hasOlder, services?.hasMore ?? false),
+    detail?.externalExecution?.notices ?? [], feed.hasOlder), [feed.rows, feed.hasOlder, services?.runs, services?.hasMore, detail?.externalExecution]);
+  const entries = useMemo(() => rows.map((row) => ({ key: row.key, own: row.kind !== "service_run" && row.kind !== "external_notice" && isOwnFeedRow(row, viewerId) })), [rows, viewerId]);
   // Лента держит низ при новых репликах и догружает предыдущие при подходе к
   // верху, сохраняя место чтения.
   const { onScroll } = useHistoryScroll(timelineRef, {
@@ -100,13 +103,14 @@ export function ConversationThread({ controlMode, dialog, detail, feed, isOwner 
               {(index === 0 || !sameDay(rows[index - 1].createdAt, row.createdAt)) && (
                 <div className="sales-day-divider"><span />{dayLabel(row.createdAt)}<span /></div>
               )}
-              {row.kind === "service_run" ? <RunFeedCard run={row.run} /> : row.kind === "comment"
+              {row.kind === "external_notice" ? <ExternalExecutionNotice notice={row.notice} agentColor={dialog.agentColor} /> : row.kind === "service_run" ? <RunFeedCard run={row.run} /> : row.kind === "comment"
                 ? <ConversationComment comment={row.comment} viewerId={viewerId} />
                 : row.calls
                   ? <ToolCallChip calls={row.calls} createdAt={row.createdAt} />
                   : <span id={`message-${row.message.id}`} style={{ display: "contents" }}><ConversationMessage message={row.message} dialog={dialog} viewerId={viewerId} /></span>}
             </Fragment>
           ))}
+          {detail?.externalExecution?.waiting && <ExternalExecutionWaiting long={detail.externalExecution.waiting === "long"} />}
         </div>
       </div>
       {transfer.overlay}

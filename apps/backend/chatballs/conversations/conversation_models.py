@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from chatballs.conversations.audience_managers import CustomerConversations
 from chatballs.tenancy.models import TenantRelationModel
 
 
@@ -59,6 +60,7 @@ class ExpectedResponder(models.TextChoices):
 
 
 class Conversation(models.Model):
+    is_test = models.BooleanField(default=False, editable=False)
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="conversations")
     channel = models.ForeignKey("channels.Channel", on_delete=models.PROTECT, related_name="conversations")
     connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
@@ -122,7 +124,11 @@ class Conversation(models.Model):
     # непустое и по нему работает и индекс, и курсор окна (api.pagination).
     last_message_at = models.DateTimeField(default=timezone.now)
 
+    including_tests = models.Manager()
+    objects = CustomerConversations()
+
     class Meta:
+        default_manager_name = "objects"
         ordering = ["-last_activity_at"]
         indexes = [
             models.Index(fields=["channel", "lifecycle"]),
@@ -144,7 +150,8 @@ class Conversation(models.Model):
         constraints = [
             # Диалог всегда принадлежит контакту.
             models.CheckConstraint(
-                condition=models.Q(contact__isnull=False),
+                condition=(models.Q(is_test=False, contact__isnull=False) |
+                           models.Q(is_test=True, contact__isnull=True, connection__isnull=True)),
                 name="conversation_requires_contact",
             ),
         ]

@@ -21,6 +21,18 @@ def lock_organization(organization_id):
 def autonomous_allowed(channel, *, organization, connection=None, conversation=None):
     agent = getattr(channel, "ai_agent", None)
     provider = getattr(agent, "provider_integration", None) or channel.provider_integration
+    if agent and agent.execution_mode == "external":
+        from chatballs.ai.external_agents.readiness import consent_current, ready
+
+        return bool(
+            organization.operation_mode == OperationMode.AI_AGENTS
+            and channel.organization_id == organization.pk and channel.is_active and agent.is_active
+            and ready(agent, organization)
+            and (connection is None or (connection.is_active and connection.channel_id == channel.pk
+                                       and connection.organization_id == organization.pk))
+            and (conversation is None or (conversation.lifecycle == "OPEN" and conversation.archived_at is None and conversation.control_mode == "AI"
+                                         and conversation.assigned_operator_id is None and consent_current(conversation)))
+        )
     return bool(
         organization.operation_mode == OperationMode.AI_AGENTS
         and channel.organization_id == organization.pk

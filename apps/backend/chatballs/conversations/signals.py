@@ -30,7 +30,7 @@ def touch_last_message_at(sender, instance: Message, created: bool, **kwargs) ->
     Условие `__lt` защищает от задним числом импортированной переписки: старое
     сообщение не должно опускать диалог в инбоксе.
     """
-    if not created or instance.created_at is None:
+    if not created or instance.created_at is None or instance.conversation.is_test:
         return
     Conversation.objects.filter(
         id=instance.conversation_id, last_message_at__lt=instance.created_at
@@ -41,7 +41,7 @@ def touch_last_message_at(sender, instance: Message, created: bool, **kwargs) ->
 def notify_message(sender, instance: Message, created: bool, **kwargs) -> None:
     # Данные сайта и подключение специалиста публикуются своими сервисами
     # после commit всей операции, включая изменение доступа.
-    if not created or instance.system_event in {SystemEvent.SITE_FIELDS_UPDATED, SystemEvent.SPECIALIST_JOINED}:
+    if not created or instance.conversation.is_test or instance.system_event in {SystemEvent.SITE_FIELDS_UPDATED, SystemEvent.SPECIALIST_JOINED}:
         return
     transaction.on_commit(lambda: notify_conversation_changed(
         instance.conversation_id, organization_id=instance.organization_id,
@@ -51,6 +51,8 @@ def notify_message(sender, instance: Message, created: bool, **kwargs) -> None:
 @receiver(post_save, sender=Conversation, dispatch_uid="conversations.notify_conversation")
 def notify_conversation(sender, instance: Conversation, created: bool, **kwargs) -> None:
     """Перехват, возврат AI, метки, приоритет, архив — всё это запись строки."""
+    if instance.is_test:
+        return
     if created:
         transaction.on_commit(lambda: notify_inbox_changed(instance.organization_id))
         return

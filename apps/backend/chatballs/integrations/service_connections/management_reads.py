@@ -4,7 +4,10 @@ from rest_framework.exceptions import PermissionDenied
 
 from chatballs.identity.policy import has_capability_any_scope
 from chatballs.integrations.models import Integration, IntegrationProvider
-from chatballs.integrations.service_connections.payloads import catalog_payload, connection_payload
+from chatballs.integrations.service_connections.payloads import (
+    catalog_payload,
+    connection_payload,
+)
 from chatballs.tenancy.database import tenant_atomic
 
 
@@ -16,7 +19,8 @@ def require(context, capability="integrations.view"):
 
 def connections(context):
     return Integration.objects.select_related("service_settings").filter(
-        organization_id=context.organization_id, provider=IntegrationProvider.ADAPTER)
+        organization_id=context.organization_id, provider=IntegrationProvider.ADAPTER).exclude(
+            service_settings__adapter_key="external_agent_v1")
 
 
 def load(context, connection_id, capability="integrations.view"):
@@ -43,4 +47,3 @@ def detail(context, connection_id):
 def adapters(context):
     require(context)
     return {"items": catalog_payload()}
-

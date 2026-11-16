@@ -10,8 +10,22 @@ import { VoiceMessage } from "./VoiceMessage";
 import { SnapshotMessage } from "./SnapshotMessage";
 import type { ApiMessage } from "./apiTypes";
 import type { ConversationListItem } from "./types";
+import { et } from "../settings/external-agent/copy";
 
-export function ConversationMessage({ message, dialog, viewerId }: { message: ApiMessage; dialog: ConversationListItem; viewerId: number | null }) {
+export function ConversationMessage(props: { message: ApiMessage; dialog: ConversationListItem; viewerId: number | null }) {
+  const { message } = props;
+  if (message.externalDelivery?.state === "suppressed") return null;
+  const note = message.externalReturned ? et("chat.returnedHelp") : message.externalVoice === "ready" ? et("chat.voiceHelp")
+    : message.externalDelivery?.textFallback ? et("chat.channelFallback")
+    : message.externalDelivery?.initiative ? et("chat.initiativeHelp") : null;
+  return <><MessageContent {...props} />{note && <MessageBubble side="operator" internal actor={et("chat.systemActor")} authorInitials="CB" time={fmt.time(message.createdAt)}>
+    <ConversationText text={note} />
+  </MessageBubble>}</>;
+}
+
+function MessageContent({ message, dialog, viewerId }: { message: ApiMessage; dialog: ConversationListItem; viewerId: number | null }) {
+  const confirmed = !message.externalDelivery || message.externalDelivery.state === "transport_accepted";
+  const footer = !confirmed && <>{et("chat.notConfirmed")} · </>;
   if (message.author === "SYSTEM") {
     if (message.transferId) return <TransferTimelineEvent conversationId={Number(dialog.id)} transferId={message.transferId} fallback={message.text} createdAt={message.createdAt} />;
     // Системное событие (кадры B, C): передача — предупреждение, взятие и
@@ -42,10 +56,10 @@ export function ConversationMessage({ message, dialog, viewerId }: { message: Ap
   if (message.transport?.provider === "EMAIL") return <EmailConversationMessage message={message} actor={actor} />;
   if (message.author === "AI" && !["voice", "file"].includes(message.kind ?? "")
     && (message.formatVersion !== undefined || message.presentation !== undefined)) {
-    return <SnapshotMessage message={message} bubble={{ side, actor, actorColor: dialog.agentColor, time: fmt.time(message.createdAt) }} />;
+    return <SnapshotMessage message={message} bubble={{ side, actor, actorColor: dialog.agentColor, time: fmt.time(message.createdAt), confirmed, footer }} />;
   }
   return (
-    <MessageBubble side={side} actor={actor} actorColor={message.author === "AI" ? dialog.agentColor : undefined} time={fmt.time(message.createdAt)} authorInitials={message.authorName ? initialsOf(message.authorName) : ""} authorAvatarUrl={message.authorAvatarUrl ?? null}>
+    <MessageBubble side={side} actor={actor} actorColor={message.author === "AI" ? dialog.agentColor : undefined} time={fmt.time(message.createdAt)} authorInitials={message.authorName ? initialsOf(message.authorName) : ""} authorAvatarUrl={message.authorAvatarUrl ?? null} confirmed={confirmed} footer={footer}>
       {message.kind === "voice"
         ? <VoiceMessage message={message} />
         : message.kind === "file"

@@ -1,0 +1,56 @@
+.hub-shell.is-settings-route:has(.external-settings) { min-width: 1024px; }
+.external-settings > .administration-card ~ .administration-card { margin-top: 18px; }
+.external-setup-error { margin-top: 18px; }
+.external-capability-result { min-height: 112px; }
+@media (max-width: 900px) { .external-capability-result { min-height: 224px; } }
+.external-help-title { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.external-help-title > strong { min-width: 0; }
+.service-oauth-waiting > div > .external-help-title { display: flex; width: fit-content; }
+.external-help-trigger.ui-icon-button.is-bare { flex: none; width: 24px; height: 24px; padding: 3px; border-radius: 50%; color: var(--n-4); }
+.external-help-trigger.ui-icon-button.is-bare:hover { color: var(--accent); background: var(--primary-bg); }
+.external-help-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.external-help-modal .ant-modal-title { padding-right: 28px; }
+.external-help-modal .agent-create-lead { margin-top: 12px; color: var(--n-3); }
+.external-help-example { display: grid; gap: 10px; min-width: 0; }
+.external-help-example > small { color: var(--n-4); font-size: 12px; }
+.external-help-modal [data-message-preview] { margin-top: 8px; }
+
+/* Owner-requested common design rules; the product and accepted archived bundles stay unchanged. */
+.external-settings .link:not(.is-strong):not(.is-mono) { font-size: 12.5px; font-weight: 500; }
+.external-settings .link:hover:not(:disabled) { text-decoration-line: underline; text-decoration-style: dotted; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.external-settings .ui-switch-column, .external-settings .ui-switch-cell { text-align: right; }
+.external-settings .ui-switch-cell > .ui-switch { margin-inline-start: auto; margin-inline-end: 0; vertical-align: middle; }
+
+/* Match the existing 18px header inset on the content side of its divider. */
+.external-settings.is-configured .settings-card-head { margin-bottom: 18px; }
+.external-settings.is-configured .settings-card-head + .service-connection-access { margin-top: 0; }
+.external-settings.is-configured .administration-message + .administration-fields { margin-top: 16px; }
+.external-settings.is-configured [data-policy-agent] { margin-bottom: 16px; }
+
+/* Current DS button variants own appearance; this row only wraps direct key actions. */
+.ea-key-field { align-self: start; }
+.ea-key-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ui-icon-button.is-bare.ea-key-copy { width: 30px; height: 30px; padding: 0; color: var(--n-4); }
+.ui-icon-button.is-bare.ea-key-copy,
+.ui-icon-button.is-bare.ea-key-copy:hover,
+.ui-icon-button.is-bare.ea-key-copy:focus,
+.ui-icon-button.is-bare.ea-key-copy:focus-visible,
+.ui-icon-button.is-bare.ea-key-copy:active,
+.ui-icon-button.is-bare.ea-key-copy:disabled,
+.ui-icon-button.is-bare.ea-key-copy.is-copied { background: transparent; border: 0; outline: 0; box-shadow: none; }
+.ui-icon-button.is-bare.ea-key-copy:hover,
+.ui-icon-button.is-bare.ea-key-copy:focus,
+.ui-icon-button.is-bare.ea-key-copy:focus-visible,
+.ui-icon-button.is-bare.ea-key-copy.is-copied { color: var(--accent); }
+
+.external-settings .external-load-error { display: grid; gap: 14px; }
+.external-settings .external-save-footer { display: grid; gap: 12px; margin-top: 18px; }
+.external-settings .external-save-footer > .administration-actions { position: static; min-height: 34px; margin: 0; padding: 0; border: 0; background: none; }
+.external-settings .external-save-footer .primary-button > span:has(.logo-spinner) { display: inline-flex; align-items: center; }
+/* Existing busy-button treatment from features/support-reports/export.css. */
+.external-settings .external-save-footer[aria-busy="true"] .primary-button:disabled { opacity: 1; background: color-mix(in srgb, var(--primary) 70%, var(--surface-card)); color: var(--on-primary); }
+.external-settings .external-feature-state { display: grid; gap: 12px; }
+.external-settings .external-feature-state > .settings-section-note { margin: 0; color: var(--n-3); }
+.external-settings .external-feature-state > .status-pill { justify-self: start; margin: 0; }
+.external-settings .external-feature-state .settings-risk-note { align-items: flex-start; }
+.external-settings .external-feature-state .settings-risk-note > svg { margin-top: 2px; }

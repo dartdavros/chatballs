@@ -11,17 +11,18 @@ export function SpeechSettings({ card, providers, canManage, busy, apply }: {
 }) {
   const [model, setModel] = useState(card.transcriptionModel);
   useEffect(() => setModel(card.transcriptionModel), [card.transcriptionModel]);
-  const selected = providers.find((item) => item.id === (card.transcriptionIntegrationId ?? card.providerIntegrationId));
+  const external = card.executionMode === "external";
+  const selected = providers.find((item) => item.id === (card.transcriptionIntegrationId ?? (external ? null : card.providerIntegrationId)));
   const compatible = providers.filter((item) => item.speechCapabilities?.stt);
   const broken = card.transcriptionIntegrationId !== null && (!selected || !selected.isActive || selected.status === "ERROR" || !selected.speechCapabilities?.stt);
   const options: [string, string][] = compatible.map((item) => [String(item.id), item.name]);
   if (selected && !options.some(([id]) => id === String(selected.id))) options.push([String(selected.id), selected.name]);
   return <>
     <SelectField disabled={busy} label={t("ai.transcription_provider")} readOnly={!canManage}
-      readOnlyText={selected?.name || t("ai.same_as_answers")} value={card.transcriptionIntegrationId ? String(card.transcriptionIntegrationId) : ""}
+      readOnlyText={selected?.name || t(external ? "ai.not_selected" : "ai.same_as_answers")} value={card.transcriptionIntegrationId ? String(card.transcriptionIntegrationId) : ""}
       onChange={(value) => void apply({ transcriptionIntegrationId: value ? Number(value) : null, transcriptionModel: "" })}
-      options={[["", t("ai.same_as_answers")], ...options]} />
-    {!card.transcriptionIntegrationId && <small className="settings-section-note">{t("speech.inheritHelp")}</small>}
+      options={[["", t(external ? "ai.not_selected" : "ai.same_as_answers")], ...options]} />
+    {!external && !card.transcriptionIntegrationId && <small className="settings-section-note">{t("speech.inheritHelp")}</small>}
     <FormField disabled={busy || !canManage} label={t("ai.transcription_model")} mono
       placeholder={card.transcriptionProviderModel || selected?.speechCapabilities?.default_model || t("ai.model_of_integration")}
       value={model} onChange={setModel} onBlur={() => { if (model !== card.transcriptionModel) void apply({ transcriptionModel: model }); }} />

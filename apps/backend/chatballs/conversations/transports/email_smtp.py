@@ -6,6 +6,8 @@ from email.message import EmailMessage
 
 from django.conf import settings
 
+from chatballs.ai.execution_policy import transport_handoff
+
 
 @dataclass(frozen=True)
 class MailOutcome:
@@ -34,8 +36,9 @@ def deliver_message(integration, outgoing):
         if not config.get("smtp_ssl", True):
             client.starttls()
         client.login(str(config.get("email", "")).strip().lower(), integration.secret)
-        sending = True
-        refused = client.send_message(outgoing)
+        with transport_handoff():
+            sending = True
+            refused = client.send_message(outgoing)
         if refused:
             return MailOutcome("FAILED", "SMTP_REJECTED")
         # QUIT failure after the final 250 does not undo SMTP acceptance.

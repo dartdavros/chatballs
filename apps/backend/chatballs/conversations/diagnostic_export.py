@@ -10,6 +10,7 @@ from chatballs.ai.diagnostic_storage import RETAINED_TURNS
 from chatballs.ai.turn import turn_pseudonymizer
 from chatballs.ai.turn_tools import plan_turn_tools
 from chatballs.conversations.models import AiTurnState, ContactFieldValue, MessageAuthor
+from chatballs.i18n import t
 from chatballs.integrations.models import Integration
 
 MAX_MESSAGES = 2000
@@ -25,8 +26,22 @@ def conversation_diagnostic(conversation):
     ).values_list("value", flat=True))
     redactor = DiagnosticRedactor(pseudonymizer, secrets)
     agent = getattr(conversation.channel, "ai_agent", None)
+    external = agent is not None and agent.execution_mode == "external"
     current = None
-    if agent is not None:
+    if external:
+        from chatballs.ai.external_agents.readiness import ready
+        from chatballs.ai.external_agents.ui_projection import conversation_status
+
+        state = conversation_status(conversation)
+        names = {"handoff": "handoffEvent", "unavailable": "unavailableEvent", "timeout": "timeoutEvent",
+                 "voiceFailure": "voiceFailure", "suppressed": "suppressed", "unknown": "unknownTitle", "partial": "partialTitle"}
+        current = {"execution": t("external.title"), "enabled": conversation.organization.external_execution_enabled,
+                   "ready": ready(agent, conversation.organization),
+                   "waiting": t("external.state_" + ("longWaiting" if state["waiting"] == "long" else "waiting")) if state["waiting"] else None,
+                   "events": [{"state": t("external.state_" + names[notice["kind"]]),
+                               "summary": redactor.text(notice["summary"]), "createdAt": notice["createdAt"]}
+                              for notice in state["notices"]]}
+    elif agent is not None:
         client, _, snapshot = diagnostic_context(agent, conversation, pseudonymizer)
         plan_turn_tools(agent=agent, conversation=conversation, client=client,
                         decisions=snapshot["toolAvailability"])
@@ -37,6 +52,8 @@ def conversation_diagnostic(conversation):
         organization_id=conversation.organization_id, message__conversation=conversation,
         message_id__in=[message.id for message in rows],
     ).order_by("-message_id")[:MAX_TRACES])
+    if external:
+        traces = []
     by_message = {trace.message_id: trace for trace in traces}
     missing = [message.id for message in rows
                if message.author_type == MessageAuthor.CONTACT

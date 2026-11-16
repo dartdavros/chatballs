@@ -1,0 +1,595 @@
+{
+  "designVersion": "A01-28052ea5652a8a70",
+  "scope": "Static A01 design only; no working backend or external integration verified",
+  "limitation": "Current non-chat product pages retain a 1024px desktop shell; 320/390px frames horizontally scroll",
+  "results": [
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "light"
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "light"
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 634,
+            "text": "АОбед.руЧатКонтактыСтатистикаАгентыНавыкиСценарииAI-провайдерыMCP и HTTPБаза зна"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "light"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 704,
+            "text": "АОбед.руЧатКонтактыСтатистикаАгентыНавыкиСценарииAI-провайдерыMCP и HTTPБаза зна"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "light"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "dark"
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "dark"
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 634,
+            "text": "АОбед.руЧатКонтактыСтатистикаАгентыНавыкиСценарииAI-провайдерыMCP и HTTPБаза зна"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "dark"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 704,
+            "text": "АОбед.руЧатКонтактыСтатистикаАгентыНавыкиСценарииAI-провайдерыMCP и HTTPБаза зна"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "dark"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "light"
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "light"
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 634,
+            "text": "AObed.ruChatContactsStatisticsAgentsSkillsScenariosAI providersMCP & HTTPKnowled"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "light"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 704,
+            "text": "AObed.ruChatContactsStatisticsAgentsSkillsScenariosAI providersMCP & HTTPKnowled"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "light"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "dark"
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "dark"
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "clientWidth": 390,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 634,
+            "text": "AObed.ruChatContactsStatisticsAgentsSkillsScenariosAI providersMCP & HTTPKnowled"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "dark"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "clientWidth": 320,
+        "scrollWidth": 1024,
+        "shellWidth": 1024,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [
+          {
+            "tag": "DIV",
+            "className": "hub-shell",
+            "left": 0,
+            "right": 704,
+            "text": "AObed.ruChatContactsStatisticsAgentsSkillsScenariosAI providersMCP & HTTPKnowled"
+          }
+        ],
+        "saveButtons": [
+          {
+            "text": "Save",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "en",
+        "theme": "dark"
+      },
+      "limitation": "Existing non-chat desktop layout; horizontal scrolling below 1024px"
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "accent": "#1677ff",
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "light"
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "accent": "#e8590c",
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 1440,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "light"
+      }
+    },
+    {
+      "check": "shared SelectField",
+      "click": "opened",
+      "enter": "opened",
+      "escape": "closed"
+    },
+    {
+      "check": "independent transcription provider",
+      "lang": "ru",
+      "options": [
+        "SpeechKit"
+      ]
+    },
+    {
+      "check": "independent transcription provider",
+      "lang": "en",
+      "options": [
+        "SpeechKit"
+      ]
+    },
+    {
+      "check": "static assistance context",
+      "state": "true",
+      "saveOrError": false
+    },
+    {
+      "check": "desktop content bottom",
+      "previous": 0,
+      "current": 1238,
+      "maximum": 1238,
+      "screenshot": "A01-ru-light-1440-bottom.png"
+    },
+    {
+      "check": "200% CSS review scale",
+      "viewportWidth": 1510,
+      "geometry": {
+        "width": 2880,
+        "height": 1960,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "shellWidth": 2880,
+        "shellMinWidth": 1024,
+        "fields": 14,
+        "cards": 6,
+        "overflow": [],
+        "saveButtons": [
+          {
+            "text": "Сохранить",
+            "disabled": true
+          }
+        ],
+        "badLinks": [],
+        "lang": "ru",
+        "theme": "light"
+      }
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "screenshots": [
+    "A01-ru-light-1440.png",
+    "A01-ru-light-390.png",
+    "A01-en-dark-1440.png",
+    "A01-ru-light-1440-bottom.png"
+  ]
+}

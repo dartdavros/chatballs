@@ -14,7 +14,11 @@ from typing import TYPE_CHECKING
 from django.utils import timezone
 
 from chatballs.ai.runtime import HANDOFF_TOKEN
-from chatballs.conversations.ai_reply_delivery import bind_reply, record_reply, reply_route
+from chatballs.conversations.ai_reply_delivery import (
+    bind_reply,
+    record_reply,
+    reply_route,
+)
 from chatballs.conversations.domain_events import (
     record_queue_entry,
 )
@@ -142,6 +146,9 @@ def store_failure(*, turn: Turn, context: TenantContext, error: object) -> str:
     conversation.last_activity_at = timezone.now()
     conversation.save(update_fields=[*QUEUE_FIELDS, "last_activity_at"])
     record_queue_entry(conversation, entered=entered, actor_kind="AI")
+    # This failure intentionally entered the employee queue under the same lock.
+    # Bind its own notification to that transition; later takeovers still revoke it.
+    turn.control_version = conversation.ai_control_version
     Message.objects.create(
         conversation=conversation,
         author_type=MessageAuthor.SYSTEM,

@@ -1,0 +1,52 @@
+# Тела — строки JSON: лексическая форма чисел не теряется при чтении YAML.
+vectors:
+  - name: Порядок ключей и числовая запись не значимы
+    left: '{"b":false,"a":1.00}'
+    right: '{ "a": 10e-1, "b": false }'
+    equal: true
+    canonical: '["object",[["a",["number","1e0"]],["b",["boolean",false]]]]'
+  - name: Большие соседние целые различаются
+    left: '{"n":9007199254740992}'
+    right: '{"n":9007199254740993}'
+    equal: false
+    canonical: '["object",[["n",["number","9007199254740992e0"]]]]'
+  - name: Ноль нормализуется
+    left: '-0.000'
+    right: '0e200'
+    equal: true
+    canonical: '["number","0e0"]'
+  - name: Decimal не округляется в пределах контекста
+    left: '123456789012345678901234567890.12'
+    right: '12345678901234567890123456789012e-2'
+    equal: true
+    canonical: '["number","12345678901234567890123456789012e-2"]'
+  - name: Boolean и число — разные типы
+    left: 'false'
+    right: '0'
+    equal: false
+    canonical: '["boolean",false]'
+  - name: Отсутствие отличается от null
+    left: '{}'
+    right: '{"x":null}'
+    equal: false
+    canonical: '["object",[]]'
+  - name: Порядок массива значим
+    left: '[1,2]'
+    right: '[2,1]'
+    equal: false
+    canonical: '["array",[["number","1e0"],["number","2e0"]]]'
+  - name: Unicode escape декодируется
+    left: '"\u044f"'
+    right: '"я"'
+    equal: true
+    canonical: '["string","я"]'
+  - name: Нормализации Unicode нет
+    left: '"\u00e9"'
+    right: '"e\u0301"'
+    equal: false
+    canonical: '["string","é"]'
+  - name: Хвостовые нули коэффициента переходят в показатель
+    left: '1200'
+    right: '12e2'
+    equal: true
+    canonical: '["number","12e2"]'

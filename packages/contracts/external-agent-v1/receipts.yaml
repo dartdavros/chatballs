@@ -1,0 +1,80 @@
+Receipt:
+  oneOf:
+    - $ref: '#/DeliveryReceipt'
+    - $ref: '#/ControlReceipt'
+DeliveryReceipt:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, receiptId, state, deliveryId, items]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId:
+      oneOf:
+        - $ref: './common.yaml#/UUID'
+        - type: 'null'
+    receiptId: {$ref: './common.yaml#/OpaqueId'}
+    state: {$ref: '#/DeliveryState'}
+    deliveryId: {$ref: './common.yaml#/UUID'}
+    items:
+      type: array
+      minItems: 1
+      items: {$ref: '#/Item'}
+ControlReceipt:
+  type: object
+  additionalProperties: false
+  required: [version, requestId, receiptId, state, reasonCode, deliveryId, items]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    requestId:
+      oneOf:
+        - $ref: './common.yaml#/UUID'
+        - type: 'null'
+    receiptId: {$ref: './common.yaml#/OpaqueId'}
+    state: {enum: [handed_off, failed, suppressed]}
+    reasonCode: {$ref: './common.yaml#/Code'}
+    deliveryId: {type: 'null'}
+    items: {type: array, maxItems: 0}
+  allOf:
+    - if: {properties: {state: {const: handed_off}}}
+      then: {properties: {reasonCode: {$ref: './common.yaml#/ReasonCode'}}}
+    - if: {properties: {state: {const: suppressed}}}
+      then: {properties: {reasonCode: {$ref: './common.yaml#/SuppressionCode'}}}
+  description: >-
+    failed — принятый TerminalResult.failed, handed_off — структурированный handoff,
+    suppressed — неприменимый поздний результат. Фиктивного сообщения нет.
+    Оригинальный outcome уже принятого результата не изменяется при повторе.
+Item:
+  type: object
+  additionalProperties: false
+  required: [itemId, messageId, state]
+  properties:
+    itemId: {$ref: './common.yaml#/UUID'}
+    messageId: {$ref: './common.yaml#/OpaqueId'}
+    state: {$ref: '#/ItemState'}
+ItemState:
+  enum: [queued, transport_accepted, failed, unknown, suppressed]
+DeliveryState:
+  enum: [queued, transport_accepted, failed, unknown, suppressed, partial]
+DeliveryStatus:
+  type: object
+  additionalProperties: false
+  required: [version, deliveryId, state, reasonCode, updatedAt, items]
+  properties:
+    version: {$ref: './common.yaml#/Version'}
+    deliveryId: {$ref: './common.yaml#/UUID'}
+    state: {$ref: '#/DeliveryState'}
+    reasonCode: {oneOf: [{$ref: './common.yaml#/Code'}, {type: 'null'}]}
+    updatedAt: {$ref: './common.yaml#/UTC'}
+    items:
+      type: array
+      minItems: 1
+      items: {$ref: '#/StatusItem'}
+StatusItem:
+  type: object
+  additionalProperties: false
+  required: [itemId, messageId, state, reasonCode]
+  properties:
+    itemId: {$ref: './common.yaml#/UUID'}
+    messageId: {$ref: './common.yaml#/OpaqueId'}
+    state: {$ref: '#/ItemState'}
+    reasonCode: {oneOf: [{$ref: './common.yaml#/Code'}, {type: 'null'}]}

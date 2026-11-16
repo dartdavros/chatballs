@@ -50,7 +50,7 @@ def agent_cards_for_context(context: TenantContext) -> QuerySet[Channel]:
         .annotate(
             open_conversations_count=Count(
                 "conversations",
-                filter=Q(conversations__lifecycle=LifecycleState.OPEN),
+                filter=Q(conversations__lifecycle=LifecycleState.OPEN, conversations__is_test=False),
                 distinct=True,
             ),
             # Кадр G1: сверху отвечающие агенты, ниже «Без AI», выключенные — в конце.

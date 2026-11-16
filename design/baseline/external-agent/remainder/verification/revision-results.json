@@ -1,0 +1,2112 @@
+{
+  "status": "PASS",
+  "designVersion": "REST-66e46e103944410c",
+  "priorVerification": {
+    "path": "verification/history/REST-54b67c04753798a0/browser-results.json",
+    "designVersion": "REST-54b67c04753798a0",
+    "scope": {
+      "kind": "targeted-revision",
+      "settingsDesktopIds": [
+        "S20",
+        "S21",
+        "S22",
+        "S23",
+        "S24",
+        "S25",
+        "S26",
+        "S27",
+        "S28",
+        "S29",
+        "S30",
+        "S31",
+        "S32",
+        "S33",
+        "S34",
+        "S35",
+        "S36",
+        "S37",
+        "S38",
+        "S39",
+        "S72",
+        "S73"
+      ],
+      "settingsMatrixIds": [
+        "S20",
+        "S24",
+        "S32",
+        "S33",
+        "S34",
+        "S35",
+        "S38",
+        "S39",
+        "S72"
+      ],
+      "matrixLanguages": [
+        "ru",
+        "en"
+      ],
+      "matrixThemes": [
+        "light",
+        "dark"
+      ],
+      "matrixWidths": [
+        1440,
+        320
+      ],
+      "changedBasicsIds": [
+        "S08",
+        "S11",
+        "S14",
+        "S70",
+        "S41"
+      ],
+      "interactionIds": [
+        "S20",
+        "S24",
+        "S08",
+        "S11",
+        "S14",
+        "S70",
+        "S41"
+      ],
+      "features": [
+        "DS binding modals",
+        "Native clipboard feedback and bare copy icon",
+        "Compact save footer",
+        "Framed load error",
+        "Feature state spacing",
+        "Right-aligned switch tables",
+        "Common action links",
+        "Contextual help and message previews"
+      ],
+      "note": "Only listed revision scenarios were rechecked; the historical full report was not overwritten."
+    },
+    "changes": [
+      "design/baseline/external-agent/remainder/check-revision.mjs",
+      "design/baseline/external-agent/remainder/settings/state-layout.css"
+    ]
+  },
+  "scope": {
+    "kind": "S34-busy-style-followup",
+    "settingsDesktopIds": [
+      "S34"
+    ],
+    "settingsMatrixIds": [
+      "S34"
+    ],
+    "matrixLanguages": [
+      "ru",
+      "en"
+    ],
+    "matrixThemes": [
+      "light",
+      "dark"
+    ],
+    "matrixWidths": [
+      1440,
+      320
+    ],
+    "changedBasicsIds": [],
+    "interactionIds": [],
+    "features": [
+      "S34 visible busy button"
+    ],
+    "note": "Only listed revision scenarios were rechecked; the historical full report was not overwritten."
+  },
+  "testedIds": [
+    "S34"
+  ],
+  "accepted": [
+    {
+      "folder": "settings-off",
+      "designVersion": "S01-5037b71a01f54b2b",
+      "sources": 200,
+      "manifestSha256": "cf624f108724d2df8a0cfe8b5c29dea0cc8706e2d35ba5d46617f5f00614b3a3"
+    },
+    {
+      "folder": "settings-unconfigured",
+      "designVersion": "S02-c8d1b152d7078f85",
+      "sources": 204,
+      "manifestSha256": "109e23724c1536e2a87f24bd93a83955e5e777af10a9dbef316b4dcefa1ba4f0"
+    },
+    {
+      "folder": "settings-ready",
+      "designVersion": "S03-2122cd3c3c071bf6",
+      "sources": 208,
+      "manifestSha256": "2a4f6f1fb3038d617ac4d925cbc49ce86d10845eaf90a1683e9c280f5724acc0"
+    },
+    {
+      "folder": "agent-external",
+      "designVersion": "S04-1d495df459254c46",
+      "sources": 212,
+      "manifestSha256": "23152b15e8b448ffbbb2cd518bc1937b23f534b587cbb0760ed9310913f47e7d"
+    },
+    {
+      "folder": "agent-test",
+      "designVersion": "S05-6dcaa8de64ce4db2",
+      "sources": 272,
+      "manifestSha256": "fb9f6919b746e5805f11f35e6442d4d874f5e481f0bcb7c00ba833ddef754ece"
+    },
+    {
+      "folder": "agent-test-waiting",
+      "designVersion": "S06-26b466b218854dd8",
+      "sources": 221,
+      "manifestSha256": "aa3a60b62ccf336239c428cab45661a9a57219301b34fc5be4d1a4b609adf32b"
+    }
+  ],
+  "results": [
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "geometry": {
+        "id": "S34",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Заменить ключ",
+          "Заменить ключ",
+          "Отозвать ключ",
+          "Проверить подключение",
+          "Помощник поддержки",
+          "Удалить связь",
+          "Помощник продаж",
+          "Удалить связь",
+          "Добавить связь",
+          "Помощник поддержки",
+          "Помощник поддержки",
+          "Открыть сообщение",
+          "Открыть сообщение",
+          "Сохраняем изменения"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Разрешить внешнее исполнениеВнешний сервис отвечает вместо встроенной модели выбранных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "ПодключениеГотово",
+            "gap": 18
+          },
+          {
+            "title": "Связи с агентамиОдно подключение может обслуживать несколько явно связанных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "Обработка и ожиданиеСрок выбирается до отправки и включает распознавание речи и очередь. Сервис не продлевает его сообщениями о ходе работы.",
+            "gap": 18
+          },
+          {
+            "title": "Данные, доступные внешнему сервисуПередаётся исходный текст обращения и только явно выбранные поля. Внешний сервис — отдельная доверенная сторона.",
+            "gap": 18
+          },
+          {
+            "title": "Оформленные сообщенияВнешний сервис может использовать только явно разрешённые шаблоны этой организации.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Заменить ключ"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Заменить ключ",
+              "Отозвать ключ"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "Все доступные агенты уже связаны с этим подключением.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 34,
+          "actionsHeight": 34,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Заменить ключ",
+          "Заменить ключ",
+          "Отозвать ключ",
+          "Проверить подключение",
+          "Помощник поддержки",
+          "Удалить связь",
+          "Помощник продаж",
+          "Удалить связь",
+          "Добавить связь",
+          "Помощник поддержки",
+          "Помощник поддержки",
+          "Открыть сообщение",
+          "Открыть сообщение",
+          "Сохраняем изменения"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Разрешить внешнее исполнениеВнешний сервис отвечает вместо встроенной модели выбранных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "ПодключениеГотово",
+            "gap": 18
+          },
+          {
+            "title": "Связи с агентамиОдно подключение может обслуживать несколько явно связанных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "Обработка и ожиданиеСрок выбирается до отправки и включает распознавание речи и очередь. Сервис не продлевает его сообщениями о ходе работы.",
+            "gap": 18
+          },
+          {
+            "title": "Данные, доступные внешнему сервисуПередаётся исходный текст обращения и только явно выбранные поля. Внешний сервис — отдельная доверенная сторона.",
+            "gap": 18
+          },
+          {
+            "title": "Оформленные сообщенияВнешний сервис может использовать только явно разрешённые шаблоны этой организации.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Заменить ключ"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Заменить ключ",
+              "Отозвать ключ"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "Все доступные агенты уже связаны с этим подключением.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 34,
+          "actionsHeight": 34,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Заменить ключ",
+          "Заменить ключ",
+          "Отозвать ключ",
+          "Проверить подключение",
+          "Помощник поддержки",
+          "Удалить связь",
+          "Помощник продаж",
+          "Удалить связь",
+          "Добавить связь",
+          "Помощник поддержки",
+          "Помощник поддержки",
+          "Открыть сообщение",
+          "Открыть сообщение",
+          "Сохраняем изменения"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Разрешить внешнее исполнениеВнешний сервис отвечает вместо встроенной модели выбранных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "ПодключениеГотово",
+            "gap": 18
+          },
+          {
+            "title": "Связи с агентамиОдно подключение может обслуживать несколько явно связанных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "Обработка и ожиданиеСрок выбирается до отправки и включает распознавание речи и очередь. Сервис не продлевает его сообщениями о ходе работы.",
+            "gap": 18
+          },
+          {
+            "title": "Данные, доступные внешнему сервисуПередаётся исходный текст обращения и только явно выбранные поля. Внешний сервис — отдельная доверенная сторона.",
+            "gap": 18
+          },
+          {
+            "title": "Оформленные сообщенияВнешний сервис может использовать только явно разрешённые шаблоны этой организации.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Заменить ключ"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Заменить ключ",
+              "Отозвать ключ"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "Все доступные агенты уже связаны с этим подключением.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 46,
+          "actionsHeight": 46,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Заменить ключ",
+          "Заменить ключ",
+          "Отозвать ключ",
+          "Проверить подключение",
+          "Помощник поддержки",
+          "Удалить связь",
+          "Помощник продаж",
+          "Удалить связь",
+          "Добавить связь",
+          "Помощник поддержки",
+          "Помощник поддержки",
+          "Открыть сообщение",
+          "Открыть сообщение",
+          "Сохраняем изменения"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Разрешить внешнее исполнениеВнешний сервис отвечает вместо встроенной модели выбранных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "ПодключениеГотово",
+            "gap": 18
+          },
+          {
+            "title": "Связи с агентамиОдно подключение может обслуживать несколько явно связанных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "Обработка и ожиданиеСрок выбирается до отправки и включает распознавание речи и очередь. Сервис не продлевает его сообщениями о ходе работы.",
+            "gap": 18
+          },
+          {
+            "title": "Данные, доступные внешнему сервисуПередаётся исходный текст обращения и только явно выбранные поля. Внешний сервис — отдельная доверенная сторона.",
+            "gap": 18
+          },
+          {
+            "title": "Оформленные сообщенияВнешний сервис может использовать только явно разрешённые шаблоны этой организации.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Заменить ключ"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Заменить ключ",
+              "Отозвать ключ"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "Все доступные агенты уже связаны с этим подключением.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 34,
+          "actionsHeight": 34,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Заменить ключ",
+          "Заменить ключ",
+          "Отозвать ключ",
+          "Проверить подключение",
+          "Помощник поддержки",
+          "Удалить связь",
+          "Помощник продаж",
+          "Удалить связь",
+          "Добавить связь",
+          "Помощник поддержки",
+          "Помощник поддержки",
+          "Открыть сообщение",
+          "Открыть сообщение",
+          "Сохраняем изменения"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Разрешить внешнее исполнениеВнешний сервис отвечает вместо встроенной модели выбранных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "ПодключениеГотово",
+            "gap": 18
+          },
+          {
+            "title": "Связи с агентамиОдно подключение может обслуживать несколько явно связанных агентов.",
+            "gap": 18
+          },
+          {
+            "title": "Обработка и ожиданиеСрок выбирается до отправки и включает распознавание речи и очередь. Сервис не продлевает его сообщениями о ходе работы.",
+            "gap": 18
+          },
+          {
+            "title": "Данные, доступные внешнему сервисуПередаётся исходный текст обращения и только явно выбранные поля. Внешний сервис — отдельная доверенная сторона.",
+            "gap": 18
+          },
+          {
+            "title": "Оформленные сообщенияВнешний сервис может использовать только явно разрешённые шаблоны этой организации.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Заменить ключ"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Заменить ключ",
+              "Отозвать ключ"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "Все доступные агенты уже связаны с этим подключением.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 46,
+          "actionsHeight": 46,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "en",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Replace key",
+          "Replace key",
+          "Revoke key",
+          "Check connection",
+          "Support assistant",
+          "Delete binding",
+          "Sales assistant",
+          "Delete binding",
+          "Add binding",
+          "Support assistant",
+          "Support assistant",
+          "Open message",
+          "Open message",
+          "Saving changes"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Allow external executionAn external service answers instead of the built-in model for selected agents.",
+            "gap": 18
+          },
+          {
+            "title": "ConnectionReady",
+            "gap": 18
+          },
+          {
+            "title": "Agent bindingsOne connection can serve several explicitly bound agents.",
+            "gap": 18
+          },
+          {
+            "title": "Processing and waitingThe deadline is chosen before dispatch and includes speech recognition and the queue. Progress updates cannot extend it.",
+            "gap": 18
+          },
+          {
+            "title": "Data available to the external serviceThe original request text and explicitly selected fields are sent. The external service is a separate trusted party.",
+            "gap": 18
+          },
+          {
+            "title": "Prepared messagesThe external service can use only explicitly permitted templates belonging to this organization.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Replace key"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Replace key",
+              "Revoke key"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "All available agents are already bound to this connection.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 34,
+          "actionsHeight": 34,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "en",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Replace key",
+          "Replace key",
+          "Revoke key",
+          "Check connection",
+          "Support assistant",
+          "Delete binding",
+          "Sales assistant",
+          "Delete binding",
+          "Add binding",
+          "Support assistant",
+          "Support assistant",
+          "Open message",
+          "Open message",
+          "Saving changes"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Allow external executionAn external service answers instead of the built-in model for selected agents.",
+            "gap": 18
+          },
+          {
+            "title": "ConnectionReady",
+            "gap": 18
+          },
+          {
+            "title": "Agent bindingsOne connection can serve several explicitly bound agents.",
+            "gap": 18
+          },
+          {
+            "title": "Processing and waitingThe deadline is chosen before dispatch and includes speech recognition and the queue. Progress updates cannot extend it.",
+            "gap": 18
+          },
+          {
+            "title": "Data available to the external serviceThe original request text and explicitly selected fields are sent. The external service is a separate trusted party.",
+            "gap": 18
+          },
+          {
+            "title": "Prepared messagesThe external service can use only explicitly permitted templates belonging to this organization.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Replace key"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Replace key",
+              "Revoke key"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "All available agents are already bound to this connection.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 46,
+          "actionsHeight": 46,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "en",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Replace key",
+          "Replace key",
+          "Revoke key",
+          "Check connection",
+          "Support assistant",
+          "Delete binding",
+          "Sales assistant",
+          "Delete binding",
+          "Add binding",
+          "Support assistant",
+          "Support assistant",
+          "Open message",
+          "Open message",
+          "Saving changes"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Allow external executionAn external service answers instead of the built-in model for selected agents.",
+            "gap": 18
+          },
+          {
+            "title": "ConnectionReady",
+            "gap": 18
+          },
+          {
+            "title": "Agent bindingsOne connection can serve several explicitly bound agents.",
+            "gap": 18
+          },
+          {
+            "title": "Processing and waitingThe deadline is chosen before dispatch and includes speech recognition and the queue. Progress updates cannot extend it.",
+            "gap": 18
+          },
+          {
+            "title": "Data available to the external serviceThe original request text and explicitly selected fields are sent. The external service is a separate trusted party.",
+            "gap": 18
+          },
+          {
+            "title": "Prepared messagesThe external service can use only explicitly permitted templates belonging to this organization.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Replace key"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Replace key",
+              "Revoke key"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "All available agents are already bound to this connection.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 34,
+          "actionsHeight": 34,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S34",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "en",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [
+          "",
+          ""
+        ],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "feature": "on",
+        "enableError": 0,
+        "connectionActive": "true",
+        "policyTargets": 2,
+        "emptyCatalog": 0,
+        "initiativeTargets": 1,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Replace key",
+          "Replace key",
+          "Revoke key",
+          "Check connection",
+          "Support assistant",
+          "Delete binding",
+          "Sales assistant",
+          "Delete binding",
+          "Add binding",
+          "Support assistant",
+          "Support assistant",
+          "Open message",
+          "Open message",
+          "Saving changes"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Allow external executionAn external service answers instead of the built-in model for selected agents.",
+            "gap": 18
+          },
+          {
+            "title": "ConnectionReady",
+            "gap": 18
+          },
+          {
+            "title": "Agent bindingsOne connection can serve several explicitly bound agents.",
+            "gap": 18
+          },
+          {
+            "title": "Processing and waitingThe deadline is chosen before dispatch and includes speech recognition and the queue. Progress updates cannot extend it.",
+            "gap": 18
+          },
+          {
+            "title": "Data available to the external serviceThe original request text and explicitly selected fields are sent. The external service is a separate trusted party.",
+            "gap": 18
+          },
+          {
+            "title": "Prepared messagesThe external service can use only explicitly permitted templates belonging to this organization.",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [
+          {
+            "direction": "outgoing",
+            "texts": [
+              "Replace key"
+            ],
+            "iconCounts": [
+              1
+            ],
+            "dropdowns": 0
+          },
+          {
+            "direction": "incoming",
+            "texts": [
+              "Replace key",
+              "Revoke key"
+            ],
+            "iconCounts": [
+              1,
+              1
+            ],
+            "dropdowns": 0
+          }
+        ],
+        "bindings": {
+          "count": 2,
+          "addDisabled": true,
+          "addHint": "All available agents are already bound to this connection.",
+          "deleteDisabled": [
+            true,
+            true
+          ],
+          "fieldDisabled": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": {
+          "tag": "FOOTER",
+          "state": "saving",
+          "gap": 18,
+          "height": 46,
+          "actionsHeight": 46,
+          "actionsGap": 0,
+          "spinnerInButton": 1,
+          "frameSpinnerCount": 1,
+          "waitingRows": 0,
+          "frameWaitingRows": 0,
+          "savingTextCount": 1,
+          "buttonBusy": "true",
+          "actionsPosition": "static",
+          "actionsBackground": "rgba(0, 0, 0, 0)"
+        },
+        "loadError": null,
+        "feature": {
+          "display": "grid",
+          "gap": 12
+        },
+        "tableHeaders": [
+          "right",
+          "right"
+        ],
+        "tableCells": [
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          },
+          {
+            "align": "right",
+            "inset": 12
+          }
+        ],
+        "links": [
+          12.5,
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": [
+          16,
+          16
+        ]
+      }
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "network": [],
+  "screenshots": [
+    "S34-ru-light-1440.png",
+    "S34-ru-light-1440-footer.png",
+    "S34-en-dark-320.png",
+    "S34-en-dark-320-footer.png"
+  ]
+}

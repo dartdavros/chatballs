@@ -20,6 +20,7 @@ COPY apps/backend/requirements.txt /app/apps/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/apps/backend/requirements.txt
 
 COPY apps/backend /app/apps/backend
+COPY packages/contracts/external-agent-v1 /app/packages/contracts/external-agent-v1
 # Генератор секретов инстанса живёт в образе, а не монтируется с хоста:
 # установка — один compose.yaml, рядом с ним ничего лежать не должно.
 COPY deploy/secrets/generate-instance-secrets.sh /usr/local/bin/chatballs-generate-secrets.sh

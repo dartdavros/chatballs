@@ -16,7 +16,7 @@ def _with_relations(queryset: QuerySet[Channel]) -> QuerySet[Channel]:
         # Один агрегат на весь список: N+1 запросов на счётчик не допускается.
         open_conversations_count=Count(
             "conversations",
-            filter=Q(conversations__lifecycle=LifecycleState.OPEN),
+            filter=Q(conversations__lifecycle=LifecycleState.OPEN, conversations__is_test=False),
             distinct=True,
         )
     )

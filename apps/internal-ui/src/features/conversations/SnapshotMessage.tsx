@@ -19,7 +19,7 @@ export function SnapshotMessage({ message, bubble }: { message: ApiMessage; bubb
       <Icon name="info" size={13} />
       {t("snapshots.updated", { name: message.template.name, date: fmt.shortDate(message.templateUpdatedAt) })}
     </aside>;
-  return <MessageBubble {...bubble} formatted={html} footer={footer} note={note}>
+  return <MessageBubble {...bubble} formatted={html} footer={<>{bubble.footer}{footer}</>} note={note}>
     <PreparedMessage content={message} title={t("snapshots.message")} />
     {html && expanded && <div className="conversation-snapshot-text">{snapshotText(message.text)}</div>}
   </MessageBubble>;

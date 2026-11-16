@@ -6,7 +6,7 @@ import { visibleSettingsSections, type SettingsSection, type SettingsSectionKey 
 // напрямую из главного меню; настройки установки — её администратору.
 const GROUPS: { key: string; label: string; sections: SettingsSectionKey[] }[] = [
   { key: "organization", label: t("settings.navigation.organization"), sections: ["organization", "groups"] },
-  { key: "service", label: t("settings.navigation.service"), sections: ["queue", "rules", "transfer", "templates", "communication"] },
+  { key: "service", label: t("settings.navigation.service"), sections: ["queue", "rules", "transfer", "templates", "communication", "external"] },
   { key: "quality", label: t("settings.navigation.quality"), sections: ["ratings", "quality"] },
   { key: "other", label: t("settings.navigation.other"), sections: ["storage", "platform", "demo"] },
 ];

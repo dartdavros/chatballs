@@ -1,0 +1,84 @@
+FieldRef:
+  type: object
+  additionalProperties: false
+  required: [sourceConnectionId, fieldId]
+  properties:
+    sourceConnectionId: {$ref: './common.yaml#/OpaqueId'}
+    fieldId: {$ref: './common.yaml#/OpaqueId'}
+CustomFieldsSnapshot:
+  type: object
+  additionalProperties: false
+  required: [mode, snapshotId, capturedAt, scope, items]
+  properties:
+    mode: {const: replace}
+    snapshotId: {$ref: './common.yaml#/UUID'}
+    capturedAt: {$ref: './common.yaml#/UTC'}
+    scope:
+      type: array
+      uniqueItems: true
+      items: {$ref: '#/FieldRef'}
+    items:
+      type: array
+      items: {$ref: '#/FieldValue'}
+  description: >-
+    Все текущие разрешённые определения, включая unset. Пары в items и scope
+    совпадают один к одному; это серверная проверка сверх JSON Schema. Порядок:
+    sourceConnectionId, порядок текущей схемы, fieldId. Без усечения; пустой
+    снимок очищает рабочий контекст полей. Исторические внешние копии не удаляет.
+FieldValue:
+  type: object
+  additionalProperties: false
+  required: [sourceConnectionId, fieldId, key, label, type, status, value, updatedAt]
+  properties:
+    sourceConnectionId: {$ref: './common.yaml#/OpaqueId'}
+    fieldId: {$ref: './common.yaml#/OpaqueId'}
+    key: {type: string, pattern: '^[a-z][a-z0-9_]{0,39}$'}
+    label: {type: string, minLength: 1, maxLength: 60}
+    type: {enum: [string, number, boolean, datetime, enum, email, phone, url]}
+    status: {enum: [set, unset, invalid]}
+    value: {type: [string, number, boolean, 'null']}
+    updatedAt: {$ref: './common.yaml#/NullableUTC'}
+    options:
+      type: array
+      items: {$ref: '#/Option'}
+    reasonCode: {enum: [type, option, format, length, schema]}
+  allOf:
+    - if: {properties: {type: {const: enum}}}
+      then: {required: [options]}
+      else: {not: {required: [options]}}
+    - if: {properties: {status: {const: unset}}}
+      then:
+        properties: {value: {type: 'null'}, updatedAt: {type: 'null'}}
+        not: {required: [reasonCode]}
+    - if: {properties: {status: {const: invalid}}}
+      then:
+        required: [reasonCode]
+        properties: {value: {type: 'null'}, updatedAt: {$ref: './common.yaml#/UTC'}}
+    - if: {properties: {status: {const: set}}}
+      then:
+        properties: {updatedAt: {$ref: './common.yaml#/UTC'}}
+        not: {required: [reasonCode]}
+        allOf:
+          - if: {properties: {type: {const: number}}}
+            then: {properties: {value: {type: number}}}
+          - if: {properties: {type: {const: boolean}}}
+            then: {properties: {value: {type: boolean}}}
+          - if: {properties: {type: {enum: [string, datetime, enum, email, phone, url]}}}
+            then: {properties: {value: {type: string, maxLength: 500}}}
+          - if: {properties: {type: {enum: [datetime, email, phone, url, enum]}}}
+            then: {properties: {value: {minLength: 1}}}
+  description: >-
+    Семантические проверки используют текущую схему и validate_field_value CB:
+    enum — код из options, уникальные options.value; number — конечное число,
+    integer до существующего лимита bit_length 1024, bool не число; datetime —
+    существующий ISO 8601, включая отсутствие смещения; email/phone/url — штатные
+    проверки и нормализация. Статус invalid не передаёт плохое исходное значение.
+    Для unset запись отсутствует, clearedAt неизвестен. 0/false/пустая string — set.
+Option:
+  type: object
+  additionalProperties: false
+  required: [value, label]
+  properties:
+    value: {type: string, minLength: 1}
+    label: {type: string, minLength: 1, maxLength: 60}
+    color: {type: string, pattern: '^#[0-9a-fA-F]{6}$'}

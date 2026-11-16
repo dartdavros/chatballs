@@ -57,6 +57,10 @@ AUDIT_CATEGORY_ALIASES = {
 
 
 AUDIT_ACTION_LABELS: dict[str, str] = {
+    **{f"ai.external.{action}": f"audit.action_external_{action}" for action in (
+        "feature_changed", "connection_created", "connection_updated", "connection_checked",
+        "binding_updated", "binding_removed", "key_revoked", "key_rotated",
+    )},
     "integrations.native_action_executed": "native.audit_executed",
     "integrations.agent_action_changed": "audit.action_integrations_agent_action_changed",
     "ai.skill_created": "audit.action_ai_skill_created",

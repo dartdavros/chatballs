@@ -1,0 +1,2129 @@
+{
+  "designVersion": "S03-2122cd3c3c071bf6",
+  "scope": "Static S03 connection readiness only; no real check, key, agent execution or delivery verified",
+  "results": [
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "lang": "ru",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "lang": "ru",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "lang": "ru",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "lang": "ru",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "lang": "ru",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "lang": "ru",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "lang": "ru",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "lang": "en",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "lang": "en",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "lang": "en",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "lang": "en",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "lang": "en",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1024,
+      "geometry": {
+        "width": 1024,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "lang": "en",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 390,
+      "geometry": {
+        "width": 390,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "lang": "en",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "geometry": {
+        "width": 320,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "lang": "en",
+        "theme": "dark",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Support service",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "accent": "#1677ff",
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "accent": "#e8590c",
+      "geometry": {
+        "width": 1440,
+        "height": 980,
+        "overflow": [],
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "check": "Static ready actions",
+      "outcome": "no key, status or content changed"
+    },
+    {
+      "check": "200% CSS review scale at original viewport 1510",
+      "geometry": {
+        "width": 2880,
+        "height": 1960,
+        "overflow": [],
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "ready": true,
+        "secretFields": [
+          {
+            "direction": "outgoing",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          },
+          {
+            "direction": "incoming",
+            "count": 1,
+            "type": "password",
+            "value": "",
+            "attributeValue": "",
+            "placeholder": "••••••••••••",
+            "readOnly": true,
+            "disabled": true
+          }
+        ],
+        "ordinaryFields": [
+          "Сервис поддержки",
+          "https://agent.example"
+        ],
+        "passwordCount": 2,
+        "incomingState": "created",
+        "capabilitiesHealthy": 1,
+        "forbiddenSecretActions": [],
+        "groups": [
+          {
+            "key": "organization",
+            "items": [
+              {
+                "key": "organization",
+                "active": false
+              },
+              {
+                "key": "groups",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "service",
+            "items": [
+              {
+                "key": "queue",
+                "active": false
+              },
+              {
+                "key": "rules",
+                "active": false
+              },
+              {
+                "key": "transfer",
+                "active": false
+              },
+              {
+                "key": "templates",
+                "active": false
+              },
+              {
+                "key": "communication",
+                "active": false
+              },
+              {
+                "key": "externalExecution",
+                "active": true
+              }
+            ]
+          },
+          {
+            "key": "quality",
+            "items": [
+              {
+                "key": "ratings",
+                "active": false
+              },
+              {
+                "key": "quality",
+                "active": false
+              }
+            ]
+          },
+          {
+            "key": "other",
+            "items": [
+              {
+                "key": "demo",
+                "active": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "screenshots": [
+    "S03-ru-light-1440.png",
+    "S03-ru-light-1440-bottom.png",
+    "S03-ru-light-390.png",
+    "S03-ru-light-390-bottom.png",
+    "S03-en-dark-1440.png",
+    "S03-en-dark-1440-bottom.png"
+  ]
+}

@@ -5,6 +5,7 @@ import { useEmailContinuation } from "./EmailContinuationContext";
 import { EmailMessageBody } from "./EmailMessageBody";
 import { EmailMessageStatus } from "./EmailMessageStatus";
 import { FileMessage } from "./FileMessage";
+import { et } from "../settings/external-agent/copy";
 
 export function EmailConversationMessage({ message, actor }: { message: ApiMessage; actor?: string }) {
   const mail = useEmailContinuation();
@@ -24,7 +25,8 @@ export function EmailConversationMessage({ message, actor }: { message: ApiMessa
         <div className="email-message-body"><strong>{transport.subject ?? operation?.subject}</strong>
           {message.kind === "file" ? <FileMessage message={message} /> : outbound ? <p>{message.text}</p> : <EmailMessageBody html={message.contentHtml} text={message.text} />}
         </div>
-        {outbound && operation && <EmailMessageStatus operation={operation} />}
+        {outbound && message.externalDelivery ? <small>{et(message.externalDelivery.state === "transport_accepted" ? "chat.sentToChannel" : "chat.notConfirmed")}</small>
+          : outbound && operation && <EmailMessageStatus operation={operation} />}
       </div>
       <time dateTime={message.createdAt}>{fmt.time(message.createdAt)}</time>
     </div>

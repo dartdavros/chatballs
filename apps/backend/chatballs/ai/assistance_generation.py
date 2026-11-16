@@ -106,7 +106,7 @@ def begin(context, public_id):
         attempt.save(update_fields=["status", "started_at", "history_version"])
     notify_suggestion(suggestion)
     pseudonymizer = turn_pseudonymizer(conversation)
-    embedding_job = plan_query_embedding(agent=agent, query=query, pseudonymizer=pseudonymizer)
+    embedding_job = plan_query_embedding(agent=agent, query=query, pseudonymizer=pseudonymizer, assistance=True)
     return suggestion, conversation, history, query, pseudonymizer, embedding_job
 
 
@@ -123,7 +123,7 @@ def run_requested_assistance(payload, context):
         with tenant_atomic(context):
             plan = plan_chat(
                 agent=agent, message=query, history=history, embedding=embedding,
-                conversation=conversation, pseudonymizer=pseudonymizer, style_guard=False,
+                conversation=conversation, pseudonymizer=pseudonymizer, style_guard=False, assistance=True,
             )
             messages = list(plan.job.messages)
             # The public history already includes the latest customer message.

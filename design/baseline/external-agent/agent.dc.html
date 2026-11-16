@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Внешний агент · A01 · Дизайн</title>
+<script>
+window.__resources = {};
+const language = new URLSearchParams(location.search).get("lang") === "en" ? "en" : "ru";
+localStorage.setItem("chatballs.language", language);
+document.documentElement.lang = language;
+</script>
+<script src="./generated/runtime.js"></script>
+<script src="../platform-expansion/support.js"></script>
+</head><body><x-dc><helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="./generated/runtime.css">
+<link rel="stylesheet" href="./baseline.css">
+</helmet>{{ canvas }}</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return { canvas: window.React.createElement(window.ExternalAgentCanvas) }; }
+}
+</script></body></html>

@@ -1,0 +1,3366 @@
+{
+  "status": "FAIL",
+  "designVersion": "REST-7c92ad2c5ef9d9e5",
+  "scope": {
+    "kind": "targeted-revision",
+    "settingsDesktopIds": [
+      "S20",
+      "S21",
+      "S22",
+      "S23",
+      "S24",
+      "S25",
+      "S26",
+      "S27",
+      "S28",
+      "S29",
+      "S30",
+      "S31",
+      "S32",
+      "S33",
+      "S34",
+      "S35",
+      "S36",
+      "S37",
+      "S38",
+      "S39",
+      "S72",
+      "S73"
+    ],
+    "settingsMatrixIds": [
+      "S20",
+      "S24",
+      "S32",
+      "S33",
+      "S34",
+      "S35",
+      "S38",
+      "S39",
+      "S72"
+    ],
+    "matrixLanguages": [
+      "ru",
+      "en"
+    ],
+    "matrixThemes": [
+      "light",
+      "dark"
+    ],
+    "matrixWidths": [
+      1440,
+      320
+    ],
+    "changedBasicsIds": [
+      "S08",
+      "S11",
+      "S14",
+      "S70",
+      "S41"
+    ],
+    "interactionIds": [
+      "S20",
+      "S24",
+      "S08",
+      "S11",
+      "S14",
+      "S70",
+      "S41"
+    ],
+    "features": [
+      "DS binding modals",
+      "Native clipboard feedback and bare copy icon",
+      "Compact save footer",
+      "Framed load error",
+      "Feature state spacing",
+      "Right-aligned switch tables",
+      "Common action links",
+      "Contextual help and message previews"
+    ],
+    "note": "Only listed revision scenarios were rechecked; the historical full report was not overwritten."
+  },
+  "testedIds": [
+    "S31",
+    "S32",
+    "S36",
+    "S08",
+    "S11",
+    "S14",
+    "S70",
+    "S41",
+    "S20",
+    "S21",
+    "S22",
+    "S23",
+    "S24",
+    "S25",
+    "S26",
+    "S27",
+    "S28",
+    "S29",
+    "S30",
+    "S33",
+    "S34",
+    "S35",
+    "S37",
+    "S38",
+    "S39",
+    "S72",
+    "S73"
+  ],
+  "accepted": [
+    {
+      "folder": "settings-off",
+      "designVersion": "S01-5037b71a01f54b2b",
+      "sources": 200,
+      "manifestSha256": "cf624f108724d2df8a0cfe8b5c29dea0cc8706e2d35ba5d46617f5f00614b3a3"
+    },
+    {
+      "folder": "settings-unconfigured",
+      "designVersion": "S02-c8d1b152d7078f85",
+      "sources": 204,
+      "manifestSha256": "109e23724c1536e2a87f24bd93a83955e5e777af10a9dbef316b4dcefa1ba4f0"
+    },
+    {
+      "folder": "settings-ready",
+      "designVersion": "S03-2122cd3c3c071bf6",
+      "sources": 208,
+      "manifestSha256": "2a4f6f1fb3038d617ac4d925cbc49ce86d10845eaf90a1683e9c280f5724acc0"
+    },
+    {
+      "folder": "agent-external",
+      "designVersion": "S04-1d495df459254c46",
+      "sources": 212,
+      "manifestSha256": "23152b15e8b448ffbbb2cd518bc1937b23f534b587cbb0760ed9310913f47e7d"
+    },
+    {
+      "folder": "agent-test",
+      "designVersion": "S05-6dcaa8de64ce4db2",
+      "sources": 272,
+      "manifestSha256": "fb9f6919b746e5805f11f35e6442d4d874f5e481f0bcb7c00ba833ddef754ece"
+    },
+    {
+      "folder": "agent-test-waiting",
+      "designVersion": "S06-26b466b218854dd8",
+      "sources": 221,
+      "manifestSha256": "aa3a60b62ccf336239c428cab45661a9a57219301b34fc5be4d1a4b609adf32b"
+    }
+  ],
+  "results": [
+    {
+      "id": "S31",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "geometry": {
+        "id": "S31",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Загружаем настройки внешнего исполнения",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "geometry": {
+        "id": "S32",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Повторить"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Внешнее исполнение",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 1 0.923216 0.924078)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S36",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "geometry": {
+        "id": "S36",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Настройки доступны только владельцу и администратору",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Повторить"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Внешнее исполнение",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 1 0.923216 0.924078)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Повторить"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Внешнее исполнение",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 1 0.923216 0.924078)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Повторить"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Внешнее исполнение",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 0.213176 0.132863 0.144157)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Организация",
+          "Группы",
+          "Когда звать на помощь",
+          "Правила обработки",
+          "Передача и участники",
+          "Шаблоны ответов",
+          "Голосовые и звонки",
+          "Внешнее исполнение",
+          "Оценки клиентов",
+          "Анализ качества",
+          "Демо-данные",
+          "Аудит действий",
+          "Повторить"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "Внешнее исполнение",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 0.213176 0.132863 0.144157)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "en",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Retry"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "External execution",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 1 0.923216 0.924078)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "en",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Retry"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "External execution",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 1 0.923216 0.924078)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "en",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Retry"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "External execution",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 0.213176 0.132863 0.144157)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S32",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "geometry": {
+        "id": "S32",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "en",
+        "theme": "dark",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 0,
+        "passwords": [],
+        "serviceLast": "externalExecution",
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "AE",
+          "Obed.ru",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Organization",
+          "Groups",
+          "When to call for help",
+          "Handling rules",
+          "Transfers and participants",
+          "Reply templates",
+          "Voice and calls",
+          "External execution",
+          "Customer ratings",
+          "Quality analysis",
+          "Demo data",
+          "Аудит действий",
+          "Retry"
+        ]
+      },
+      "revision": {
+        "headers": [
+          {
+            "title": "External execution",
+            "gap": 18
+          }
+        ],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": {
+          "icons": 1,
+          "background": "color(srgb 0.213176 0.132863 0.144157)",
+          "borders": [
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            },
+            {
+              "width": 1,
+              "style": "solid"
+            }
+          ],
+          "retryGap": 14,
+          "display": "grid"
+        },
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S08",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S08",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": {
+          "width": 420,
+          "height": 980,
+          "inputs": [
+            {
+              "value": "",
+              "disabled": true
+            }
+          ],
+          "reply": 0,
+          "error": 0
+        },
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": false,
+        "startDisabled": false,
+        "waiting": 1,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "Сервис поддержки",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать",
+          "Тестовые данные клиента",
+          "Отправить"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S08",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external",
+          "processing"
+        ],
+        "closedWithEscape": 2
+      }
+    },
+    {
+      "id": "S08",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S08",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": {
+          "width": 420,
+          "height": 980,
+          "inputs": [
+            {
+              "value": "",
+              "disabled": true
+            }
+          ],
+          "reply": 0,
+          "error": 0
+        },
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": false,
+        "startDisabled": false,
+        "waiting": 1,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "Сервис поддержки",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать",
+          "Тестовые данные клиента",
+          "Отправить"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S08",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external",
+          "processing"
+        ],
+        "closedWithEscape": 2
+      }
+    },
+    {
+      "id": "S11",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S11",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": {
+          "width": 420,
+          "height": 980,
+          "inputs": [
+            {
+              "value": "Тестовый клиент",
+              "disabled": false
+            },
+            {
+              "value": "Поддержка",
+              "disabled": false
+            },
+            {
+              "value": "",
+              "disabled": false
+            }
+          ],
+          "reply": 0,
+          "error": 0
+        },
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": false,
+        "startDisabled": false,
+        "waiting": 0,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "Сервис поддержки",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать",
+          "Тестовые данные клиента",
+          "Отправить"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S11",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external",
+          "webFields"
+        ],
+        "closedWithEscape": 2
+      }
+    },
+    {
+      "id": "S11",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S11",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": {
+          "width": 420,
+          "height": 980,
+          "inputs": [
+            {
+              "value": "Тестовый клиент",
+              "disabled": false
+            },
+            {
+              "value": "Поддержка",
+              "disabled": false
+            },
+            {
+              "value": "",
+              "disabled": false
+            }
+          ],
+          "reply": 0,
+          "error": 0
+        },
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": false,
+        "startDisabled": false,
+        "waiting": 0,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "Сервис поддержки",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать",
+          "Тестовые данные клиента",
+          "Отправить"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S11",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external",
+          "webFields"
+        ],
+        "closedWithEscape": 2
+      }
+    },
+    {
+      "id": "S14",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S14",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": true,
+        "startDisabled": true,
+        "waiting": 0,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "—",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S14",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external"
+        ],
+        "closedWithEscape": 1
+      }
+    },
+    {
+      "id": "S14",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S14",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": true,
+        "startDisabled": true,
+        "waiting": 0,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "—",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S14",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external"
+        ],
+        "closedWithEscape": 1
+      }
+    },
+    {
+      "id": "S70",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S70",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1440,
+        "panel": null,
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": false,
+        "startDisabled": false,
+        "waiting": 0,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "Сервис поддержки",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S70",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external"
+        ],
+        "closedWithEscape": 1
+      }
+    },
+    {
+      "id": "S70",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S70",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 1024,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "1024px",
+        "shellWidth": 1024,
+        "panel": null,
+        "execution": "external",
+        "blocker": 0,
+        "testDisabled": false,
+        "startDisabled": false,
+        "waiting": 0,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Агенты",
+          "Проверить агента",
+          "Запустить AI",
+          "Внешнее",
+          "Сервис поддержки",
+          "Настроить внешнее исполнение",
+          "Как у клиента",
+          "Язык организации",
+          "Русский",
+          "English",
+          "SpeechKit",
+          "Язык организации",
+          "Выключено",
+          "Выключено",
+          "Поддержка",
+          "Добавить",
+          "Отвязать"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5,
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S70",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "external"
+        ],
+        "closedWithEscape": 1
+      }
+    },
+    {
+      "id": "S41",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S41",
+        "width": 1440,
+        "height": 980,
+        "client": 1440,
+        "scroll": 1440,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "0px",
+        "shellWidth": 1440,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 1,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Все",
+          "Мои",
+          "Общая очередь",
+          "На мне",
+          "МОПомощникМария Орлова14:30Здравствуйте! Пришлите информацию о сервисе и контакты поддержки.Поддержка",
+          "ИППомощникИван Петров14:10Спасибо, вопрос решён.Поддержка",
+          "Взять диалог",
+          "Ответ клиенту",
+          "Комментарий",
+          "Шаблоны",
+          "Черновик AI",
+          "Отправить⏎",
+          "Контакт",
+          "История",
+          "Запросить контакт",
+          "Не назначен",
+          "Поддержка",
+          "Средний"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S41",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "processing"
+        ],
+        "closedWithEscape": 1
+      }
+    },
+    {
+      "id": "S41",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-basics",
+      "geometry": {
+        "id": "S41",
+        "width": 320,
+        "height": 980,
+        "client": 320,
+        "scroll": 320,
+        "lang": "ru",
+        "theme": "light",
+        "overflow": [],
+        "minWidth": "0px",
+        "shellWidth": 320,
+        "panel": null,
+        "blocker": 0,
+        "waiting": 1,
+        "passwords": [],
+        "modal": null,
+        "clientShadow": null,
+        "unknown": 0,
+        "htmlFallback": 0,
+        "enableError": 0,
+        "policyTargets": 0,
+        "emptyCatalog": 0,
+        "initiativeTargets": 0,
+        "buttonText": [
+          "АЕ",
+          "Обед.ру",
+          "Чат",
+          "Контакты",
+          "Статистика",
+          "Агенты",
+          "Навыки",
+          "Сценарии",
+          "AI-провайдеры",
+          "MCP и HTTP",
+          "База знаний",
+          "Порталы",
+          "Виджеты",
+          "Мессенджеры",
+          "Почта",
+          "Интеграции",
+          "Сотрудники",
+          "Настройки",
+          "Готов",
+          "Все",
+          "Мои",
+          "Общая очередь",
+          "На мне",
+          "МОПомощникМария Орлова14:30Здравствуйте! Пришлите информацию о сервисе и контакты поддержки.Поддержка",
+          "ИППомощникИван Петров14:10Спасибо, вопрос решён.Поддержка",
+          "Взять диалог",
+          "Клиенту",
+          "Коммент.",
+          "Шаблоны",
+          "Черновик AI",
+          "Отправить⏎",
+          "Контакт",
+          "История",
+          "Запросить контакт",
+          "Не назначен",
+          "Поддержка",
+          "Средний"
+        ]
+      },
+      "revision": {
+        "headers": [],
+        "badgeGap": null,
+        "keyActions": [],
+        "bindings": null
+      },
+      "quality": {
+        "saveFeedbackCount": 0,
+        "footer": null,
+        "loadError": null,
+        "feature": null,
+        "tableHeaders": [],
+        "tableCells": [],
+        "links": [
+          12.5
+        ],
+        "reviewFieldGaps": [],
+        "policyGaps": []
+      }
+    },
+    {
+      "id": "S41",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "changed-help",
+      "help": {
+        "topics": [
+          "processing"
+        ],
+        "closedWithEscape": 1
+      }
+    },
+    {
+      "id": "S20",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "help-and-message-previews",
+      "help": {
+        "topics": [
+          "external",
+          "keys",
+          "capability",
+          "bindings",
+          "processing",
+          "initiative",
+          "data",
+          "webFields",
+          "templates"
+        ],
+        "closedWithEscape": 9
+      },
+      "previews": {
+        "templates": [
+          "greeting",
+          "order"
+        ]
+      },
+      "linkAndTable": {
+        "size": 12.5,
+        "line": "underline",
+        "decoration": "dotted"
+      }
+    },
+    {
+      "id": "S20",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "binding-interactions",
+      "bindings": {
+        "initial": 2,
+        "deleteConfirmationRequired": true,
+        "cancelEscapeAndClosePreserved": true,
+        "noInlineAdd": true,
+        "blankWhitespaceAndMissingAgentBlocked": true,
+        "duplicateAgentsExcluded": true,
+        "afterConfirmedDelete": 1,
+        "afterValidModalSubmit": 2,
+        "trimmedIdentifier": true
+      }
+    },
+    {
+      "id": "S20",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "help-and-message-previews",
+      "help": {
+        "topics": [
+          "external",
+          "keys",
+          "capability",
+          "bindings",
+          "processing",
+          "initiative",
+          "data",
+          "webFields",
+          "templates"
+        ],
+        "closedWithEscape": 9
+      },
+      "previews": {
+        "templates": [
+          "greeting",
+          "order"
+        ]
+      },
+      "linkAndTable": {
+        "size": 12.5,
+        "line": "underline",
+        "decoration": "dotted"
+      }
+    },
+    {
+      "id": "S20",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "binding-interactions",
+      "bindings": {
+        "initial": 2,
+        "deleteConfirmationRequired": true,
+        "cancelEscapeAndClosePreserved": true,
+        "noInlineAdd": true,
+        "blankWhitespaceAndMissingAgentBlocked": true,
+        "duplicateAgentsExcluded": true,
+        "afterConfirmedDelete": 1,
+        "afterValidModalSubmit": 2,
+        "trimmedIdentifier": true
+      }
+    }
+  ],
+  "failures": [
+    {
+      "id": "S20",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S21",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S21: switch cells/inset"
+    },
+    {
+      "id": "S22",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S22: switch cells/inset"
+    },
+    {
+      "id": "S23",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S23: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S25",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S25: switch cells/inset"
+    },
+    {
+      "id": "S26",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S26: switch cells/inset"
+    },
+    {
+      "id": "S27",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S27: switch cells/inset"
+    },
+    {
+      "id": "S28",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S28: switch cells/inset"
+    },
+    {
+      "id": "S29",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S29: switch cells/inset"
+    },
+    {
+      "id": "S30",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S30: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S37",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S37: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S73",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-desktop",
+      "error": "S73: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S20",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S20: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S24: switch cells/inset"
+    },
+    {
+      "id": "S33",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S33: switch cells/inset"
+    },
+    {
+      "id": "S34",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S34: switch cells/inset"
+    },
+    {
+      "id": "S35",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S35: switch cells/inset"
+    },
+    {
+      "id": "S38",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S38: switch cells/inset"
+    },
+    {
+      "id": "S39",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S39: switch cells/inset"
+    },
+    {
+      "id": "S72",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "settings-matrix",
+      "error": "S72: switch cells/inset"
+    },
+    {
+      "id": "S24",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "phase": "native-key-copy",
+      "error": "Expected values to be strictly equal:\n\n3 !== 0\n"
+    },
+    {
+      "id": "S24",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "phase": "native-key-copy",
+      "error": "Expected values to be strictly equal:\n\n3 !== 0\n"
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "screenshots": [
+    "FAIL-S20-ru-light-1440-settings-desktop.png",
+    "FAIL-S21-ru-light-1440-settings-desktop.png",
+    "FAIL-S22-ru-light-1440-settings-desktop.png",
+    "FAIL-S23-ru-light-1440-settings-desktop.png",
+    "FAIL-S24-ru-light-1440-settings-desktop.png",
+    "FAIL-S25-ru-light-1440-settings-desktop.png",
+    "FAIL-S26-ru-light-1440-settings-desktop.png",
+    "FAIL-S27-ru-light-1440-settings-desktop.png",
+    "FAIL-S28-ru-light-1440-settings-desktop.png",
+    "FAIL-S29-ru-light-1440-settings-desktop.png",
+    "FAIL-S30-ru-light-1440-settings-desktop.png",
+    "S32-ru-light-1440.png",
+    "FAIL-S33-ru-light-1440-settings-desktop.png",
+    "FAIL-S34-ru-light-1440-settings-desktop.png",
+    "FAIL-S35-ru-light-1440-settings-desktop.png",
+    "FAIL-S37-ru-light-1440-settings-desktop.png",
+    "FAIL-S38-ru-light-1440-settings-desktop.png",
+    "FAIL-S39-ru-light-1440-settings-desktop.png",
+    "FAIL-S72-ru-light-1440-settings-desktop.png",
+    "FAIL-S73-ru-light-1440-settings-desktop.png",
+    "FAIL-S20-ru-light-1440-settings-matrix.png",
+    "FAIL-S24-ru-light-1440-settings-matrix.png",
+    "FAIL-S33-ru-light-1440-settings-matrix.png",
+    "FAIL-S34-ru-light-1440-settings-matrix.png",
+    "FAIL-S35-ru-light-1440-settings-matrix.png",
+    "FAIL-S38-ru-light-1440-settings-matrix.png",
+    "FAIL-S39-ru-light-1440-settings-matrix.png",
+    "FAIL-S72-ru-light-1440-settings-matrix.png",
+    "FAIL-S20-ru-light-320-settings-matrix.png",
+    "FAIL-S24-ru-light-320-settings-matrix.png",
+    "FAIL-S33-ru-light-320-settings-matrix.png",
+    "FAIL-S34-ru-light-320-settings-matrix.png",
+    "FAIL-S35-ru-light-320-settings-matrix.png",
+    "FAIL-S38-ru-light-320-settings-matrix.png",
+    "FAIL-S39-ru-light-320-settings-matrix.png",
+    "FAIL-S72-ru-light-320-settings-matrix.png",
+    "FAIL-S20-ru-dark-1440-settings-matrix.png",
+    "FAIL-S24-ru-dark-1440-settings-matrix.png",
+    "FAIL-S33-ru-dark-1440-settings-matrix.png",
+    "FAIL-S34-ru-dark-1440-settings-matrix.png",
+    "FAIL-S35-ru-dark-1440-settings-matrix.png",
+    "FAIL-S38-ru-dark-1440-settings-matrix.png",
+    "FAIL-S39-ru-dark-1440-settings-matrix.png",
+    "FAIL-S72-ru-dark-1440-settings-matrix.png",
+    "FAIL-S20-ru-dark-320-settings-matrix.png",
+    "FAIL-S24-ru-dark-320-settings-matrix.png",
+    "FAIL-S33-ru-dark-320-settings-matrix.png",
+    "FAIL-S34-ru-dark-320-settings-matrix.png",
+    "FAIL-S35-ru-dark-320-settings-matrix.png",
+    "FAIL-S38-ru-dark-320-settings-matrix.png",
+    "FAIL-S39-ru-dark-320-settings-matrix.png",
+    "FAIL-S72-ru-dark-320-settings-matrix.png",
+    "FAIL-S20-en-light-1440-settings-matrix.png",
+    "FAIL-S24-en-light-1440-settings-matrix.png",
+    "FAIL-S33-en-light-1440-settings-matrix.png",
+    "FAIL-S34-en-light-1440-settings-matrix.png",
+    "FAIL-S35-en-light-1440-settings-matrix.png",
+    "FAIL-S38-en-light-1440-settings-matrix.png",
+    "FAIL-S39-en-light-1440-settings-matrix.png",
+    "FAIL-S72-en-light-1440-settings-matrix.png",
+    "FAIL-S20-en-light-320-settings-matrix.png",
+    "FAIL-S24-en-light-320-settings-matrix.png",
+    "FAIL-S33-en-light-320-settings-matrix.png",
+    "FAIL-S34-en-light-320-settings-matrix.png",
+    "FAIL-S35-en-light-320-settings-matrix.png",
+    "FAIL-S38-en-light-320-settings-matrix.png",
+    "FAIL-S39-en-light-320-settings-matrix.png",
+    "FAIL-S72-en-light-320-settings-matrix.png",
+    "FAIL-S20-en-dark-1440-settings-matrix.png",
+    "FAIL-S24-en-dark-1440-settings-matrix.png",
+    "FAIL-S33-en-dark-1440-settings-matrix.png",
+    "FAIL-S34-en-dark-1440-settings-matrix.png",
+    "FAIL-S35-en-dark-1440-settings-matrix.png",
+    "FAIL-S38-en-dark-1440-settings-matrix.png",
+    "FAIL-S39-en-dark-1440-settings-matrix.png",
+    "FAIL-S72-en-dark-1440-settings-matrix.png",
+    "FAIL-S20-en-dark-320-settings-matrix.png",
+    "FAIL-S24-en-dark-320-settings-matrix.png",
+    "S32-en-dark-320.png",
+    "FAIL-S33-en-dark-320-settings-matrix.png",
+    "FAIL-S34-en-dark-320-settings-matrix.png",
+    "FAIL-S35-en-dark-320-settings-matrix.png",
+    "FAIL-S38-en-dark-320-settings-matrix.png",
+    "FAIL-S39-en-dark-320-settings-matrix.png",
+    "FAIL-S72-en-dark-320-settings-matrix.png",
+    "S08-ru-light-1440.png",
+    "S08-ru-light-320.png",
+    "S11-ru-light-1440.png",
+    "S11-ru-light-320.png",
+    "S14-ru-light-1440.png",
+    "S14-ru-light-320.png",
+    "S70-ru-light-1440.png",
+    "S70-ru-light-320.png",
+    "S41-ru-light-1440.png",
+    "S41-ru-light-320.png",
+    "S20-ru-light-1440-section-bindings.png",
+    "S20-ru-light-1440-section-initiative.png",
+    "S20-ru-light-1440-help-templates.png",
+    "S20-ru-light-1440-section-templates.png",
+    "S20-ru-light-1440-message-greeting.png",
+    "S20-ru-light-1440-message-order.png",
+    "S20-ru-light-1440-data-table.png",
+    "S20-ru-light-1440-link-hover.png",
+    "S20-ru-light-1440-binding-remove-modal.png",
+    "S20-ru-light-1440-binding-add-modal.png",
+    "S20-ru-light-1440-binding-add-valid-modal.png",
+    "FAIL-S24-ru-light-1440-native-key-copy.png",
+    "S20-en-dark-320-section-bindings.png",
+    "S20-en-dark-320-section-initiative.png",
+    "S20-en-dark-320-help-templates.png",
+    "S20-en-dark-320-section-templates.png",
+    "S20-en-dark-320-message-greeting.png",
+    "S20-en-dark-320-message-order.png",
+    "S20-en-dark-320-data-table.png",
+    "S20-en-dark-320-link-hover.png",
+    "S20-en-dark-320-binding-remove-modal.png",
+    "S20-en-dark-320-binding-add-modal.png",
+    "S20-en-dark-320-binding-add-valid-modal.png",
+    "FAIL-S24-en-dark-320-native-key-copy.png"
+  ]
+}

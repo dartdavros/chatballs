@@ -124,10 +124,11 @@ def _begin(*, message_id: int, user_id: str, is_new: bool, context: TenantContex
     conversation = message.conversation
     channel = conversation.channel
     agent = getattr(channel, "ai_agent", None)
-    if (not autonomous_allowed(channel, organization=organization,
+    if (agent is None or agent.execution_mode != "builtin" or not autonomous_allowed(channel, organization=organization,
                                connection=conversation.connection, conversation=conversation)
             or message.ai_delivery.get("modeVersion", 1) != organization.operation_mode_version
             or message.ai_delivery.get("controlVersion", 0) != conversation.ai_control_version
+            or message.ai_delivery.get("executionVersion", 1) != agent.execution_version
             or message.ai_delivery.get("agentId", agent.pk if agent else None) != (agent.pk if agent else None)):
         # Диалог успел уйти человеку либо агента отключили: отвечать не нужно.
         message.ai_turn_state = AiTurnState.DONE

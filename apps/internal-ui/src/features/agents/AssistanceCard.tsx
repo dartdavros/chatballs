@@ -4,6 +4,7 @@ import { Icon } from "../../shared/icons";
 import type { AgentCard } from "./model";
 import { useAgentAssistance } from "./useAgentAssistance";
 import "./assistance.css";
+import { et } from "../settings/external-agent/copy";
 
 /** platform-expansion/Сотрудники и агенты.dc.html, G1–G3. */
 export function AssistanceCard({ card, canManage, busy, save }: {
@@ -30,7 +31,7 @@ export function AssistanceCard({ card, canManage, busy, save }: {
       <div className="agent-assistance-toggle">
         <div>
           <strong>{t("agent_assistance.autonomous")}</strong>
-          <small>{t("agent_assistance.autonomous_description")}</small>
+          <small>{card.executionMode === "external" ? et("agent.assistanceHelp") : t("agent_assistance.autonomous_description")}</small>
         </div>
         <SwitchButton className="ui-switch is-compact is-comparison" label={t("agent_assistance.autonomous")} checked={aiActive} disabled onClick={() => {}} />
       </div>
@@ -52,7 +53,7 @@ export function AssistanceCard({ card, canManage, busy, save }: {
       {card.providerIntegrationId === null && (
         <div className="agent-assistance-note is-warning">
           <Icon name="warning" size={14} strokeWidth={2} />
-          <span>{t("agent_assistance.no_provider")}</span>
+          <span>{card.executionMode === "external" ? et("agent.assistanceMissing") : t("agent_assistance.no_provider")}</span>
         </div>
       )}
     </section>

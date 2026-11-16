@@ -6,10 +6,10 @@ import { Button } from "../../shared/ui-controls";
 import { groupColorOf } from "../conversations/model";
 import { agentTile, agentStatusMeta, createdLabel, openDialogsLine, type AgentCard, type AgentPatch } from "./model";
 
-export function AgentHeader({ card, canManage, busy, apply, toggleAi, onDelete, onTest, testing }: {
+export function AgentHeader({ card, canManage, busy, apply, toggleAi, onDelete, onTest, testing, testDisabled = false }: {
   card: AgentCard; canManage: boolean; busy: boolean; testing: boolean;
   apply: (patch: AgentPatch) => Promise<boolean>; toggleAi: () => Promise<void>;
-  onDelete: () => void; onTest: () => void;
+  onDelete: () => void; onTest: () => void; testDisabled?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const tile = agentTile(card);
@@ -61,14 +61,14 @@ export function AgentHeader({ card, canManage, busy, apply, toggleAi, onDelete, 
         </div>
         {canManage && (
           <div className="agent-head-actions">
-            <Button variant="secondary" className={`agent-test-button${testing ? " is-active" : ""}`} icon="message" aria-expanded={testing} onClick={onTest}>
+            <Button variant="secondary" className={`agent-test-button${testing ? " is-active" : ""}`} icon="message" aria-expanded={testing} disabled={testDisabled || busy} onClick={onTest}>
               {t("agent_test.open")}
             </Button>
-            <Button variant="secondary" className="agent-toggle" icon={running ? "pause" : "bolt"} disabled={busy} onClick={() => void toggleAi()}>
+            <Button variant="secondary" className="agent-toggle" icon={running ? "pause" : "bolt"} disabled={busy || !running && testDisabled} onClick={() => void toggleAi()}>
               {running ? t("ai.stop_ai") : t("ai.start_ai")}
             </Button>
             <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} overlayClassName="app-dropdown">
-              <button className="agent-head-menu" type="button" aria-label={t("ai.agent_actions")} title={t("common.actions")}><Icon name="more" size={17} strokeWidth={2} /></button>
+              <button className="row-menu-button agent-head-menu" type="button" aria-label={t("ai.agent_actions")} title={t("common.actions")}><Icon name="more" size={17} strokeWidth={2} /></button>
             </Dropdown>
           </div>
         )}

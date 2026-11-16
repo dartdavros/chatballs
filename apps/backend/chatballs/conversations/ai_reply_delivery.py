@@ -47,6 +47,11 @@ def bind_reply(turn, message, route):
     message.ai_reply_to = turn.message
     message.ai_delivery = route
     message.save(update_fields=["ai_reply_to", "ai_delivery"])
+    bind_email_reply(message, route)
+
+
+def bind_email_reply(message, route):
+    """Reuse mailbox threading without imposing the builtin one-reply relation."""
     if route.get("sourceLetterId"):
         source = EmailThreadMessage.objects.select_related("connection", "thread").get(pk=route["sourceLetterId"])
         EmailThreadMessage.objects.create(

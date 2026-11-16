@@ -1,5 +1,4 @@
-import { AgentSkillsCard } from "../skills/AgentSkillsCard";
-import { AgentActionsCard } from "./actions/AgentActionsCard";
+import { AgentConfiguration } from "./AgentConfiguration";
 import { Modal } from "antd";
 import type { ChannelRoute } from "../../shared/ChannelNavigationMenu";
 import { useEffect, useState } from "react";
@@ -8,17 +7,11 @@ import { Icon } from "../../shared/icons";
 import { EmptyState, ErrorScreen, LoadingState } from "../../shared/ui";
 import { BackLink } from "../../shared/ui-controls";
 import type { EmployeeGroup, RouteKey } from "../../types";
-import { AgentToolsCard } from "./AgentToolsCard";
 import { enabledToolRefs } from "./agentTools";
 import { useAgentDetail } from "./useAgentDetail";
 import { AgentHeader } from "./AgentHeader";
-import { InstructionsCard } from "./InstructionsCard";
-import { KnowledgeCard } from "./KnowledgeCard";
-import { AssignmentCard } from "./AssignmentCard";
-import { AssistanceCard } from "./AssistanceCard";
-import { ConnectionsCard } from "./ConnectionsCard";
-import { ModelCard } from "./ModelCard";
 import { AgentTestPanel } from "./test-chat/AgentTestPanel";
+import { ExternalAgentTestPanel } from "./external/ExternalAgentTestPanel";
 
 export function AgentDetailPage({
   agentId,
@@ -31,6 +24,7 @@ export function AgentDetailPage({
   openServers,
   openServer,
   openAiProvider,
+  openExternalSettings,
   onLoaded,
 }: {
   agentId: number | null;
@@ -43,11 +37,12 @@ export function AgentDetailPage({
   openServers: () => void;
   openServer: (integrationId: number) => void;
   openAiProvider: () => void;
+  openExternalSettings: () => void;
   setRoute: (route: RouteKey) => void;
   onLoaded: (name: string | null) => void;
 }) {
   const state = useAgentDetail(agentId, canManage, canManageConnections, openAgents);
-  const { card, missing, failed, reload, tools, busy, feedback, deleting, setDeleting, providers, messengers, apply, toggleAi, removeAgent, bind, unbind } = state;
+  const { card, missing, failed, reload, tools, busy, feedback, deleting, setDeleting, apply, toggleAi, removeAgent } = state;
   const [testOpen, setTestOpen] = useState(false);
   useEffect(() => { onLoaded(card?.name ?? null); return () => onLoaded(null); }, [card?.name, onLoaded]);
   if (missing) return <EmptyState title={t("ai.agent_not_found")} />;
@@ -60,9 +55,9 @@ export function AgentDetailPage({
       <BackLink label={t("common.agents")} onClick={openAgents} />
 
       <AgentHeader card={card} canManage={canManage} busy={busy} apply={apply} toggleAi={toggleAi}
-        onDelete={() => setDeleting(true)} onTest={() => setTestOpen(true)} testing={testOpen} />
+        onDelete={() => setDeleting(true)} onTest={() => setTestOpen(true)} testing={testOpen} testDisabled={card.executionMode === "external" && !card.externalExecution?.available} />
 
-      {card.providerIntegrationId === null && (
+      {card.providerIntegrationId === null && card.executionMode !== "external" && (
         <div className="agent-blocker">
           <Icon name="alert" size={18} strokeWidth={2.2} />
           <div>
@@ -77,40 +72,13 @@ export function AgentDetailPage({
 
       {feedback && <div className={`agent-feedback is-${feedback.kind}`}>{feedback.text}</div>}
 
-      <div className="agent-grid">
-        <div className="agent-column">
-          <InstructionsCard card={card} canManage={canManage} busy={busy} apply={apply} />
-          <ModelCard card={card} providers={providers} canManage={canManage} busy={busy} toolsUnsupported={toolsUnsupported} apply={apply} />
-          {canManage && <AgentSkillsCard card={card} />}
-          <KnowledgeCard card={card} canManage={canManage} openKnowledge={openKnowledge} reload={reload} />
-        </div>
-        <div className="agent-column">
-          {canManage && <AgentActionsCard key={card.id} agent={card.id} />}
-          <AssignmentCard card={card} groups={groups} canManage={canManage} busy={busy} apply={apply} />
-          <AssistanceCard key={card.id} card={card} canManage={canManage} busy={busy} save={state.saveAssistance} />
-          <ConnectionsCard
-            card={card}
-            canManage={canManageConnections}
-            busy={busy}
-            available={messengers.filter((item) => item.channel === null)}
-            openChannels={openChannels}
-            bind={bind}
-            unbind={unbind}
-          />
-          <AgentToolsCard
-            tools={tools}
-            modelWarning={toolsUnsupported}
-            canManage={canManage}
-            canOpenServers={canManageConnections}
-            busy={busy}
-            save={(refs) => void apply({ tools: refs })}
-            openIntegrations={openServers}
-            openServer={openServer}
-          />
-        </div>
-      </div>
+      <AgentConfiguration card={card} state={state} groups={groups} canManage={canManage} canManageConnections={canManageConnections}
+        toolsUnsupported={toolsUnsupported} openKnowledge={openKnowledge} openChannels={openChannels} openServers={openServers}
+        openServer={openServer} openExternalSettings={openExternalSettings} />
 
-      {testOpen && <AgentTestPanel key={card.id} card={card} onClose={() => setTestOpen(false)} />}
+      {testOpen && (card.executionMode === "external"
+        ? <ExternalAgentTestPanel key={card.id} card={card} onClose={() => setTestOpen(false)} />
+        : <AgentTestPanel key={card.id} card={card} onClose={() => setTestOpen(false)} />)}
 
       {deleting && (
         <Modal

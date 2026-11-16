@@ -51,6 +51,8 @@ def run_test_chat(context, agent_id, body):
             except Channel.DoesNotExist:
                 return (404, {"detail": t("ai.agent_not_found")})
             agent = getattr(channel, "ai_agent", None)
+            if agent is not None and agent.execution_mode == "external":
+                return (400, {"detail": t("external.not_builtin")})
             if agent is None or not agent.is_active:
                 raise ProviderError(t("channels.no_active_agent"))
             data = parse_test_client_data(channel, body.get("clientData"))

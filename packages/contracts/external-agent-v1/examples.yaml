@@ -1,0 +1,227 @@
+valid:
+  - name: Минимальный запрос с пустыми allowlist и обязательным replace
+    schema: request.yaml#/AgentRequest
+    value:
+      version: '1'
+      requestId: 10000000-0000-4000-8000-000000000001
+      createdAt: '2026-11-14T12:00:00Z'
+      deadlineAt: '2026-11-14T12:02:00Z'
+      agent: {id: cb-agent, externalAgentId: gcs-agent}
+      conversation:
+        id: cb-conversation
+        externalSessionId: null
+        authorizationId: 20000000-0000-4000-8000-000000000001
+        turnSequence: 1
+      trigger:
+        messageId: cb-message
+        createdAt: '2026-11-14T12:00:00Z'
+        type: text
+        text: Пример сообщения
+        wasVoice: false
+        attachments: []
+      context:
+        history:
+          mode: window
+          snapshotCursor: opaque-snapshot
+          truncated: false
+          messages: []
+          historyUrl: https://chatballs.example.invalid/api/v1/external-agent/connections/c/conversations/d/history/
+          nextCursor: null
+        customer:
+          id: cb-contact
+          fields: {}
+          customFields:
+            mode: replace
+            snapshotId: 30000000-0000-4000-8000-000000000001
+            capturedAt: '2026-11-14T12:00:00Z'
+            scope: []
+            items: []
+        dataPolicy: {revision: 1, mode: agreed_original, fields: [], customFields: []}
+        language: {mode: mirror, organization: ru, requested: null}
+      permissions: {reply: true, handoff: true, proactive: false}
+      deliveryConstraints:
+        types: [text, file, image, formatted, contact_request]
+        maxFileBytes: 20971520
+        maxTextCharacters: null
+      callbacks:
+        resultUrl: https://chatballs.example.invalid/api/v1/external-agent/connections/c/requests/10000000-0000-4000-8000-000000000001/result/
+  - name: Готовый текст
+    schema: result.yaml#/TerminalResult
+    value:
+      version: '1'
+      requestId: 10000000-0000-4000-8000-000000000001
+      resultId: 40000000-0000-4000-8000-000000000001
+      status: completed
+      externalSessionId: gcs-session
+      outcome:
+        type: reply
+        messages:
+          - itemId: 50000000-0000-4000-8000-000000000001
+            content: {type: text, text: Пример готового ответа}
+  - name: Окончательный отказ, без нового исполнения
+    schema: result.yaml#/TerminalResult
+    value:
+      version: '1'
+      requestId: 10000000-0000-4000-8000-000000000001
+      resultId: 40000000-0000-4000-8000-000000000001
+      status: failed
+      error: {code: service_failed, retryable: false}
+  - name: Квитанция отказа без сообщения
+    schema: receipts.yaml#/Receipt
+    value:
+      version: '1'
+      requestId: 10000000-0000-4000-8000-000000000001
+      receiptId: receipt-1
+      state: failed
+      reasonCode: service_failed
+      deliveryId: null
+      items: []
+  - name: Кастомное поле false
+    schema: fields.yaml#/FieldValue
+    value:
+      sourceConnectionId: web-A
+      fieldId: field-A
+      key: agreed
+      label: Пример
+      type: boolean
+      status: set
+      value: false
+      updatedAt: '2026-11-14T12:00:00Z'
+  - name: Кастомное поле unset
+    schema: fields.yaml#/FieldValue
+    value:
+      sourceConnectionId: web-A
+      fieldId: field-B
+      key: reference
+      label: Пример
+      type: string
+      status: unset
+      value: null
+      updatedAt: null
+  - name: Кастомное поле invalid enum
+    schema: fields.yaml#/FieldValue
+    value:
+      sourceConnectionId: web-A
+      fieldId: field-C
+      key: state
+      label: Пример
+      type: enum
+      status: invalid
+      value: null
+      updatedAt: '2026-11-14T12:00:00Z'
+      options: [{value: open, label: Открыто}]
+      reasonCode: option
+  - name: Схема существующего шаблона CB
+    schema: catalogs.yaml#/TemplateCatalog
+    value:
+      version: '1'
+      items:
+        - id: template-1
+          revision: 1
+          purpose: Пример
+          dataSchema:
+            type: object
+            properties:
+              title: {type: string, required: true}
+              rows: {type: list, items: {type: number}}
+          representations: [text, html]
+  - name: Возможности двух направлений
+    schema: catalogs.yaml#/Capabilities
+    value:
+      versions: ['1']
+      contentTypes: [text, image, file, contact, contact_request, formatted]
+      directions:
+        fromChatballs: [text, image, file, contact, contact_request, formatted]
+        toChatballs: [text, image, file, contact_request, formatted]
+      durableIdempotency: true
+      statusLookup: true
+      callbacks: true
+      cancel: true
+      dedupRetentionSeconds: 2592000
+      maxJsonBytes: 262144
+  - name: Числовой ноль
+    fromValid: 4
+    set: {type: number, value: 0}
+  - name: Большое целое без округления
+    fromValid: 4
+    set: {type: number, value: 9007199254740993}
+  - name: Валидная пустая строка
+    fromValid: 4
+    set: {type: string, value: ''}
+  - name: Дата без выдуманного смещения
+    fromValid: 4
+    set: {type: datetime, value: '2026-11-14T12:00:00'}
+  - name: Email
+    fromValid: 4
+    set: {type: email, value: 'sample@example.invalid'}
+  - name: Телефон
+    fromValid: 4
+    set: {type: phone, value: '+79990000000'}
+  - name: URL
+    fromValid: 4
+    set: {type: url, value: 'https://example.invalid/'}
+  - name: Сохранённый код enum
+    fromValid: 6
+    set: {status: set, value: open}
+    remove: [reasonCode]
+  - name: Голосовой trigger — текст и исходные метаданные
+    fromValid: 0
+    set:
+      trigger.wasVoice: true
+      trigger.source: {kind: voice, durationSeconds: 18}
+  - name: Асинхронная регистрация
+    schema: result.yaml#/Accepted
+    value:
+      version: '1'
+      requestId: 10000000-0000-4000-8000-000000000001
+      status: accepted
+      externalSessionId: null
+invalid:
+  - name: Версия — строка
+    fromValid: 0
+    set: {version: 1}
+  - name: Нет обязательного снимка кастомных полей
+    fromValid: 0
+    remove: [context.customer.customFields]
+  - name: Нельзя выбрать организацию
+    fromValid: 0
+    set: {organizationId: foreign}
+  - name: fixed требует язык
+    fromValid: 0
+    set: {context.language.mode: fixed}
+  - name: Голос требует source
+    fromValid: 0
+    set: {trigger.wasVoice: true}
+  - name: Callback не принимает unknown вместо результата
+    fromValid: 1
+    set: {status: unknown}
+  - name: Нельзя менять контакт через результат
+    fromValid: 1
+    set: {customerPatch: {phone: '123'}}
+  - name: boolean не число
+    fromValid: 4
+    set: {type: number}
+  - name: unset не содержит прежнее значение
+    fromValid: 5
+    set: {value: Старое значение}
+  - name: invalid не содержит плохое исходное значение
+    fromValid: 6
+    set: {value: obsolete}
+  - name: invalid требует код причины
+    fromValid: 6
+    remove: [reasonCode]
+  - name: Контактная карточка не отправляется наружу
+    schema: messages.yaml#/OutgoingContent
+    value: {type: contact, text: Произвольная карточка}
+  - name: Нельзя отправить внешний URL вместо файла
+    schema: messages.yaml#/OutgoingContent
+    value: {type: file, url: 'https://example.invalid/file'}
+  - name: Нельзя прислать произвольный HTML
+    schema: messages.yaml#/OutgoingContent
+    value: {type: formatted, srcDoc: '<script></script>'}
+  - name: Время метаданных только UTC
+    fromValid: 4
+    set: {updatedAt: '2026-11-14T15:00:00+03:00'}
+  - name: enum требует options
+    fromValid: 6
+    remove: [options]

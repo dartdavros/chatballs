@@ -16,6 +16,7 @@ export type SettingsSectionKey =
   | "ratings"
   | "quality"
   | "communication"
+  | "external"
   | "storage"
   | "platform"
   | "demo";
@@ -96,6 +97,13 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "mic",
     heading: t("settings.voice_calls"),
     lead: t("settings.where_customer_operator_can_record"),
+  },
+  {
+    key: "external",
+    label: t("external.off.sectionTitle"),
+    icon: "server",
+    heading: t("external.off.sectionTitle"),
+    lead: "",
   },
   {
     key: "storage",

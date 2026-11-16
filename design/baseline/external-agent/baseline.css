@@ -1,0 +1,10 @@
+/* Review tools are outside the product frame. Product visuals come from current source CSS. */
+html,body{margin:0;min-width:0;height:auto;overflow:auto}
+.ea-canvas{padding:24px;min-height:100vh;background:var(--surface-page)}
+.ea-review{max-width:1440px;display:flex;flex-direction:column;gap:12px;margin-bottom:20px;color:var(--n-3);font-size:13px;line-height:1.5}
+.ea-review h1{margin:0;color:var(--n-1);font-size:20px}.ea-review p{margin:0}
+.ea-review-controls{display:flex;flex-wrap:wrap;gap:16px}.ea-review label{display:flex;align-items:center;gap:8px}
+.ea-review select{height:34px;border:1px solid var(--n-7);border-radius:8px;padding:0 8px;background:var(--surface-card);color:var(--n-1);font:inherit}
+.ea-screen{container:baseline / inline-size;overflow:auto;background:var(--surface-feed);border:0}
+.ea-screen>.hub-shell{height:100%}.ea-screen .hub-sidebar,.ea-screen .hub-main{height:100%}
+/* The application's non-chat 1024px minimum is intentionally preserved at narrow widths. */

@@ -11,6 +11,9 @@ from chatballs.tenancy.models import TenantRelationModel
 
 
 class AIAgent(TenantRelationModel):
+    execution_mode = models.CharField(max_length=16, default="builtin", db_default="builtin",
+                                     choices=[("builtin", "builtin"), ("external", "external")])
+    execution_version = models.PositiveBigIntegerField(default=1, db_default=1)
     tenant_relation_fields = ("channel", "provider_integration", "transcription_integration", "synthesis_integration")
     channel = models.OneToOneField("channels.Channel", on_delete=models.CASCADE, related_name="ai_agent")
     # BYOK-секрет организации. Раньше жил на Channel, из-за
@@ -100,3 +103,14 @@ class AIAgent(TenantRelationModel):
     @is_active.setter
     def is_active(self, value: bool) -> None:
         self.status = AIAgentStatus.ACTIVE if value else AIAgentStatus.DISABLED
+
+
+from chatballs.ai.external_agents import (  # noqa: E402, F401
+    config_models,
+    delivery_models,
+    file_models,
+    receipt_models,
+    request_models,
+    session_models,
+    template_models,
+)

@@ -1,0 +1,88 @@
+Capabilities:
+  servers: [{url: 'https://gocostack.example.invalid'}]
+  get:
+    operationId: getGoCoStackCapabilities
+    tags: [GoCoStack]
+    summary: Проверить возможности без запуска агента
+    security: [{GoCoStackBearer: []}]
+    responses:
+      '200':
+        description: Поддерживаемый контракт
+        content:
+          application/json:
+            schema: {$ref: './catalogs.yaml#/Capabilities'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+Requests:
+  servers: [{url: 'https://gocostack.example.invalid'}]
+  post:
+    operationId: createGoCoStackRequest
+    tags: [GoCoStack]
+    summary: Устойчиво зарегистрировать один ход
+    security: [{GoCoStackBearer: []}]
+    parameters: [{$ref: './common.yaml#/IdempotencyKey'}]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './request.yaml#/AgentRequest'}
+    responses:
+      '200':
+        description: Неизменяемый окончательный результат, в том числе повтор завершённого запроса
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: './result.yaml#/TerminalResult'
+                - allOf:
+                    - $ref: './result.yaml#/UnknownOrCancelled'
+                    - properties: {status: {const: cancelled}}
+      '202':
+        description: >-
+          Запрос зарегистрирован до действий. Повтор может показать processing или
+          unknown; новая работа не создаётся. После 202 используются GET/callback.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: './result.yaml#/Pending'
+                - allOf:
+                    - $ref: './result.yaml#/UnknownOrCancelled'
+                    - properties: {status: {const: unknown}}
+      '409': {$ref: './common.yaml#/ErrorResponse'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+RequestStatus:
+  servers: [{url: 'https://gocostack.example.invalid'}]
+  parameters: [{$ref: './common.yaml#/RequestId'}]
+  get:
+    operationId: getGoCoStackRequest
+    tags: [GoCoStack]
+    summary: Прочитать ту же работу без повторного исполнения
+    security: [{GoCoStackBearer: []}]
+    responses:
+      '200':
+        description: Текущее состояние, terminal результат возвращается без обёртки
+        content:
+          application/json:
+            schema: {$ref: './result.yaml#/RequestStatus'}
+      '404': {$ref: './common.yaml#/ErrorResponse'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+Cancel:
+  servers: [{url: 'https://gocostack.example.invalid'}]
+  parameters: [{$ref: './common.yaml#/RequestId'}]
+  post:
+    operationId: cancelGoCoStackRequest
+    tags: [GoCoStack]
+    summary: Идемпотентно уведомить об отмене без обещания компенсации
+    security: [{GoCoStackBearer: []}]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './result.yaml#/CancelRequest'}
+    responses:
+      '200':
+        description: cancelled, unknown либо уже сохранённый completed/failed
+        content:
+          application/json:
+            schema: {$ref: './result.yaml#/CancelResponse'}
+      default: {$ref: './common.yaml#/ErrorResponse'}

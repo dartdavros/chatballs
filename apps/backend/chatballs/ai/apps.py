@@ -6,3 +6,11 @@ class AiConfig(AppConfig):
     label = "ai"
     name = "chatballs.ai"
     verbose_name = "AI agents, knowledge and releases"
+
+    def ready(self):
+        from chatballs.ai.external_agents import (
+            event_handlers,  # noqa: F401
+            notice_models,  # noqa: F401
+            operation_models,  # noqa: F401
+            test_models,  # noqa: F401
+        )

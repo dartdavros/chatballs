@@ -2,6 +2,9 @@ import type { MessagePresentation, SiteField } from "@chatballs/contracts";
 
 // kind: "" — текст, "contact_request" — запрос контакта, "contact" — клиент поделился номером.
 export type ApiMessage = MessagePresentation & {
+  externalDelivery?: { state: "queued" | "transport_accepted" | "unknown" | "failed" | "suppressed"; textFallback: boolean; initiative: boolean };
+  externalVoice?: "ready";
+  externalReturned?: boolean;
   templateUpdatedAt?: string;
   id: number;
   author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM";
@@ -81,6 +84,7 @@ export type ReplyTemplateRef = {
 };
 
 export type ApiConversation = {
+  externalExecution?: { waiting: "ordinary" | "long" | null; notices: ExternalNotice[] };
   access?: { actions: string[]; supervised: boolean; isParticipant: boolean; canReply: boolean; canControl: boolean };
   id: number;
   channel: { id: number; code: string; name: string };
@@ -122,6 +126,8 @@ export type ApiConversation = {
   canReleaseToAi?: boolean;
   hasAgent?: boolean;
 };
+
+export type ExternalNotice = { id: string; kind: "handoff" | "unavailable" | "timeout" | "voiceFailure" | "suppressed" | "unknown" | "partial"; summary: string; createdAt: string };
 
 // Живые ленты (инбокс, история диалога) приходят окном: записи, признак
 // продолжения и курсор на следующее окно.

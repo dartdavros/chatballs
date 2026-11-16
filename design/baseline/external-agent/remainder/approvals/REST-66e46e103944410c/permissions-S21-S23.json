@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "approvalSequence": 2,
+  "status": "owner_approved_screens",
+  "approvedDate": "2026-11-15",
+  "timezone": "Europe/Moscow",
+  "ownerStatement": "S21–S23 принимаю.",
+  "designVersion": "REST-66e46e103944410c",
+  "approvedScreens": [
+    "S21",
+    "S22",
+    "S23"
+  ],
+  "scope": [
+    "Пустые разрешения данных, отсутствие WEB-источников и каталога оформленных сообщений",
+    "Явно выбранные разрешения полей и оформленных сообщений для агента и подключения с разграничением WEB-источников",
+    "Устаревшие разрешения после удаления или изменения источника, поля и шаблона"
+  ],
+  "previousApprovalRecord": "decision.json",
+  "resourceHashes": {
+    "generated/sources.json": "98ad16b419e69aa78120fecd4d95fff020179541d0545e46a67ceff4ec0dfb39",
+    "generated/cases.json": "3bb1ec1a9a70c0b01454dc915f9ee50e75bedbf10fa234aec98fabfe06b3f392",
+    "generated/runtime.js": "926c4358a4a03d354bafa5d53548428b301a331cc7b117485bd46992a7235454",
+    "generated/runtime.css": "6143f2c2da6b51e88ffffdc641f88306fb03108d3205e0b7c31937b3aef944c6"
+  },
+  "designPreparationStatus": "prepared",
+  "fullPackageApproved": false,
+  "remainingCaseSpecificReviews": {
+    "keysAndConnection": [
+      "S25",
+      "S26",
+      "S27",
+      "S28",
+      "S29",
+      "S30"
+    ],
+    "disableAndRestore": [
+      "S37",
+      "S38",
+      "S39",
+      "S73"
+    ],
+    "agentReadiness": [
+      "S14",
+      "S15",
+      "S16",
+      "S17",
+      "S18",
+      "S19",
+      "S70",
+      "S71"
+    ],
+    "testPanel": [
+      "S08",
+      "S09",
+      "S10",
+      "S11"
+    ],
+    "staffChat": [
+      "S40",
+      "S41",
+      "S44",
+      "S45",
+      "S46",
+      "S47",
+      "S48",
+      "S49",
+      "S50"
+    ],
+    "consent": [
+      "S60"
+    ]
+  }
+}

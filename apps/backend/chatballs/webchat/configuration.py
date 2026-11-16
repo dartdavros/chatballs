@@ -44,6 +44,10 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
 
     recording.update(public_synthesis(integration))
     consent_text = clean_consent_html(str(consent.get("consent_text") or "")) or t("webchat.default_consent", language=language)
+    from chatballs.ai.external_agents.consent import disclosure_html
+    from chatballs.webchat.consent import current_version
+
+    consent_text += disclosure_html(widget, language=language)
     if integration.config.get("answerPlaybackEnabled", False):
         consent_text += "<p>" + t("speech.consent_disclosure", language=language) + "</p>"
     return {
@@ -65,7 +69,7 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
             # Запись могла сохраниться до очистки — наружу уходит только
             # безопасная разметка (SPEC-0020 R-15).
             "text": consent_text,
-            "version": consent.get("consent_version") or "v1",
+            "version": current_version(widget),
         },
         "quickReplies": cfg.get("quick_replies") or [],
         # Схема своих полей — уже без «Видит AI» (widgets.ensure_widget).

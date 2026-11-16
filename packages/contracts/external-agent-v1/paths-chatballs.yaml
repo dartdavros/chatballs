@@ -1,0 +1,120 @@
+Result:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/RequestId'
+  post:
+    operationId: submitExternalAgentResult
+    tags: [Chatballs]
+    summary: Принять итог через общую с синхронным ответом машину состояний
+    description: >-
+      requestId URL/тела совпадает. Текущая привязка выводится из сохранённого
+      request. Отдельный authorizationId не принимается. Поздний результат
+      при действующем ключе может быть suppressed; отозванный ключ — 401.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './result.yaml#/TerminalResult'}
+    responses:
+      '200':
+        description: Повтор с прежним receiptId и фактическим состоянием либо handoff/failed/suppressed
+        content:
+          application/json:
+            schema: {$ref: './receipts.yaml#/Receipt'}
+      '202':
+        description: Новый набор устойчиво принят к доставке; это не доставка в канал
+        content:
+          application/json:
+            schema: {$ref: './receipts.yaml#/DeliveryReceipt'}
+      '409': {$ref: './common.yaml#/ErrorResponse'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+Messages:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/ConversationId'
+  post:
+    operationId: sendExternalAgentMessages
+    tags: [Chatballs]
+    summary: Принять инициативу только при пустой клиентской очереди
+    parameters: [{$ref: './common.yaml#/IdempotencyKey'}]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './result.yaml#/ProactiveMessages'}
+    responses:
+      '200':
+        description: Повтор принятого deliveryId, прежний receiptId и фактическое состояние
+        content:
+          application/json:
+            schema: {$ref: './receipts.yaml#/DeliveryReceipt'}
+      '202':
+        description: Новый набор принят к доставке
+        content:
+          application/json:
+            schema: {$ref: './receipts.yaml#/DeliveryReceipt'}
+      '403': {$ref: './common.yaml#/ErrorResponse'}
+      '409': {$ref: './common.yaml#/ErrorResponse'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+Handoff:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/ConversationId'
+  post:
+    operationId: requestExternalAgentHandoff
+    tags: [Chatballs]
+    summary: Передать в штатную очередь сотрудника и отозвать отправку
+    parameters: [{$ref: './common.yaml#/IdempotencyKey'}]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './result.yaml#/HandoffRequest'}
+    responses:
+      '200':
+        description: Устойчивая квитанция handoff; повтор своей операции не создаёт новый handoff
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './receipts.yaml#/ControlReceipt'
+                - properties: {state: {const: handed_off}}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+Delivery:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/DeliveryId'
+    - $ref: './common.yaml#/AuthorizationId'
+  get:
+    operationId: getExternalAgentDelivery
+    tags: [Chatballs]
+    summary: Прочитать фактический исход набора
+    description: При утрате разрешения детализация недоступна; исключение только для своего receipt ACK
+    responses:
+      '200':
+        description: Состояния каждого элемента; transport_accepted не означает прочтение
+        content:
+          application/json:
+            schema: {$ref: './receipts.yaml#/DeliveryStatus'}
+      default: {$ref: './common.yaml#/ErrorResponse'}
+History:
+  parameters:
+    - $ref: './common.yaml#/ConnectionId'
+    - $ref: './common.yaml#/ConversationId'
+    - $ref: './common.yaml#/AuthorizationId'
+    - $ref: './common.yaml#/SnapshotCursor'
+    - $ref: './common.yaml#/PageCursor'
+    - $ref: './common.yaml#/PageSize'
+  get:
+    operationId: getExternalAgentHistory
+    tags: [Chatballs]
+    summary: Читать публичную историю назад в фиксированном снимке
+    responses:
+      '200':
+        description: Страница по возрастанию логического порядка без trigger/будущих входящих
+        content:
+          application/json:
+            schema: {$ref: './catalogs.yaml#/HistoryPage'}
+      '409': {$ref: './common.yaml#/ErrorResponse'}
+      '413': {$ref: './common.yaml#/ErrorResponse'}
+      default: {$ref: './common.yaml#/ErrorResponse'}

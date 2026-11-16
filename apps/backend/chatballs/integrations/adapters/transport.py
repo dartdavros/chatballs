@@ -22,6 +22,7 @@ from dataclasses import dataclass, field, replace
 from typing import IO
 from urllib.parse import urljoin
 
+from chatballs.ai.execution_policy import transport_handoff
 from chatballs.integrations.adapters.auth import OutboundRequest
 from chatballs.integrations.adapters.contracts import FileRef, Limits
 from chatballs.integrations.adapters.registry import Extension
@@ -66,22 +67,21 @@ class GuardedTransport:
         from chatballs.identity.instance_settings import tools_private_network_allowed
 
         allow_private = tools_private_network_allowed()
-        deadline: float | None = None
+        deadline = time.monotonic() + limits.timeout_seconds
         with _client_context(request.client_certificate) as context:
             for _ in range(MAX_REDIRECTS + 1):
                 target = check_tool_url(request.url, allow_private=allow_private)
-                # Срок — на разговор с сервисом: проверка адреса по политике
-                # установки его не расходует.
-                deadline = deadline or time.monotonic() + limits.timeout_seconds
                 connection = _connected(target, deadline, context)
                 try:
                     # С этого места запрос мог дойти: сбой дальше — не «не отправлено».
-                    connection.request(
-                        request.method,
-                        target.request_target,
-                        body=request.body,
-                        headers={"User-Agent": user_agent(), **request.headers},
-                    )
+                    with transport_handoff():
+                        connection.pinned_sock.settimeout(remaining_time(deadline))
+                        connection.request(
+                            request.method,
+                            target.request_target,
+                            body=request.body,
+                            headers={"User-Agent": user_agent(), **request.headers},
+                        )
                     response = connection.getresponse()
                     location = response.headers.get("Location") if response.status in REDIRECT_STATUSES else None
                     if not location:

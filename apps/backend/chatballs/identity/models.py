@@ -118,6 +118,8 @@ def organization_logo_upload_path(instance: Organization, filename: str) -> str:
 
 
 class Organization(models.Model):
+    external_execution_enabled = models.BooleanField(default=False, db_default=False)
+    external_execution_version = models.PositiveBigIntegerField(default=1, db_default=1)
     operation_mode = models.CharField(max_length=16, choices=OperationMode.choices, default=OperationMode.AI_AGENTS)
     operation_mode_version = models.PositiveBigIntegerField(default=1)
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)

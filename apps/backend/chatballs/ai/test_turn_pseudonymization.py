@@ -56,9 +56,14 @@ class TurnPseudonymizationTests(TestCase):
         self.channel = Channel.objects.create(
             organization=self.organization, code="site", name="Site"
         )
+        provider = Integration.objects.create(
+            organization=self.organization, name="Builtin test provider",
+            kind=IntegrationKind.LLM_PROVIDER, provider=IntegrationProvider.DEMO, secret="demo",
+        )
         self.agent = AIAgent.objects.create(
             organization=self.organization, channel=self.channel, name="Agent",
             status=AIAgentStatus.ACTIVE, persona="Ассистент.", instructions="Помогай клиенту.",
+            provider_integration=provider,
         )
         self.connection = Integration.objects.create(
             organization=self.organization, channel=self.channel, name="Web",

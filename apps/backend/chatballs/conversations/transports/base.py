@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 from django.conf import settings
 
+from chatballs.ai.execution_policy import transport_handoff
 from chatballs.i18n import t
 from chatballs.integrations.outbound import ensure_downloadable
 from chatballs.integrations.proxy import build_opener
@@ -71,7 +72,9 @@ class InboundMessage:
 def request_json(url: str, *, headers: dict | None = None, method: str = "GET", body: dict | None = None, proxy_url: str = "") -> dict:
     data = json.dumps(body).encode("utf-8") if body is not None else None
     request = urllib.request.Request(url, data=data, headers=headers or {}, method=method)
-    with build_opener(proxy_url).open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT) as response:
+    with transport_handoff():
+        response = build_opener(proxy_url).open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT)
+    with response:
         raw = response.read().decode("utf-8")
         return json.loads(raw) if raw else {}
 
@@ -171,6 +174,8 @@ def request_json_multipart(
     request = urllib.request.Request(
         url, data=body, headers={**(headers or {}), "Content-Type": body_type}, method="POST"
     )
-    with build_opener(proxy_url).open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT) as response:
+    with transport_handoff():
+        response = build_opener(proxy_url).open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT)
+    with response:
         raw = response.read().decode("utf-8")
         return json.loads(raw) if raw else {}

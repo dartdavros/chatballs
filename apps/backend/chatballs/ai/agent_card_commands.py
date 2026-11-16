@@ -32,6 +32,10 @@ def create(context, body, *, request=None):
 def update(context, agent_id, body, *, request=None):
     require(context, "ai.manage")
     channel = cards.agent_card_for_context(context=context, agent_id=agent_id)
+    if "executionMode" in body:
+        from chatballs.ai.external_agents.config_bindings import select_execution
+
+        select_execution(context, channel.ai_agent.pk, body["executionMode"])
     channel = cards.update_agent_card(context=context, channel=channel, body=body)
     _audit(context, "ai.agent_updated", channel, fields=sorted(body), request=request)
     return {"agent": cards.agent_card_payload(channel, check_tool_support=True)}
