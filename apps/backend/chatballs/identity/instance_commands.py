@@ -31,35 +31,17 @@ def update(user, body):
     body = body if isinstance(body, dict) else {}
     errors: dict[str, str] = {}
 
-    scheme = str(body.get("publicScheme", row.public_scheme or "http")).lower()
-    if scheme not in SCHEMES:
-        errors["publicScheme"] = t("settings.http_or_https")
+    fields = ["updated_at"]
+    if "publicHost" in body or "publicScheme" in body:
+        fields += _update_public_address(row, body, errors)
 
-    # Владелец может вставить и целый URL из адресной строки — берём хост
-    # и порт, путь отбрасываем.
-    raw_host = str(
-        body.get("publicHost", format_address(row.public_host, row.public_port))
-    ).strip()
-    if "//" in raw_host:
-        raw_host = raw_host.split("//", 1)[1]
-    parsed = split_address(raw_host.split("/", 1)[0], scheme)
-    host, port = parsed if parsed is not None else ("", None)
-    if parsed is None:
-        errors["publicHost"] = t("settings.invalid_port")
-    elif not host:
-        errors["publicHost"] = t("settings.address_required")
-    else:
-        try:
-            # IP-адрес — обычный случай коробки: домена может не быть вовсе.
-            if not _looks_like_ipv4(host):
-                validate_domain(host)
-        except ValidationError:
-            errors["publicHost"] = t("settings.invalid_address")
-
-    raw_language = str(body.get("defaultLanguage", row.default_language)).strip()
-    language = normalize_language(raw_language)
-    if raw_language and not language:
-        errors["defaultLanguage"] = t("settings.language_unsupported")
+    if "defaultLanguage" in body:
+        raw_language = str(body["defaultLanguage"]).strip()
+        language = normalize_language(raw_language)
+        if raw_language and not language:
+            errors["defaultLanguage"] = t("settings.language_unsupported")
+        row.default_language = language or DEFAULT_LANGUAGE
+        fields.append("default_language")
 
     external_checks = body.get("externalChecksEnabled", row.external_checks_enabled)
     if not isinstance(external_checks, bool):
@@ -70,22 +52,6 @@ def update(user, body):
             {"detail": next(iter(errors.values())), "errors": errors}, status=400
         )
 
-    fields = [
-        "public_host",
-        "public_port",
-        "public_scheme",
-        "previous_public_host",
-        "default_language",
-        "updated_at",
-    ]
-    if host != row.public_host:
-        # Прежний адрес остаётся принятым: владелец меняет адрес заранее,
-        # сидя на старом, и не должен выпасть из установки в тот же миг.
-        row.previous_public_host = row.public_host
-    row.public_host = host
-    row.public_port = port
-    row.public_scheme = scheme
-    row.default_language = language or DEFAULT_LANGUAGE
     if external_checks != row.external_checks_enabled:
         row.external_checks_enabled = external_checks
         row.external_checks_revision += 1
@@ -135,6 +101,37 @@ def update(user, body):
     row.save(update_fields=fields)
     invalidate_cache()
     return CommandOutcome({"instance": instance_payload(row)})
+
+
+def _update_public_address(row: InstanceSettings, body: dict, errors: dict[str, str]) -> list[str]:
+    scheme = str(body.get("publicScheme", row.public_scheme or "http")).lower()
+    if scheme not in SCHEMES:
+        errors["publicScheme"] = t("settings.http_or_https")
+
+    # Владелец может вставить целый URL. Берём хост и порт, отбрасываем путь.
+    raw_host = str(body.get("publicHost", format_address(row.public_host, row.public_port))).strip()
+    if "//" in raw_host:
+        raw_host = raw_host.split("//", 1)[1]
+    parsed = split_address(raw_host.split("/", 1)[0], scheme)
+    if parsed is None:
+        errors["publicHost"] = t("settings.invalid_port")
+        return []
+    host, port = parsed
+    if not host:
+        errors["publicHost"] = t("settings.address_required")
+    elif not _looks_like_ipv4(host):
+        try:
+            validate_domain(host)
+        except ValidationError:
+            errors["publicHost"] = t("settings.invalid_address")
+
+    # Прежний адрес продолжает работать после смены хоста.
+    if host != row.public_host:
+        row.previous_public_host = row.public_host
+    row.public_host = host
+    row.public_port = port
+    row.public_scheme = scheme
+    return ["public_host", "public_port", "public_scheme", "previous_public_host"]
 
 
 def _looks_like_ipv4(value: str) -> bool:
