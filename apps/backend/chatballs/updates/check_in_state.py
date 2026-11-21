@@ -13,6 +13,7 @@ from chatballs.updates.check_in_client import (
     RETRY_INTERVAL,
     TIMEOUT_SECONDS,
     CheckInResult,
+    valid_check_in_version,
 )
 
 
@@ -23,6 +24,8 @@ class CheckInState(models.Model):
     installation_id = models.UUIDField(default=uuid4, editable=False)
     next_attempt_at = models.DateTimeField(null=True, blank=True)
     attempt_id = models.UUIDField(null=True, blank=True)
+    last_attempted_version = models.CharField(max_length=255, blank=True, default="")
+    rate_limited = models.BooleanField(default=False)
     announcements = models.JSONField(default=list)
     received_at = models.DateTimeField(null=True, blank=True)
     received_revision = models.PositiveBigIntegerField(null=True, blank=True)
@@ -52,16 +55,19 @@ def _states():
 
 
 @transaction.atomic
-def reserve_attempt() -> Attempt | None:
+def reserve_attempt(version: str) -> Attempt | None:
     instance = _lock_instance()
     if not instance.external_checks_enabled:
         return None
     state, _ = CheckInState.objects.get_or_create(instance=instance)
     attempt_id = uuid4()
-    # Recovery window if the process dies after committing the claim.
-    claimed = _states().filter(
-        models.Q(next_attempt_at__isnull=True) | models.Q(next_attempt_at__lte=Now()),
-    ).update(attempt_id=attempt_id, next_attempt_at=Now() + RETRY_INTERVAL)
+    due = models.Q(next_attempt_at__isnull=True) | models.Q(next_attempt_at__lte=Now())
+    # The deadline doubles as the recovery window if the process dies after claiming.
+    reservation = {"attempt_id": attempt_id, "next_attempt_at": Now() + RETRY_INTERVAL}
+    if valid_check_in_version(version):
+        due |= models.Q(attempt_id__isnull=True, rate_limited=False) & ~models.Q(last_attempted_version=version)
+        reservation["last_attempted_version"] = version
+    claimed = _states().filter(due).update(**reservation)
     if not claimed:
         return None
     return Attempt(state.installation_id, attempt_id, instance.external_checks_revision)
@@ -88,9 +94,10 @@ def finish_attempt(attempt: Attempt, result: CheckInResult) -> bool:
         return False
     state.attempt_id = None
     current = instance.external_checks_enabled and instance.external_checks_revision == attempt.revision
-    delay = result.delay if current or result.error == "http_429" else DAILY_INTERVAL
+    state.rate_limited = result.error == "http_429"
+    delay = result.delay if current or state.rate_limited else DAILY_INTERVAL
     state.next_attempt_at = state.db_now + min(delay, datetime.max.replace(tzinfo=UTC) - state.db_now)
-    fields = ["attempt_id", "next_attempt_at"]
+    fields = ["attempt_id", "next_attempt_at", "rate_limited"]
     if current:
         state.last_error = result.error
         state.last_result_revision = attempt.revision

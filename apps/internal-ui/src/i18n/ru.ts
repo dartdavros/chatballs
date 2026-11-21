@@ -1413,7 +1413,7 @@ export const ru = {
   "updates.updater_offline": "Сервис обновления не запущен, обновление из интерфейса недоступно",
   "updates.card_title": "Обновления",
   "updates.external_checks_label": "Получать обновления и сервисные сообщения.",
-  "updates.external_checks_hint": "В запросах будет передаваться идентификатор установки",
+  "updates.external_checks_hint": "В Backoffice передаются идентификатор установки и внешний адрес, если он настроен.",
   "updates.external_checks_save_error": "Не удалось сохранить настройку.",
   "updates.announcement_label": "Сервисное сообщение",
   "updates.announcement_details": "Подробнее",

@@ -3,16 +3,68 @@
 import asyncio
 from dataclasses import dataclass
 from datetime import timedelta
+from ipaddress import IPv6Address, ip_address
 from unicodedata import category
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 from uuid import UUID
 
 import httpx
+from django.core.exceptions import ValidationError
+from django.core.validators import DomainNameValidator
 
 CHECK_IN_URL = "https://bo.chatballs.ru/public/v1/installations/check-in/"
 TIMEOUT_SECONDS = 5
 DAILY_INTERVAL = timedelta(days=1)
 RETRY_INTERVAL = timedelta(minutes=15)
+MAX_REQUEST_BYTES = 4096
+LOCAL_DOMAIN_SUFFIXES = (
+    ".localhost", ".local", ".localdomain", ".internal", ".lan", ".home.arpa",
+    ".test", ".invalid", ".example",
+)
+
+
+def _public_host(host: str) -> str:
+    if "%" in host:
+        return ""
+    try:
+        ip = ip_address(host.rstrip("."))
+    except ValueError:
+        if host.rstrip(".").endswith(LOCAL_DOMAIN_SUFFIXES):
+            return ""
+        try:
+            DomainNameValidator()(host)
+        except ValidationError:
+            return ""
+        return host
+
+    public_ip = (ip.ipv4_mapped or ip) if isinstance(ip, IPv6Address) else ip
+    if not public_ip.is_global or public_ip.is_multicast or public_ip.is_reserved:
+        return ""
+    if isinstance(ip, IPv6Address):
+        return "" if ip.is_site_local else f"[{ip}]"
+    return str(ip)
+
+
+def _clean_public_url(value: str) -> str:
+    if any(char.isspace() or category(char) in {"Cc", "Cs"} or char == "\\" for char in value):
+        return ""
+    try:
+        parsed = urlsplit(value)
+        port = parsed.port
+    except ValueError:
+        return ""
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname or port == 0:
+        return ""
+    authority = parsed.netloc.rsplit("@", 1)[-1]
+    if authority.startswith("["):
+        _, _, suffix = authority.partition("]")
+        if suffix and not suffix.startswith(":"):
+            return ""
+    host = _public_host(parsed.hostname)
+    if not host or authority.startswith("[") != host.startswith("["):
+        return ""
+    address = f"{host}:{port}" if port is not None else host
+    return urlunsplit((parsed.scheme, address, parsed.path, "", ""))
 
 
 @dataclass(frozen=True)
@@ -71,21 +123,31 @@ def _rate_limit_delay(value: str) -> timedelta:
     return RETRY_INTERVAL
 
 
-async def _post(installation_id: UUID, version: str) -> CheckInResult:
+def _build_request(installation_id: UUID, version: str, public_url: str) -> httpx.Request:
+    payload = {"installation_id": str(installation_id), "version": version}
+    if cleaned_url := _clean_public_url(public_url):
+        request = httpx.Request("POST", CHECK_IN_URL, json={**payload, "public_url": cleaned_url})
+        if len(request.content) <= MAX_REQUEST_BYTES:
+            return request
+    return httpx.Request("POST", CHECK_IN_URL, json=payload)
+
+
+async def _post(request: httpx.Request) -> CheckInResult:
     try:
         async with asyncio.timeout(TIMEOUT_SECONDS):
             async with httpx.AsyncClient(
                 verify=True, follow_redirects=False, trust_env=False, timeout=TIMEOUT_SECONDS,
             ) as client:
-                response = await client.post(
-                    CHECK_IN_URL,
-                    json={"installation_id": str(installation_id), "version": version},
-                )
+                response = await client.send(request)
     except (TimeoutError, httpx.TimeoutException):
         return CheckInResult(error="timeout", delay=RETRY_INTERVAL)
     except httpx.HTTPError:
         return CheckInResult(error="network", delay=RETRY_INTERVAL)
 
+    return _read_response(response)
+
+
+def _read_response(response: httpx.Response) -> CheckInResult:
     status = response.status_code
     if status == 200:
         try:
@@ -100,7 +162,11 @@ async def _post(installation_id: UUID, version: str) -> CheckInResult:
     )
 
 
-def send_check_in(installation_id: UUID, version: str) -> CheckInResult:
-    if not 1 <= len(version) <= 255 or any(category(char) in {"Cc", "Cs"} for char in version):
+def valid_check_in_version(version: str) -> bool:
+    return 1 <= len(version) <= 255 and all(category(char) not in {"Cc", "Cs"} for char in version)
+
+
+def send_check_in(installation_id: UUID, version: str, public_url: str = "") -> CheckInResult:
+    if not valid_check_in_version(version):
         return CheckInResult(error="invalid_version")
-    return asyncio.run(_post(installation_id, version))
+    return asyncio.run(_post(_build_request(installation_id, version, public_url)))

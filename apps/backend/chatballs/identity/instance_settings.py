@@ -263,17 +263,8 @@ def remember_public_host(raw_host: str, scheme: str = "http") -> None:
     row.save(update_fields=["public_host", "public_port", "public_scheme", "updated_at"])
 
 
-def public_base_url() -> str:
-    """Адрес установки для абсолютных ссылок, уходящих наружу.
-
-    Такие ссылки агент отдаёт клиенту в мессенджер, поэтому «localhost»
-    здесь недопустим. Источник — адрес, на котором прошли мастер (и который
-    владелец может поменять в «Настройках»); переменная окружения остаётся
-    переопределением для установок, ведущих конфигурацию сами.
-    """
-
-    from django.conf import settings
-
+def configured_public_base_url() -> str:
+    """Актуальный настроенный адрес установки без встроенного значения."""
     configured = os.environ.get("CHATBALLS_PUBLIC_BASE_URL", "").strip()
     if configured:
         return configured.rstrip("/")
@@ -286,7 +277,14 @@ def public_base_url() -> str:
     if row is not None and row.public_host:
         scheme = row.public_scheme or "http"
         return f"{scheme}://{format_address(row.public_host, row.public_port)}"
-    return str(settings.CHATBALLS_PUBLIC_BASE_URL).rstrip("/")
+    return ""
+
+
+def public_base_url() -> str:
+    """Адрес установки для абсолютных ссылок, уходящих наружу."""
+    from django.conf import settings
+
+    return configured_public_base_url() or str(settings.CHATBALLS_PUBLIC_BASE_URL).rstrip("/")
 
 
 def email_is_configured() -> bool:

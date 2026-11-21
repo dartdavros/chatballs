@@ -137,6 +137,12 @@ class Command(BaseCommand):
             # переставали забираться входящие сообщения и истекать приглашения
             # на звонки. Проверки дешёвые: почти всегда это сравнение времени.
             now = time.monotonic()
+            if does_polling and now - last_check_in_sweep >= CHECK_IN_SWEEP_INTERVAL:
+                last_check_in_sweep = now
+                try:
+                    check_in_if_due()
+                except Exception:  # pragma: no cover
+                    logger.exception("Backoffice check-in cycle failed")
             if does_events and now - last_stale_sweep >= STALE_SWEEP_INTERVAL:
                 last_stale_sweep = now
                 try:
@@ -162,12 +168,6 @@ class Command(BaseCommand):
                 self._for_each_tenant(
                     sweep_waiting_conversations, "Waiting queue sweep cycle failed"
                 )
-            if does_polling and now - last_check_in_sweep >= CHECK_IN_SWEEP_INTERVAL:
-                last_check_in_sweep = now
-                try:
-                    check_in_if_due()
-                except Exception:  # pragma: no cover
-                    logger.exception("Backoffice check-in cycle failed")
             if does_polling and now - last_maintenance >= MAINTENANCE_INTERVAL:
                 last_maintenance = now
                 # Канал релизов спрашивается не чаще раза в несколько часов:

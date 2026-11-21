@@ -1412,7 +1412,7 @@ export const en: Record<MessageKey, Message> = {
   "updates.updater_offline": "The update service is not running, so updating from the interface is unavailable",
   "updates.card_title": "Updates",
   "updates.external_checks_label": "Receive updates and service announcements.",
-  "updates.external_checks_hint": "Requests will include the installation ID",
+  "updates.external_checks_hint": "The installation ID and, if configured, the public address are sent to Backoffice.",
   "updates.external_checks_save_error": "Could not save the setting.",
   "updates.announcement_label": "Service announcement",
   "updates.announcement_details": "Learn more",
