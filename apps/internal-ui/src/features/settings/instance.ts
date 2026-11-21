@@ -25,6 +25,7 @@ export type InstancePayload = {
   updatedAt: string | null;
   // Язык экранов до входа и умолчание для организаций без своего языка.
   defaultLanguage: string;
+  externalChecksEnabled: boolean;
   languages: Array<{ code: string; label: string }>;
   email: EmailPayload;
   turn: { urls: string[]; ttlSeconds: number; secretReady: boolean };

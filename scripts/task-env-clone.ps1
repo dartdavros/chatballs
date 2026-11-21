@@ -90,13 +90,18 @@ try {
     try {
         Invoke-Docker run --rm --network "container:$postgres" --entrypoint pg_dump `
             -v "${Name}_clone-scratch:/dump" $image `
-            -h 127.0.0.1 -U $superuser -Fc -f /dump/db.dump $database
+            -h 127.0.0.1 -U $superuser -Fc --exclude-table-data=public.updates_checkinstate `
+            -f /dump/db.dump $database
         Invoke-Docker run --rm --network "container:$target" --entrypoint pg_restore `
             -v "${Name}_clone-scratch:/dump" $image `
             -h 127.0.0.1 -U $superuser -d $database --exit-on-error --single-transaction /dump/db.dump
     } finally {
         & docker volume rm "${Name}_clone-scratch" | Out-Null
     }
+    # Migrate the target only, then assign a new UUID with outbound checks off.
+    # Skaro starts the workers only after this script completes successfully.
+    $prepareCopy = 'python manage.py migrate --noinput && python manage.py prepare_installation_copy --confirm-independent-copy'
+    Invoke-Docker compose run --rm --no-deps --build init sh -ec $prepareCopy
 } catch {
     # The copy is disposable and nothing else exists in its project yet; the source is never touched.
     & docker compose down --volumes --remove-orphans 2>$null | Out-Null

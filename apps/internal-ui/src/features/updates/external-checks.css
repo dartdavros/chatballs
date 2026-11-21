@@ -1,0 +1,63 @@
+.external-setting {
+  margin-top: 18px;
+  padding: 14px 0 10px;
+  border-top: 1px solid var(--n-9);
+}
+
+.external-setting .settings-card-head {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.external-setting-status {
+  min-height: 22px;
+  color: var(--primary);
+}
+
+.external-setting-status .settings-section-error {
+  margin: 4px 0 0;
+}
+
+.external-setting-status .cb-loader {
+  display: block;
+}
+
+.service-messages {
+  min-height: 90px;
+  padding-top: 14px;
+  border-top: 1px solid var(--n-9);
+}
+
+.service-messages h3,
+.service-message h4 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 13.5px;
+}
+
+.service-message {
+  padding: 12px 0;
+  overflow-wrap: anywhere;
+}
+
+.service-message + .service-message {
+  border-top: 1px solid var(--n-9);
+}
+
+.service-message p {
+  margin: 6px 0 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.service-message a {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .settings-content .administration-card:has(.external-setting) .settings-facts {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

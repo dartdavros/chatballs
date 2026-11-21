@@ -23,7 +23,11 @@ export function PlatformSettingsCard({ canManage, organizationName }: { canManag
 
   return (
     <>
-      <UpdatesCard canManage={canManage} />
+      <UpdatesCard
+        canManage={canManage}
+        externalChecksEnabled={current.externalChecksEnabled}
+        onSettingsSaved={setCurrent}
+      />
       <AddressCard canManage={canManage} current={current} onSaved={setCurrent} />
       <LanguageCard canManage={canManage} current={current} onSaved={setCurrent} />
       <EmailCard canManage={canManage} current={current} onSaved={setCurrent} />

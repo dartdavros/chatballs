@@ -33,6 +33,11 @@ urlpatterns = [
     ),
     # Обновления установки: состояние, проверка канала, установка по кнопке.
     path("update/", update_views.UpdateStateView.as_view(), name="instance-update"),
+    path(
+        "update/announcements/",
+        update_views.ServiceAnnouncementsView.as_view(),
+        name="instance-update-announcements",
+    ),
     path("update/check/", update_views.UpdateCheckView.as_view(), name="instance-update-check"),
     path("update/install/", update_views.UpdateInstallView.as_view(), name="instance-update-install"),
 ]

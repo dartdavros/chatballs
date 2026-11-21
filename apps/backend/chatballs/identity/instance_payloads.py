@@ -18,6 +18,7 @@ def instance_payload(row: InstanceSettings) -> dict:
         "publicUrl": public_base_url(),
         # Язык экранов, где организации ещё нет: логин, сброс пароля, мастер.
         "defaultLanguage": row.default_language or DEFAULT_LANGUAGE,
+        "externalChecksEnabled": row.external_checks_enabled,
         "languages": [{"code": code, "label": label} for code, label in LANGUAGES],
         "updatedAt": row.updated_at,
         "email": {

@@ -62,6 +62,19 @@ class InstallationActionTests(TestCase):
             self.invoke("instance.network.patch", {"enabled": True})
         self.assertFalse(InstanceSettings.load().tools_private_network)
 
+    def test_external_checks_setting_controls_the_release_check_in_the_catalog(self):
+        data = self.invoke("instance.settings.patch", {"publicHost": "127.0.0.1"})
+        self.assertTrue(data["instance"]["externalChecksEnabled"])
+        data = self.invoke("instance.settings.patch", {"externalChecksEnabled": False})
+        self.assertFalse(data["instance"]["externalChecksEnabled"])
+        update = self.invoke("instance.update.check")["update"]
+        self.assertIsNone(update["checkedAt"])
+        self.assertEqual(update["checkError"], "")
+        HumanUser.objects.filter(pk=self.user.pk).update(is_instance_admin=False)
+        with self.assertRaises(NativeAccessDenied):
+            self.invoke("instance.settings.patch", {"externalChecksEnabled": True})
+        self.assertFalse(InstanceSettings.load().external_checks_enabled)
+
     def test_storage_result_does_not_disclose_provider_errors_or_masked_keys(self):
         row = ss.StorageSettings.load()
         row.s3_access_key = "SecretAccessKey176"

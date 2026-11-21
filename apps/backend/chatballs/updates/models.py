@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from django.db import models
 
+from chatballs.updates.check_in_state import CheckInState  # noqa: F401
+
 
 class InstallStatus(models.TextChoices):
     IDLE = "IDLE", "Не запускалась"

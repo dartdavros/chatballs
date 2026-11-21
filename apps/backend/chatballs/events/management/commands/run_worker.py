@@ -31,6 +31,7 @@ from chatballs.ratings.web_delivery import deliver_due_requests
 from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.lookup import iter_organizations
+from chatballs.updates.check_in import check_in_if_due
 from chatballs.updates.services import check_for_updates
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,7 @@ CALL_SWEEP_INTERVAL = 10.0  # seconds between call timeout sweeps (invite expiry
 QUEUE_SWEEP_INTERVAL = 30.0  # seconds between waiting-queue escalation sweeps
 # Возврат событий, взятых в работу упавшим процессом.
 STALE_SWEEP_INTERVAL = 60.0
+CHECK_IN_SWEEP_INTERVAL = 30.0
 
 
 class Command(BaseCommand):
@@ -125,6 +127,7 @@ class Command(BaseCommand):
         last_call_sweep = 0.0
         last_queue_sweep = 0.0
         last_stale_sweep = 0.0
+        last_check_in_sweep = -CHECK_IN_SWEEP_INTERVAL
         while True:
             worked = self._dispatch_one() if does_events else False
 
@@ -159,6 +162,12 @@ class Command(BaseCommand):
                 self._for_each_tenant(
                     sweep_waiting_conversations, "Waiting queue sweep cycle failed"
                 )
+            if does_polling and now - last_check_in_sweep >= CHECK_IN_SWEEP_INTERVAL:
+                last_check_in_sweep = now
+                try:
+                    check_in_if_due()
+                except Exception:  # pragma: no cover
+                    logger.exception("Backoffice check-in cycle failed")
             if does_polling and now - last_maintenance >= MAINTENANCE_INTERVAL:
                 last_maintenance = now
                 # Канал релизов спрашивается не чаще раза в несколько часов:

@@ -68,6 +68,8 @@ class InstanceSettings(models.Model):
         "identity.HumanUser", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     tools_private_network_enabled_at = models.DateTimeField(null=True, blank=True)
+    external_checks_enabled = models.BooleanField(default=True)
+    external_checks_revision = models.PositiveBigIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -85,6 +87,13 @@ class InstanceSettings(models.Model):
     def load(cls) -> InstanceSettings:
         obj, _ = cls.objects.get_or_create(pk=cls.SINGLETON_PK)
         return obj
+
+
+def external_checks_allowed() -> bool:
+    enabled = InstanceSettings.objects.filter(pk=InstanceSettings.SINGLETON_PK).values_list(
+        "external_checks_enabled", flat=True
+    ).first()
+    return enabled is not False
 
 
 _CACHE_TTL_SECONDS = 10.0

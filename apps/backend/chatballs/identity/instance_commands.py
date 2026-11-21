@@ -61,6 +61,10 @@ def update(user, body):
     if raw_language and not language:
         errors["defaultLanguage"] = t("settings.language_unsupported")
 
+    external_checks = body.get("externalChecksEnabled", row.external_checks_enabled)
+    if not isinstance(external_checks, bool):
+        errors["externalChecksEnabled"] = t("api.boolean_required")
+
     if errors:
         return CommandOutcome(
             {"detail": next(iter(errors.values())), "errors": errors}, status=400
@@ -82,6 +86,10 @@ def update(user, body):
     row.public_port = port
     row.public_scheme = scheme
     row.default_language = language or DEFAULT_LANGUAGE
+    if external_checks != row.external_checks_enabled:
+        row.external_checks_enabled = external_checks
+        row.external_checks_revision += 1
+        fields += ["external_checks_enabled", "external_checks_revision"]
 
     email = body.get("email")
     if isinstance(email, dict):

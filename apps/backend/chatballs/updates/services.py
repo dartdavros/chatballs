@@ -18,6 +18,7 @@ from pathlib import Path
 from django.conf import settings
 from django.utils import timezone
 
+from chatballs.identity.instance_settings import external_checks_allowed
 from chatballs.updates.github import (
     ReleaseChannelError,
     fetch_latest_release,
@@ -49,6 +50,8 @@ def check_for_updates(*, force: bool = False) -> UpdateState:
     state = UpdateState.load()
     interval = timedelta(seconds=settings.CHATBALLS_UPDATE_CHECK_INTERVAL_SECONDS)
     if not force and state.checked_at and timezone.now() - state.checked_at < interval:
+        return state
+    if not external_checks_allowed():
         return state
     try:
         release = fetch_latest_release()

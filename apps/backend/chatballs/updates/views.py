@@ -1,9 +1,11 @@
 """Update API retains its permissions and uses common domain commands."""
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.identity.command_http import command_response
 from chatballs.identity.instance_access import InstanceSettingsPermission, IsInstanceAdmin
 from chatballs.updates import commands
+from chatballs.updates.check_in_state import announcement_snapshot
 
 
 class UpdateStateView(APIView):
@@ -11,6 +13,13 @@ class UpdateStateView(APIView):
 
     def get(self, request):
         return command_response(commands.read(request.user, request=request))
+
+
+class ServiceAnnouncementsView(APIView):
+    permission_classes = [IsInstanceAdmin]
+
+    def get(self, request):
+        return Response(announcement_snapshot(), headers={"Cache-Control": "no-store"})
 
 
 class UpdateCheckView(APIView):

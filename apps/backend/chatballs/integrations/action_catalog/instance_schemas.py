@@ -16,9 +16,11 @@ EMAIL_OUTPUT = obj(host=field("host"), port=field("port", "integer"), user=field
 TURN_INPUT = obj(urls=field("urls", "array", items=TypeSpec("string")), ttlSeconds=field("ttlSeconds", "integer"))
 TURN_OUTPUT = obj(**dict(TURN_INPUT.properties), secretReady=field("secretReady", "boolean"))
 INPUT = obj(publicHost=field("publicHost"), publicScheme=field("publicScheme"),
-    defaultLanguage=field("defaultLanguage"), email=EMAIL_INPUT, turn=TURN_INPUT)
+    defaultLanguage=field("defaultLanguage"), email=EMAIL_INPUT, turn=TURN_INPUT,
+    externalChecksEnabled=field("externalChecksEnabled", "boolean"))
 OUTPUT = obj(instance=obj(publicHost=field("publicHost"), publicScheme=field("publicScheme"),
     publicUrl=field("publicUrl"), defaultLanguage=field("defaultLanguage"),
+    externalChecksEnabled=field("externalChecksEnabled", "boolean"),
     languages=field("languages", "array", items=obj(code=field("code"), label=field("label"))),
     updatedAt=field("updatedAt", "datetime", nullable=True), email=EMAIL_OUTPUT, turn=TURN_OUTPUT))
 NETWORK = obj(toolsNetwork=obj(enabled=field("enabled", "boolean"),
