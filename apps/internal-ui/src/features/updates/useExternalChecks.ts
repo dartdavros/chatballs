@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 import { api, ApiError } from "../../api/client";
 import { patchInstance, type InstancePayload } from "../settings/instance";
@@ -15,19 +15,14 @@ type AnnouncementResponse = {
   expiresInMs: number | null;
 };
 
-type Snapshot = Omit<AnnouncementResponse, "expiresInMs"> & { deadline: number | null };
+type Snapshot = Omit<AnnouncementResponse, "expiresInMs" | "failed"> & { deadline: number | null };
 
-export function useExternalChecks(
-  canManage: boolean,
-  savedEnabled: boolean,
-  onSettingsSaved: (settings: InstancePayload) => void,
-) {
+export function useExternalChecks(canManage: boolean) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [readFailed, setReadFailed] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const [saving, setSaving] = useState(false);
   const reader = useRef<AbortController | null>(null);
-  const enabled = snapshot?.enabled ?? savedEnabled;
+  const enabled = snapshot?.enabled ?? null;
 
   useEffect(() => {
     if (!canManage || saving) return undefined;
@@ -38,18 +33,17 @@ export function useExternalChecks(
     async function read() {
       const started = Date.now();
       try {
-        const { expiresInMs, ...result } = await api<AnnouncementResponse>(ANNOUNCEMENTS_URL, {
+        const { enabled, announcements, expiresInMs } = await api<AnnouncementResponse>(ANNOUNCEMENTS_URL, {
+          cache: "no-store",
           signal: controller.signal,
         });
         if (controller.signal.aborted) return;
-        setSnapshot({ ...result, deadline: expiresInMs === null ? null : started + expiresInMs });
-        setReadFailed(false);
+        setSnapshot({ enabled, announcements, deadline: expiresInMs === null ? null : started + expiresInMs });
       } catch (error) {
         if (controller.signal.aborted) return;
         if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
           setSnapshot(null);
         }
-        setReadFailed(true);
       }
       refresh = window.setTimeout(() => void read(), REFRESH_INTERVAL);
     }
@@ -76,17 +70,18 @@ export function useExternalChecks(
     };
   }, [snapshot]);
 
-  async function toggle() {
+  async function toggle(nextEnabled: boolean): Promise<InstancePayload | undefined> {
+    if (!canManage || saving) return undefined;
     reader.current?.abort();
     setSaving(true);
     setSaveFailed(false);
     try {
-      const saved = await patchInstance({ externalChecksEnabled: !enabled });
-      setSnapshot(null);
-      setReadFailed(false);
-      onSettingsSaved(saved);
+      const saved = await patchInstance({ externalChecksEnabled: nextEnabled });
+      setSnapshot({ enabled: saved.externalChecksEnabled, announcements: null, deadline: null });
+      return saved;
     } catch {
       setSaveFailed(true);
+      return undefined;
     } finally {
       setSaving(false);
     }
@@ -97,8 +92,15 @@ export function useExternalChecks(
     enabled,
     saving,
     saveFailed,
-    failed: enabled && (readFailed || Boolean(snapshot?.failed)),
-    announcements: enabled && fresh ? snapshot?.announcements ?? null : null,
+    announcements: canManage && enabled && fresh ? snapshot?.announcements ?? null : null,
     toggle,
   };
+}
+
+export const ExternalChecksContext = createContext<ReturnType<typeof useExternalChecks> | null>(null);
+
+export function useShellExternalChecks() {
+  const external = useContext(ExternalChecksContext);
+  if (!external) throw new Error("External checks require the workspace shell");
+  return external;
 }

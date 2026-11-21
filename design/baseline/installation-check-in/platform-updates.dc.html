@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Сервисные сообщения · Черновик макета Chatballs</title>
+  <title>Обновления · Chatballs</title>
   <link rel="stylesheet" href="../../../apps/internal-ui/src/styles/base.css">
   <link rel="stylesheet" href="../../../apps/internal-ui/src/shared/form-controls.css">
   <link rel="stylesheet" href="../../../apps/internal-ui/src/shared/ui-controls.css">
@@ -22,12 +22,6 @@
     .external-setting .settings-card-head { padding-bottom: 0; border-bottom: 0; }
     .external-setting-status { min-height: 22px; color: var(--primary); }
     .external-setting-status .settings-section-error { margin: 4px 0 0; }
-    .service-messages { min-height: 90px; padding-top: 14px; border-top: 1px solid var(--n-9); }
-    .service-messages h3, .service-message h4 { margin: 0; color: var(--n-1); font-size: 13.5px; }
-    .service-message { padding: 12px 0; overflow-wrap: anywhere; }
-    .service-message + .service-message { border-top: 1px solid var(--n-9); }
-    .service-message p { margin: 6px 0 0; line-height: 1.5; white-space: pre-wrap; }
-    .service-message a { display: inline-block; margin-top: 8px; font-size: 13px; }
     @media (max-width: 600px) {
       .design-document { padding-inline: 12px; }
       .settings-facts { grid-template-columns: minmax(0, 1fr) auto; }
@@ -36,10 +30,7 @@
 </head>
 <body>
   <main class="design-document">
-    <h1>Получение обновлений и сервисных сообщений</h1>
-    <p class="settings-section-note">Черновик для согласования. Настройки → Платформа → Обновления. Переключатель и сообщения видит администратор установки, как и сам раздел «Платформа».</p>
-    <p class="settings-section-note">Карточка сохраняет данные о релизах. При выключенном переключателе кнопка «Проверить» недоступна. После включения GitHub снова можно проверять вручную. Сервисные сообщения появляются после следующего успешного получения.</p>
-    <p class="settings-section-note">При ошибке получения предыдущие сообщения остаются видны до истечения 24 часов с момента получения. Заголовки и абзацы показываются обычным текстом в порядке ответа. Пустые и недопустимые ссылки скрыты.</p>
+    <h1>Обновления</h1>
     <div id="frames"></div>
   </main>
 
@@ -81,28 +72,10 @@
               </div>
               <div class="external-setting-status" aria-live="polite"></div>
             </section>
-            <section class="service-messages">
-              <h3>Сервисные сообщения</h3>
-              <div data-service-content></div>
-            </section>
           </section>
         </div>
       </section>
     </section>
-  </template>
-
-  <template id="messages">
-    <article class="service-message">
-      <h4>Плановое обслуживание</h4>
-      <p class="settings-card-note">Вечером возможен короткий перерыв.
-
-Подробности на сайте.</p>
-      <a class="link is-neutral" href="https://chatballs.ru/" target="_blank" rel="noreferrer">Подробнее</a>
-    </article>
-    <article class="service-message">
-      <h4>Обслуживание завершено</h4>
-      <p class="settings-card-note">Все сервисы работают в обычном режиме.</p>
-    </article>
   </template>
 
   <template id="saving">
@@ -111,14 +84,10 @@
 
   <script>
     const frames = [
-      { id: "messages", title: "Два сообщения, одно со ссылкой", messages: true },
-      { id: "empty", title: "Пустой ответ", note: "Сервисных сообщений нет." },
-      { id: "disabled", title: "Получение выключено", disabled: true, note: "Получение сервисных сообщений выключено." },
-      { id: "waiting", title: "До первого свежего ответа", note: "Сообщения появятся после следующей проверки." },
-      { id: "failed", title: "Ошибка получения без свежих сообщений", fetchError: true },
-      { id: "failed-with-messages", title: "Ошибка получения со свежими сообщениями", fetchError: true, messages: true },
-      { id: "saving", title: "Изменение сохраняется", saving: true, note: "Сервисных сообщений нет." },
-      { id: "save-error", title: "Ошибка сохранения", saveError: true, note: "Сервисных сообщений нет." },
+      { id: "enabled", title: "Получение включено" },
+      { id: "disabled", title: "Получение выключено", disabled: true },
+      { id: "saving", title: "Изменение сохраняется", saving: true },
+      { id: "save-error", title: "Ошибка сохранения", saveError: true },
     ];
 
     function appendText(container, text, error = false) {
@@ -143,11 +112,6 @@
       const feedback = frame.querySelector(".external-setting-status");
       if (state.saving) feedback.append(document.querySelector("#saving").content.cloneNode(true));
       if (state.saveError) appendText(feedback, "Не удалось сохранить настройку.", true);
-
-      const messages = frame.querySelector("[data-service-content]");
-      if (state.fetchError) appendText(messages, "Не удалось получить сервисные сообщения.", true);
-      if (state.note) appendText(messages, state.note);
-      if (state.messages) messages.append(document.querySelector("#messages").content.cloneNode(true));
 
       document.querySelector("#frames").append(fragment);
     }

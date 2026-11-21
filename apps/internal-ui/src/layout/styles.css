@@ -1,6 +1,13 @@
+.hub-frame {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .hub-shell {
   position: relative;
-  height: 100vh;
+  flex: 1;
+  min-height: 0;
   display: flex;
   overflow: hidden;
   background: var(--n-11);
@@ -16,7 +23,7 @@
 .hub-sidebar {
   position: relative;
   width: var(--sidebar-width, 220px);
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex: none;
   flex-direction: column;
@@ -578,7 +585,7 @@
 
 .hub-main {
   min-width: 0;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex: 1;
   flex-direction: column;

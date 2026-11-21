@@ -8,7 +8,7 @@ import { checkUpdates, installUpdate } from "./api";
 import { useUpdatesCardPresence } from "./cardPresence";
 import { ExternalChecksPanel } from "./ExternalChecksPanel";
 import { UpdateProgress } from "./UpdateProgress";
-import { useExternalChecks } from "./useExternalChecks";
+import { useShellExternalChecks } from "./useExternalChecks";
 import { useUpdateInfo } from "./useUpdateInfo";
 import { t } from "../../i18n";
 
@@ -25,11 +25,17 @@ export function UpdatesCard({ canManage, externalChecksEnabled, onSettingsSaved 
 }) {
   const { info, setInfo, installing, unreachable, finished, forget, markPending, targetVersion, startedAt } =
     useUpdateInfo(true);
-  const external = useExternalChecks(canManage, externalChecksEnabled, onSettingsSaved);
+  const external = useShellExternalChecks();
+  const enabled = external.enabled ?? externalChecksEnabled;
   const [busy, setBusy] = useState(false);
   const [errorText, setErrorText] = useState("");
   // Пока карточка на экране, полоса наверху о том же не говорит.
   useUpdatesCardPresence();
+
+  async function toggleExternalChecks() {
+    const settings = await external.toggle(!enabled);
+    if (settings) onSettingsSaved(settings);
+  }
 
   async function run(action: () => Promise<typeof info>) {
     setBusy(true);
@@ -65,7 +71,7 @@ export function UpdatesCard({ canManage, externalChecksEnabled, onSettingsSaved 
           <small>{t("updates.card_hint")}</small>
         </div>
         {canManage && (
-          <Button variant="secondary" disabled={busy || installing || external.saving || !external.enabled} onClick={() => void run(checkUpdates)}>{t("updates.check")}</Button>
+          <Button variant="secondary" disabled={busy || installing || external.saving || !enabled} onClick={() => void run(checkUpdates)}>{t("updates.check")}</Button>
         )}
       </div>
       <dl className="settings-facts">
@@ -116,7 +122,14 @@ export function UpdatesCard({ canManage, externalChecksEnabled, onSettingsSaved 
       {!installing && !finished && info && !info.available && latest && !info.checkError && (
         <p className="settings-card-note">{t("updates.up_to_date")}</p>
       )}
-      {canManage && <ExternalChecksPanel {...external} />}
+      {canManage && (
+        <ExternalChecksPanel
+          enabled={enabled}
+          saving={external.saving}
+          saveFailed={external.saveFailed}
+          onToggle={() => void toggleExternalChecks()}
+        />
+      )}
     </div>
   );
 }

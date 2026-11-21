@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { AppData, AuthenticatedUser, Employee, RouteKey, SessionUser } from "../types";
 import type { SettingsSectionKey } from "../features/settings/sections";
@@ -17,6 +17,8 @@ import { OnboardingOverlay } from "../features/onboarding/OnboardingOverlay";
 import { OnboardingTour } from "../features/onboarding/OnboardingTour";
 import { OnboardingProvider, useOnboardingState } from "../features/onboarding/useOnboarding";
 import { UpdateBanner } from "../features/updates/UpdateBanner";
+import { ServiceAnnouncementBanner } from "../features/updates/ServiceAnnouncementBanner";
+import { ExternalChecksContext, useExternalChecks } from "../features/updates/useExternalChecks";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { isConnectionWorkspace } from "./ConnectionRouteContent";
 import { useMediaQuery } from "../shared/useMediaQuery";
@@ -28,6 +30,8 @@ export function Shell({ navigationVersion, route, setRoute, settingsSection, ope
   openKnowledgeEditorRoute: (knowledgeId: number | null) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openChannelRoute: (channelId: number) => void; openSupportPortalRoute: (portalId: number) => void; openPortalSettingsRoute: (portalId: number, section?: PortalSettingsSectionKey) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void; onSwitchOrganization: (organizationPublicId: string) => void; onOrganizationCreated: (identity: AuthenticatedUser, organizationPublicId: string) => void }) {
   useLanguage();
   useDocumentTitle(routeTitle(route));
+  const externalChecks = useExternalChecks(user.isInstanceAdmin);
+  const main = useRef<HTMLElement>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -149,33 +153,43 @@ export function Shell({ navigationVersion, route, setRoute, settingsSection, ope
   // «Порталы» — своя лента на --surface-feed и полноэкранные сплиты (кадры PT1–PT8).
   const isPortals = route === "supportPortals" || route === "supportPortalDetail" || route === "supportPortalSettings";
   return (
-    <OnboardingProvider value={onboarding}>
-      <div className={`hub-shell ${isDialogsWorkspace ? "is-chat-route" : ""} ${isSettings ? "is-settings-route" : ""} ${isProfile ? "is-profile-route" : ""} ${isContacts ? "is-contacts-route" : ""}`}>
-        <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} onSwitchOrganization={onSwitchOrganization} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
-        <div className="hub-main">
-          {manager && <DemoInstallBanner reload={reload} />}
-          <UpdateBanner enabled={user.isInstanceAdmin} />
-          {/* Верхней панели нет ни у одной роли (дизайн-базлайн v2): заголовок и
-              «назад» живут в самой странице, уведомления — в меню профиля сайдбара. */}
-          <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""} ${isSettings ? "settings-scroll" : ""} ${isProfile ? "profile-scroll" : ""} ${isContacts ? "contacts-scroll" : ""} ${isAgents ? "agents-scroll" : ""} ${isEmployees ? "employees-scroll" : ""} ${isAudit ? "audit-scroll" : ""} ${isPortals ? "portals-scroll" : ""} ${isKnowledge || isKnowledgeEditor ? "knowledge-scroll" : ""}`}>
-            <div key={isConnectionWorkspace(route) || route === "skills" ? `${route}:${navigationVersion}` : route} className={`hub-page enter-surface ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isSettings ? "settings-page" : ""} ${isProfile ? "profile-page-shell" : ""} ${isContacts ? "contacts-page-shell" : ""} ${isAgents ? "agents-page-shell" : ""} ${isEmployees ? "employees-page-shell" : ""} ${isAudit ? "audit-page-shell" : ""} ${isKnowledge ? "knowledge-page-shell" : ""} ${isKnowledgeEditor ? "knowledge-editor-shell" : ""} ${isPortals ? "portals-page-shell" : ""}`}>
-              <ShellRouteContent settingsSection={settingsSection} openSettings={openSettingsRoute} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} chatScopeSwitcher={manager} route={route} data={data} selectedEmployeeId={selectedEmployeeId} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedIntegrationId={selectedIntegrationId} openWebIntegration={openWebIntegrationRoute} openServer={openServerRoute} openScenario={openScenarioRoute} resolveLegacyIntegration={resolveLegacyIntegrationRoute} openServiceConnection={openServiceConnectionRoute} selectedSupportPortalId={selectedSupportPortalId} portalSettingsSection={portalSettingsSection} openSupportPortal={openSupportPortalRoute} openPortalSettings={openPortalSettingsRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} openKnowledgeEditor={openKnowledgeEditorRoute} onAgentLoaded={() => undefined} onChannelLoaded={() => undefined} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} onOpenSidebar={() => setSidebarExpanded(true)} onOrganizationCreated={onOrganizationCreated} />
+    <ExternalChecksContext.Provider value={externalChecks}>
+      <OnboardingProvider value={onboarding}>
+        <div className="hub-frame">
+          {user.isInstanceAdmin && (
+            <ServiceAnnouncementBanner
+              announcements={externalChecks.announcements}
+              onDismissLast={() => main.current?.focus({ preventScroll: true })}
+            />
+          )}
+          <div className={`hub-shell ${isDialogsWorkspace ? "is-chat-route" : ""} ${isSettings ? "is-settings-route" : ""} ${isProfile ? "is-profile-route" : ""} ${isContacts ? "is-contacts-route" : ""}`}>
+            <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} onSwitchOrganization={onSwitchOrganization} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
+            <div className="hub-main">
+              {manager && <DemoInstallBanner reload={reload} />}
+              <UpdateBanner enabled={user.isInstanceAdmin} />
+              {/* Верхней панели нет ни у одной роли (дизайн-базлайн v2): заголовок и
+                  «назад» живут в самой странице, уведомления — в меню профиля сайдбара. */}
+              <main ref={main} tabIndex={-1} className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""} ${isSettings ? "settings-scroll" : ""} ${isProfile ? "profile-scroll" : ""} ${isContacts ? "contacts-scroll" : ""} ${isAgents ? "agents-scroll" : ""} ${isEmployees ? "employees-scroll" : ""} ${isAudit ? "audit-scroll" : ""} ${isPortals ? "portals-scroll" : ""} ${isKnowledge || isKnowledgeEditor ? "knowledge-scroll" : ""}`}>
+                <div key={isConnectionWorkspace(route) || route === "skills" ? `${route}:${navigationVersion}` : route} className={`hub-page enter-surface ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isSettings ? "settings-page" : ""} ${isProfile ? "profile-page-shell" : ""} ${isContacts ? "contacts-page-shell" : ""} ${isAgents ? "agents-page-shell" : ""} ${isEmployees ? "employees-page-shell" : ""} ${isAudit ? "audit-page-shell" : ""} ${isKnowledge ? "knowledge-page-shell" : ""} ${isKnowledgeEditor ? "knowledge-editor-shell" : ""} ${isPortals ? "portals-page-shell" : ""}`}>
+                  <ShellRouteContent settingsSection={settingsSection} openSettings={openSettingsRoute} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} chatScopeSwitcher={manager} route={route} data={data} selectedEmployeeId={selectedEmployeeId} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedIntegrationId={selectedIntegrationId} openWebIntegration={openWebIntegrationRoute} openServer={openServerRoute} openScenario={openScenarioRoute} resolveLegacyIntegration={resolveLegacyIntegrationRoute} openServiceConnection={openServiceConnectionRoute} selectedSupportPortalId={selectedSupportPortalId} portalSettingsSection={portalSettingsSection} openSupportPortal={openSupportPortalRoute} openPortalSettings={openPortalSettingsRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} openKnowledgeEditor={openKnowledgeEditorRoute} onAgentLoaded={() => undefined} onChannelLoaded={() => undefined} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} onOpenSidebar={() => setSidebarExpanded(true)} onOrganizationCreated={onOrganizationCreated} />
+                </div>
+              </main>
             </div>
-          </main>
+            <NotificationDrawer
+              open={notifOpen}
+              items={notifications}
+              unreadCount={unreadCount}
+              onClose={() => setNotifOpen(false)}
+              onItemClick={onNotificationClick}
+              onMarkAll={onMarkAll}
+            />
+            {notificationAlerts.holder}
+            <OnboardingOverlay />
+            <OnboardingTour />
+            <OnboardingLauncher />
+          </div>
         </div>
-        <NotificationDrawer
-          open={notifOpen}
-          items={notifications}
-          unreadCount={unreadCount}
-          onClose={() => setNotifOpen(false)}
-          onItemClick={onNotificationClick}
-          onMarkAll={onMarkAll}
-        />
-        {notificationAlerts.holder}
-        <OnboardingOverlay />
-        <OnboardingTour />
-        <OnboardingLauncher />
-      </div>
-    </OnboardingProvider>
+      </OnboardingProvider>
+    </ExternalChecksContext.Provider>
   );
 }

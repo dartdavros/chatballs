@@ -1,0 +1,71 @@
+.demo-install-banner.service-announcement {
+  --close-size: 24px;
+  display: grid;
+  grid-template-columns: var(--close-size) minmax(0, 1fr) var(--close-size);
+  align-items: start;
+  color: var(--text-heading);
+}
+
+.service-announcement-content {
+  grid-column: 2;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--close-size);
+}
+
+.service-announcement-content > svg {
+  flex: none;
+  color: var(--primary-text);
+}
+
+.service-announcement-text {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.service-announcement-content > .link {
+  flex: none;
+  white-space: nowrap;
+}
+
+.service-announcement-content > .link:hover {
+  color: color-mix(in srgb, var(--primary-text) 88%, var(--text-heading));
+}
+
+.service-announcement-content > .link svg {
+  flex: none;
+}
+
+.demo-install-banner.service-announcement .demo-install-close {
+  grid-column: 3;
+  width: var(--close-size);
+  height: var(--close-size);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+.demo-install-banner.service-announcement .demo-install-close:hover {
+  background: var(--primary-border);
+}
+
+.service-announcement :is(.link, button):focus-visible {
+  outline-color: currentColor;
+}
+
+@media (max-width: 768px) {
+  .demo-install-banner.service-announcement {
+    --close-size: 32px;
+    padding: 5px 8px;
+    gap: 6px;
+  }
+
+  .service-announcement-content {
+    gap: 6px;
+  }
+}
