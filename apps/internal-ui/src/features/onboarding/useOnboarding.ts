@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 import type { SettingsSectionKey } from "../settings/sections";
 import type { RouteKey, SessionUser } from "../../types";
-import { isManager } from "../../auth/access";
+import { canManagePlatform, isManager } from "../../auth/access";
 import { PENDING_STATE, fetchOnboarding, postOnboardingAction, type OnboardingState } from "./api";
 import { type OnboardingStep } from "./steps";
 import { operationModeSteps } from "./operationModeSteps";
@@ -62,7 +62,8 @@ export function useOnboardingState({ user, setRoute, openSettings }: {
 }): OnboardingApi {
   const available = isManager(user);
   const [state, setState] = useState<OnboardingState>(PENDING_STATE);
-  const steps = useMemo(() => operationModeSteps(user.isInstanceAdmin, state.operationMode), [user.isInstanceAdmin, state.operationMode]);
+  const platformAccess = canManagePlatform(user);
+  const steps = useMemo(() => operationModeSteps(platformAccess, state.operationMode), [platformAccess, state.operationMode]);
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState<OnboardingView>(null);
   const [index, setIndex] = useState(0);
