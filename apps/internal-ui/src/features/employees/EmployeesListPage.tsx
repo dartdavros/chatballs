@@ -12,7 +12,7 @@ import { EmployeePasswordDialog } from "./EmployeePasswordDialog";
 import { EmployeeTable } from "./EmployeeTable";
 import { EmployeesFilters } from "./EmployeesFilters";
 import { blockEmployee, fetchEmployees, resendInvitation, resetEmployeePassword, revokeInvitation, terminateEmployeeSessions, type IssuedPassword } from "./api";
-import type { EmployeeRoleFilter } from "./model";
+import type { EmployeeRoleFilter, EmployeeStatusFilter } from "./model";
 import { t } from "../../i18n";
 import type { WorkStatusCode } from "../work-status/model";
 import { useAvailabilityRefresh } from "../work-status/useAvailabilityRefresh";
@@ -27,6 +27,7 @@ export function EmployeesPage({ groups, openEmployee, user }: {
   user: SessionUser;
 }) {
   const [role, setRole] = useState<EmployeeRoleFilter>("all");
+  const [status, setStatus] = useState<EmployeeStatusFilter>("all");
   const [workStatus, setWorkStatus] = useState<WorkStatusCode | "all">("all");
   const [groupId, setGroupId] = useState<number | "all">("all");
   const [query, setQuery] = useState("");
@@ -38,15 +39,15 @@ export function EmployeesPage({ groups, openEmployee, user }: {
   // Поиск придерживается: запрос уходит, когда человек перестал печатать.
   const settledQuery = useDebounced(query);
   const filters = useMemo(
-    () => ({ role, groupId, query: settledQuery, workStatus }),
-    [groupId, role, settledQuery, workStatus],
+    () => ({ role, status, groupId, query: settledQuery, workStatus }),
+    [groupId, role, status, settledQuery, workStatus],
   );
   const load = useCallback((page: number) => fetchEmployees(filters, page), [filters]);
   const employees = usePagedResource(load, filters, t("admin.could_not_load_operators"));
   useAvailabilityRefresh(employees.reload);
 
   function resetFilters() {
-    setQuery(""); setRole("all"); setGroupId("all"); setMenuId(null); setWorkStatus("all");
+    setQuery(""); setRole("all"); setStatus("all"); setGroupId("all"); setMenuId(null); setWorkStatus("all");
   }
 
   async function run(action: () => Promise<void>) {
@@ -72,6 +73,8 @@ export function EmployeesPage({ groups, openEmployee, user }: {
       </header>
 
       <EmployeesFilters
+        status={status}
+        setStatus={(value) => { setStatus(value); setMenuId(null); }}
         workStatus={workStatus}
         setWorkStatus={setWorkStatus}
         groupId={groupId}

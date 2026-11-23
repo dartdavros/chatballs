@@ -12,7 +12,7 @@ from chatballs.identity.instance_settings import (
     invalidate_cache,
     split_address,
 )
-from chatballs.integrations.action_catalog.authority import require_instance
+from chatballs.integrations.action_catalog.authority import require_instance, require_platform_settings
 from chatballs.support_portals.addressing import validate_domain
 
 SCHEMES = ("http", "https")
@@ -25,7 +25,9 @@ def read(user):
 
 @transaction.atomic
 def update(user, body):
-    user = require_instance(user)
+    user = require_platform_settings(user)
+    if isinstance(body, dict) and "turn" in body:
+        require_instance(user)
     row = InstanceSettings.load()
     row = InstanceSettings.objects.select_for_update().get(pk=row.pk)
     body = body if isinstance(body, dict) else {}
@@ -100,6 +102,11 @@ def update(user, body):
 
     row.save(update_fields=fields)
     invalidate_cache()
+    if "external_checks_revision" in fields:
+        from chatballs.realtime import publish
+        from chatballs.updates.announcement_state import ANNOUNCEMENT_GROUP
+
+        transaction.on_commit(lambda: publish(ANNOUNCEMENT_GROUP, {"type": "announcements.changed"}))
     return CommandOutcome({"instance": instance_payload(row)})
 
 

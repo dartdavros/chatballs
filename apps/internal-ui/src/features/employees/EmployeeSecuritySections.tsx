@@ -7,7 +7,7 @@ import { t } from "../../i18n";
 // Статус и безопасность · Опасная зона (кадры E3/E4). У владельца единственное
 // опасное действие — передача владения: заблокировать или удалить его нельзя.
 
-export function EmployeeSecuritySections({ blocked, employee, form, busy, updateForm, onResetPassword, onTerminateSessions, onToggleBlock, onTransferOwnership }: {
+export function EmployeeSecuritySections({ blocked, employee, form, busy, updateForm, onResetPassword, onTerminateSessions, onToggleBlock, onTransferOwnership, onDismiss }: {
   blocked: boolean;
   employee: Employee;
   form: EmployeeForm;
@@ -17,6 +17,7 @@ export function EmployeeSecuritySections({ blocked, employee, form, busy, update
   onTerminateSessions: () => void;
   onToggleBlock: () => void;
   onTransferOwnership: () => void;
+  onDismiss: () => void;
 }) {
   const permissions = employee.permissions;
   const isOwner = employee.role === "OWNER";
@@ -32,7 +33,7 @@ export function EmployeeSecuritySections({ blocked, employee, form, busy, update
             <strong>{t("common.password")}</strong>
             <small>{t("admin.last_password_change", { date: formatDate(employee.passwordChangedAt) })}</small>
           </div>
-          <button className="employee-security-action" type="button" disabled={busy || !permissions?.canResetPassword} onClick={onResetPassword}>{t("admin.reset_password")}</button>
+          {permissions?.canResetPassword && <button className="employee-security-action" type="button" disabled={busy} onClick={onResetPassword}>{t("admin.reset_password")}</button>}
         </div>
         <div className="employee-security-row">
           <div>
@@ -46,11 +47,11 @@ export function EmployeeSecuritySections({ blocked, employee, form, busy, update
             <strong>{t("common.active_sessions")}</strong>
             <small>{sessions}</small>
           </div>
-          <button className="employee-security-action" type="button" disabled={busy || !permissions?.canTerminateSessions} onClick={onTerminateSessions}>{t("admin.end_all")}</button>
+          {permissions?.canTerminateSessions && <button className="employee-security-action" type="button" disabled={busy} onClick={onTerminateSessions}>{t("admin.end_all")}</button>}
         </div>
       </section>
 
-      {(isOwner ? permissions?.canTransferOwnership : canBlock) && (
+      {(isOwner ? permissions?.canTransferOwnership : canBlock || permissions?.canDismiss) && (
         <section className="employee-danger">
           <h3>{t("admin.danger_zone")}</h3>
           {isOwner ? (
@@ -61,7 +62,7 @@ export function EmployeeSecuritySections({ blocked, employee, form, busy, update
                 <Icon name="transfer" size={14} strokeWidth={1.8} />{t("admin.transfer_ownership")}</button>
               <small>{t("admin.owner_cannot_blocked_or_deleted")}</small>
             </div>
-          ) : (
+          ) : canBlock ? (
             <div>
               <strong>{t("admin.access_block")}</strong>
               <p>
@@ -72,6 +73,13 @@ export function EmployeeSecuritySections({ blocked, employee, form, busy, update
               <button type="button" disabled={busy} onClick={onToggleBlock}>
                 <Icon name="lock" size={14} strokeWidth={1.8} />{blocked ? t("admin.unblock_operator") : t("admin.block_operator")}
               </button>
+            </div>
+          ) : null}
+          {!isOwner && permissions?.canDismiss && (
+            <div>
+              <strong>{t("employees.dismiss_action")}</strong>
+              <p>{t("employees.dismiss_hint")}</p>
+              <button type="button" disabled={busy} onClick={onDismiss}>{t("employees.dismiss_action")}</button>
             </div>
           )}
         </section>

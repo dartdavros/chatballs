@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from chatballs.i18n.messages import (
+    employees_en,
+    employees_ru,
     assistance_en,
     assistance_ru,
     comments_en,
@@ -103,6 +105,7 @@ from chatballs.i18n.messages import (
 
 CATALOG: dict[str, dict[str, object]] = {
     "ru": {
+        **employees_ru.MESSAGES,
         **external_agents_ru.MESSAGES,
         **site_events_ru.MESSAGES,
         **ru.MESSAGES,
@@ -154,6 +157,7 @@ CATALOG: dict[str, dict[str, object]] = {
         **speech_ru.MESSAGES,
     },
     "en": {
+        **employees_en.MESSAGES,
         **external_agents_en.MESSAGES,
         **site_events_en.MESSAGES,
         **en.MESSAGES,

@@ -6,6 +6,7 @@ from chatballs.api.pagination import paginate
 from chatballs.conversations.activity_history import history_index, history_records, history_sources
 from chatballs.conversations.read_services import visible_conversation
 from chatballs.conversations.transfer_display import transfer_history_payload
+from chatballs.conversations.participant_payloads import leave_reason_text
 
 
 class HistoryInput(serializers.Serializer):
@@ -31,7 +32,7 @@ def activity_payload(item, records):
     elif kind in ("JOIN", "LEAVE"):
         payload.update(
             actor=person(row.joined_by if kind == "JOIN" else row.left_by), recipient=person(row.membership),
-            reason={"name": row.join_reason if kind == "JOIN" else row.leave_reason},
+            reason={"name": row.join_reason if kind == "JOIN" else leave_reason_text(row.leave_reason)},
         )
     else:
         payload["actor"] = {"id": row.author_user_id, "name": row.system_params.get("operator", "")}

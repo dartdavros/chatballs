@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from rest_framework.exceptions import PermissionDenied
 
-from chatballs.identity.instance_access import can_view_instance_settings, is_instance_admin
+from chatballs.identity.instance_access import can_manage_platform, can_view_instance_settings, is_instance_admin
 from chatballs.identity.models import HumanUser
 from chatballs.integrations.action_catalog.contracts import NativeAccessDenied
 from chatballs.integrations.adapters.contracts import DEFAULT_LIMITS
@@ -38,6 +38,13 @@ def current_user(user):
 def require_instance(user, *, read=False):
     user = current_user(user)
     if not (can_view_instance_settings(user) if read else is_instance_admin(user)):
+        raise PermissionDenied()
+    return user
+
+
+def require_platform_settings(user):
+    user = current_user(user)
+    if not can_manage_platform(user):
         raise PermissionDenied()
     return user
 

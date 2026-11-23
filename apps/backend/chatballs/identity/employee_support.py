@@ -35,6 +35,7 @@ def employee_payload(
         "lastLogin": profile.user.last_login.isoformat() if profile.user.last_login else None,
         "isActive": profile.user.is_active,
         "isBlocked": profile.is_blocked,
+        "dismissedAt": profile.dismissed_at.isoformat() if profile.dismissed_at else None,
         "mustChangePassword": profile.user.must_change_password,
         # «Последняя смена» пароля в карточке сотрудника (кадр E3).
         "passwordChangedAt": (

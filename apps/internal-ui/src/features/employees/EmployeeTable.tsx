@@ -99,6 +99,7 @@ function EmployeeRow({ employee, groups, menuOpen, onBlock, onResetPassword, onT
   const permissions = employee.permissions;
   const role = roleBadge(employee.role);
   const status = statusBadge(employee);
+  const canBlock = employee.isBlocked ? permissions?.canUnblock : permissions?.canBlock;
   const open = () => { setMenuId(null); openEmployee(employee); };
   const act = (run: () => void) => { setMenuId(null); run(); };
   // Кадр E2: карточка · сессии · пароль · разделитель · блокировка.
@@ -107,17 +108,17 @@ function EmployeeRow({ employee, groups, menuOpen, onBlock, onResetPassword, onT
     { key: "open", label: <button type="button" onClick={open}><Icon name="external" size={15} />{t("admin.open_card")}</button> },
     { key: "sessions", disabled: !permissions?.canTerminateSessions, label: <button type="button" onClick={() => act(() => onTerminateSessions(employee))}><Icon name="logout" size={15} />{t("admin.end_sessions")}</button> },
     { key: "password", disabled: !permissions?.canResetPassword, label: <button type="button" onClick={() => act(() => onResetPassword(employee))}><Icon name="lock" size={15} />{t("admin.reset_password")}</button> },
-    { type: "divider" as const },
+    ...(canBlock ? [{ type: "divider" as const }] : []),
     {
       key: "block",
-      disabled: employee.isBlocked ? !permissions?.canUnblock : !permissions?.canBlock,
+      disabled: !canBlock,
       label: (
         <button className={employee.isBlocked ? "success" : "danger"} type="button" onClick={() => act(() => onBlock(employee))}>
           <Icon name="lock" size={15} />{employee.isBlocked ? t("admin.unblock") : t("admin.block")}
         </button>
       ),
     },
-  ];
+  ].filter((item) => !("disabled" in item && item.disabled));
 
   return (
     <div className={`employees-row ${employee.isBlocked ? "is-blocked" : ""}`} role="button" tabIndex={0} onClick={open} onKeyDown={(event) => { if (event.key === "Enter") open(); }}>

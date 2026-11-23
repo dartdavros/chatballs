@@ -3,14 +3,14 @@
 OWNER и ADMIN идентичны по правам: оба управляют любыми сотрудниками, включая
 других администраторов. Отличия ровно два:
 
-- владельца нельзя удалить и заблокировать (и нельзя сменить ему роль —
-  единственный путь: передача владения);
+- карточка владельца доступна только для просмотра;
 - передача владения доступна только самому владельцу.
 """
 
 from __future__ import annotations
 
 from chatballs.identity.models import EmployeeRole, OrganizationMembership
+from chatballs.identity.policy import can_administer_access
 
 
 class EmployeeAction:
@@ -25,20 +25,12 @@ class EmployeeAction:
     RESET_PASSWORD = "reset_password"
     TERMINATE_SESSIONS = "terminate_sessions"
     DELETE = "delete"
+    DISMISS = "dismiss"
     TRANSFER_OWNERSHIP = "transfer_ownership"
 
 
 # Действия, запрещённые над владельцем для всех (SPEC-CHATBALLS-0031 §3);
 # смена его роли возможна только через ownership flow.
-_OWNER_PROTECTED_ACTIONS = frozenset(
-    {
-        EmployeeAction.CHANGE_ROLE,
-        EmployeeAction.BLOCK,
-        EmployeeAction.UNBLOCK,
-        EmployeeAction.DELETE,
-    }
-)
-
 _MANAGED_ACTIONS = frozenset(
     {
         EmployeeAction.VIEW,
@@ -51,16 +43,13 @@ _MANAGED_ACTIONS = frozenset(
         EmployeeAction.RESET_PASSWORD,
         EmployeeAction.TERMINATE_SESSIONS,
         EmployeeAction.DELETE,
+        EmployeeAction.DISMISS,
     }
 )
 
 
 def _is_active_manager(actor: OrganizationMembership | None) -> bool:
-    return (
-        actor is not None
-        and not actor.is_blocked
-        and actor.role in {EmployeeRole.OWNER, EmployeeRole.ADMIN}
-    )
+    return can_administer_access(actor)
 
 
 def can_create_role(actor: OrganizationMembership | None, new_role: str) -> bool:
@@ -92,8 +81,10 @@ def can_manage_employee(
         return False
     if action not in _MANAGED_ACTIONS:
         return False
-    if target.role == EmployeeRole.OWNER and action in _OWNER_PROTECTED_ACTIONS:
-        return False
+    if target.role == EmployeeRole.OWNER:
+        return action == EmployeeAction.VIEW
+    if target.dismissed_at is not None:
+        return action in {EmployeeAction.VIEW, EmployeeAction.DISMISS}
     return True
 
 
@@ -105,6 +96,7 @@ def employee_management_flags(
     для скрытия недоступных действий во фронтенде."""
     return {
         "canView": can_manage_employee(actor, target, EmployeeAction.VIEW),
+        "canDismiss": target.dismissed_at is None and can_manage_employee(actor, target, EmployeeAction.DISMISS),
         "canUpdateProfile": can_manage_employee(actor, target, EmployeeAction.UPDATE_PROFILE),
         "canChangeRole": can_manage_employee(actor, target, EmployeeAction.CHANGE_ROLE),
         "canChangeGroups": can_manage_employee(actor, target, EmployeeAction.CHANGE_GROUPS),
@@ -115,5 +107,8 @@ def employee_management_flags(
         "canUnblock": can_manage_employee(actor, target, EmployeeAction.UNBLOCK),
         "canResetPassword": can_manage_employee(actor, target, EmployeeAction.RESET_PASSWORD),
         "canTerminateSessions": can_manage_employee(actor, target, EmployeeAction.TERMINATE_SESSIONS),
-        "canTransferOwnership": can_manage_employee(actor, target, EmployeeAction.TRANSFER_OWNERSHIP),
+        "canTransferOwnership": (
+            _is_active_manager(actor) and actor.role == EmployeeRole.OWNER
+            and actor.pk == target.pk and target.role == EmployeeRole.OWNER
+        ),
     }

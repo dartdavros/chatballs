@@ -8,6 +8,7 @@ import { EmployeeDetailHeader } from "./EmployeeDetailHeader";
 import { EmployeeDetailRail } from "./EmployeeDetailRail";
 import { EmployeeIdentitySections } from "./EmployeeIdentitySections";
 import { EmployeePasswordDialog } from "./EmployeePasswordDialog";
+import { EmployeeDismissDialog } from "./EmployeeDismissDialog";
 import { EmployeeSecuritySections } from "./EmployeeSecuritySections";
 import { OwnershipTransferModal } from "./OwnershipTransferModal";
 import { employeeForm, employeeStatusKey, type EmployeeForm } from "./model";
@@ -31,6 +32,7 @@ export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
   const [saveFailed, setSaveFailed] = useState(false);
   const [issued, setIssued] = useState<IssuedPassword | null>(null);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [dismissOpen, setDismissOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     const payload = await api<{ employee: Employee }>(`/api/v1/employees/${employeeId}/`);
@@ -115,6 +117,7 @@ export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
             onTerminateSessions={() => void run(() => terminateEmployeeSessions(currentEmployee.id))}
             onToggleBlock={() => void run(() => blockEmployee(currentEmployee.id, !currentEmployee.isBlocked))}
             onTransferOwnership={() => setTransferOpen(true)}
+            onDismiss={() => setDismissOpen(true)}
           />
         </div>
         <EmployeeDetailRail employee={currentEmployee} />
@@ -122,6 +125,12 @@ export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
 
       {issued && <EmployeePasswordDialog issued={issued} onClose={() => setIssued(null)} />}
       {transferOpen && <OwnershipTransferModal onClose={() => setTransferOpen(false)} />}
+      {dismissOpen && <EmployeeDismissDialog employee={currentEmployee} onClose={() => setDismissOpen(false)}
+        onDismissed={(employee) => {
+          setCurrentEmployee(employee);
+          setForm(employeeForm(employee));
+          setDismissOpen(false);
+        }} />}
     </div>
   );
 }

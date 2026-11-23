@@ -2,11 +2,11 @@
 from chatballs.i18n import t
 from chatballs.identity.command_outcomes import CommandOutcome
 from chatballs.identity.instance_settings import email_connection, email_from_address
-from chatballs.integrations.action_catalog.authority import require_instance
+from chatballs.integrations.action_catalog.authority import require_platform_settings
 
 
 def check(user, body):
-    user = require_instance(user)
+    user = require_platform_settings(user)
     from django.core.mail import send_mail
 
     connection = email_connection()

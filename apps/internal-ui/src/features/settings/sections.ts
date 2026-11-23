@@ -1,5 +1,6 @@
 import type { Icon } from "../../shared/icons";
 import type { SessionUser } from "../../types";
+import { canManagePlatform } from "../../auth/access";
 import { t } from "../../i18n";
 
 // Разделы «Настроек» (дизайн-базлайн v2, кадры N1–N7): субменю 240px и один
@@ -133,7 +134,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
 export const DEFAULT_SETTINGS_SECTION: SettingsSectionKey = "organization";
 
 export function visibleSettingsSections(user: SessionUser): SettingsSection[] {
-  return SETTINGS_SECTIONS.filter((section) => !section.instanceOnly || user.isInstanceAdmin);
+  return SETTINGS_SECTIONS.filter((section) => !section.instanceOnly || (section.key === "platform" ? canManagePlatform(user) : user.isInstanceAdmin));
 }
 
 export function settingsSectionKey(value: string | null | undefined): SettingsSectionKey | null {

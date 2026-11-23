@@ -1,6 +1,11 @@
 """Protected participant display shared by API and scenarios."""
 
 from chatballs.identity.avatars import user_avatar_url_in
+from chatballs.i18n import t
+
+
+def leave_reason_text(reason):
+    return t("admin.employee_dismissed_reason") if reason == "employee_dismissed" else reason
 
 
 def member_payload(member):
@@ -26,5 +31,5 @@ def participant_payload(participant):
         "joinReason": participant.join_reason,
         "leftByMembershipId": participant.left_by_id,
         "leftAt": participant.left_at.isoformat() if participant.left_at else None,
-        "leaveReason": participant.leave_reason,
+        "leaveReason": leave_reason_text(participant.leave_reason),
     }

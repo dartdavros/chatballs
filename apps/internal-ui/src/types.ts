@@ -48,6 +48,7 @@ export type AuthenticatedUser = {
   // Администратор установки: разделы «Платформа» и «Хранилище файлов» — его,
   // это свойства инсталляции, а не организации.
   isInstanceAdmin: boolean;
+  canManagePlatform?: boolean;
   memberships: OrganizationMembership[];
   uiTheme: "LIGHT" | "DARK" | "SYSTEM";
   uiAccent: string;
@@ -73,6 +74,7 @@ export type LoginPayload =
 // источник истины (SPEC-CHATBALLS-0031 §3); фронтенд скрывает недоступное.
 export type EmployeePermissions = {
   canView: boolean;
+  canDismiss?: boolean;
   canUpdateProfile: boolean;
   canChangeRole: boolean;
   canChangeGroups: boolean;
@@ -103,6 +105,7 @@ export type Employee = {
   lastLogin?: string | null;
   isActive: boolean;
   isBlocked: boolean;
+  dismissedAt?: string | null;
   mustChangePassword: boolean;
   totpRequired: boolean;
   totpEnabled: boolean;

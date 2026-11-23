@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 
 from chatballs.identity import instance_commands, instance_email_commands
 from chatballs.identity.command_http import command_response
-from chatballs.identity.instance_access import InstanceSettingsPermission, IsInstanceAdmin
+from chatballs.identity.instance_access import InstanceSettingsPermission, CanManagePlatform
 from chatballs.identity.instance_payloads import instance_payload  # noqa: F401
 
 
@@ -18,7 +18,7 @@ class InstanceAddressView(APIView):
 
 
 class InstanceEmailCheckView(APIView):
-    permission_classes = [IsInstanceAdmin]
+    permission_classes = [CanManagePlatform]
 
     def post(self, request):
         return command_response(instance_email_commands.check(request.user, request.data))

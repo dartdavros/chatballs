@@ -14,7 +14,7 @@ from chatballs.identity.sessions import revoke_user_sessions
 @transaction.atomic
 def reset_password(context, user_id, body, *, request=None):
     actor = context.membership
-    profile = profile_for(context, user_id)
+    profile = profile_for(context, user_id, for_update=True)
     if profile is None:
         return rejected(t("admin.employee_not_found"), 'not_found')
     if not can_manage_employee(actor, profile, EmployeeAction.RESET_PASSWORD):
@@ -38,7 +38,7 @@ def reset_password(context, user_id, body, *, request=None):
 @transaction.atomic
 def revoke_sessions(context, user_id, body, *, request=None):
     actor = context.membership
-    profile = profile_for(context, user_id)
+    profile = profile_for(context, user_id, for_update=True)
     if profile is None:
         return rejected(t("admin.employee_not_found"), 'not_found')
     if not can_manage_employee(actor, profile, EmployeeAction.TERMINATE_SESSIONS):
@@ -59,7 +59,7 @@ def revoke_sessions(context, user_id, body, *, request=None):
 @transaction.atomic
 def block_employee(context, user_id, body, *, request=None):
     actor = context.membership
-    profile = profile_for(context, user_id)
+    profile = profile_for(context, user_id, for_update=True)
     if profile is None:
         return rejected(t("admin.employee_not_found"), 'not_found')
     if not can_manage_employee(actor, profile, EmployeeAction.BLOCK):
@@ -79,7 +79,7 @@ def block_employee(context, user_id, body, *, request=None):
 @transaction.atomic
 def unblock_employee(context, user_id, body, *, request=None):
     actor = context.membership
-    profile = profile_for(context, user_id)
+    profile = profile_for(context, user_id, for_update=True)
     if profile is None:
         return rejected(t("admin.employee_not_found"), 'not_found')
     if not can_manage_employee(actor, profile, EmployeeAction.UNBLOCK):

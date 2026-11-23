@@ -3,7 +3,7 @@ from django.db import transaction
 
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.command_outcomes import CommandOutcome
-from chatballs.integrations.action_catalog.authority import require_instance
+from chatballs.integrations.action_catalog.authority import require_instance, require_platform_settings
 from chatballs.updates.models import UpdateState
 from chatballs.updates.services import (
     InstallNotPossible,
@@ -21,14 +21,14 @@ def read(user, *, request=None):
 
 
 def check(user, *, request=None):
-    user = require_instance(user)
+    user = require_platform_settings(user)
     state = sync_install_status(check_for_updates(force=True))
     return CommandOutcome({"update": update_payload(state)})
 
 
 @transaction.atomic
 def install(user, *, request=None):
-    user = require_instance(user)
+    user = require_platform_settings(user)
     try:
         state = UpdateState.load()
         state = UpdateState.objects.select_for_update().get(pk=state.pk)

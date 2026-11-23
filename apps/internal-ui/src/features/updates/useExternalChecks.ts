@@ -2,22 +2,29 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 import { api, ApiError } from "../../api/client";
 import { patchInstance, type InstancePayload } from "../settings/instance";
+import { useRealtime, useRealtimeEvent } from "../realtime/RealtimeProvider";
+import { nextPublicationBoundary, publicationIsActive, type PublicationWindow } from "./publicationSchedule";
 
 const ANNOUNCEMENTS_URL = "/api/v1/instance/update/announcements/";
 const REFRESH_INTERVAL = 30_000;
 
-export type ServiceAnnouncement = { id: number; title: string; text: string; link: string };
+export type ServiceAnnouncement = PublicationWindow & { id: number; title: string; text: string; link: string };
 
 type AnnouncementResponse = {
   enabled: boolean;
   failed: boolean;
   announcements: ServiceAnnouncement[] | null;
   expiresInMs: number | null;
+  serverNowMs?: number;
 };
 
-type Snapshot = Omit<AnnouncementResponse, "expiresInMs" | "failed"> & { deadline: number | null };
+type Snapshot = Omit<AnnouncementResponse, "expiresInMs" | "failed"> & { deadline: number | null; receivedAt?: number };
 
 export function useExternalChecks(canManage: boolean) {
+  const { connected } = useRealtime();
+  const [refreshVersion, refresh] = useState(0);
+  const [clockVersion, updateClock] = useState(0);
+  useRealtimeEvent("announcements.changed", () => refresh((version) => version + 1));
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -33,12 +40,13 @@ export function useExternalChecks(canManage: boolean) {
     async function read() {
       const started = Date.now();
       try {
-        const { enabled, announcements, expiresInMs } = await api<AnnouncementResponse>(ANNOUNCEMENTS_URL, {
+        const { enabled, announcements, expiresInMs, serverNowMs } = await api<AnnouncementResponse>(ANNOUNCEMENTS_URL, {
           cache: "no-store",
           signal: controller.signal,
         });
         if (controller.signal.aborted) return;
-        setSnapshot({ enabled, announcements, deadline: expiresInMs === null ? null : started + expiresInMs });
+        setSnapshot({ enabled, announcements, serverNowMs, receivedAt: performance.now(),
+          deadline: expiresInMs === null ? null : started + expiresInMs });
       } catch (error) {
         if (controller.signal.aborted) return;
         if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
@@ -53,7 +61,20 @@ export function useExternalChecks(canManage: boolean) {
       controller.abort();
       window.clearTimeout(refresh);
     };
-  }, [canManage, saving]);
+  }, [canManage, saving, connected, refreshVersion]);
+
+  useEffect(() => {
+    if (snapshot?.serverNowMs === undefined || snapshot.receivedAt === undefined) return;
+    const now = snapshot.serverNowMs + performance.now() - snapshot.receivedAt;
+    const delay = nextPublicationBoundary(snapshot.announcements ?? [], now);
+    const update = () => updateClock((version) => version + 1);
+    const timer = delay === null ? undefined : window.setTimeout(update, Math.min(delay, 2_000_000_000));
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [snapshot, clockVersion]);
 
   useEffect(() => {
     if (snapshot?.deadline == null) return undefined;
@@ -87,12 +108,15 @@ export function useExternalChecks(canManage: boolean) {
     }
   }
 
-  const fresh = snapshot?.deadline != null && snapshot.deadline > Date.now();
+  const fresh = snapshot?.serverNowMs !== undefined || snapshot?.deadline != null && snapshot.deadline > Date.now();
+  const now = snapshot?.serverNowMs === undefined ? Date.now()
+    : snapshot.serverNowMs + performance.now() - (snapshot.receivedAt ?? performance.now());
   return {
     enabled,
     saving,
     saveFailed,
-    announcements: canManage && enabled && fresh ? snapshot?.announcements ?? null : null,
+    announcements: canManage && enabled && fresh
+      ? snapshot?.announcements?.filter((item) => publicationIsActive(item, now)) ?? null : null,
     toggle,
   };
 }

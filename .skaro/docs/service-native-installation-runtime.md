@@ -31,7 +31,7 @@ instance, platform или bootstrap. Это граница исполнения,
   TenantContext или ID пользователя из аргументов не заменяют её.
 - Instance: штатные is_instance_admin и can_view_instance_settings. Сохранить
   различие чтения общих настроек менеджером организации и изменения только
-  администратором установки; tools-network читает только администратор установки.
+  пользователем с правом управления «Платформой» для операций этого раздела. Чтение tools-network требует того же права. Действия вне раздела, включая запись настроек TURN и команды хранилища, требуют признака администратора установки (ADR-0024).
 - Platform: действующие PlatformOperator и PlatformToken с исходной capability.
   Provisioning остаётся на backend-platform, со штатным Idempotency-Key,
   tenant-транзакцией и результатом существующей provisioning service.

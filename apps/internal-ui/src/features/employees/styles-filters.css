@@ -1,0 +1,61 @@
+/* --- Фильтры --- */
+
+.employees-filters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.employees-page .employees-search {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.employees-filters .employees-role-filter { width: 145px; }
+.employees-filters .employees-status-filter { width: 132px; }
+
+.employees-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.employees-filter-group > span:first-child {
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.employees-filters-spacer {
+  flex: 1;
+}
+
+.employees-group-filter {
+  min-width: 120px;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.employees-reset {
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-4);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.employees-reset.is-dirty {
+  color: var(--primary-text);
+}
+
+.employees-reset:hover {
+  background: var(--n-9);
+}
+

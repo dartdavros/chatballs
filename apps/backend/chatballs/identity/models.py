@@ -193,6 +193,7 @@ class OrganizationMembership(models.Model):
     phone = models.CharField(max_length=32, blank=True)
     totp_required = models.BooleanField(default=False)
     blocked_at = models.DateTimeField(null=True, blank=True)
+    dismissed_at = models.DateTimeField(null=True, blank=True, default=None)
     work_status = models.CharField(max_length=16, choices=WorkStatus.choices, default=WorkStatus.UNAVAILABLE, db_default=WorkStatus.UNAVAILABLE)
     work_status_version = models.PositiveBigIntegerField(default=0, db_default=0)
     work_status_changed_at = models.DateTimeField(null=True, blank=True, db_default=None)
@@ -210,6 +211,11 @@ class OrganizationMembership(models.Model):
         # Preserve the deployed table and every existing PK/FK during C02 rename.
         db_table = "identity_employeeprofile"
         constraints = [
+            models.CheckConstraint(
+                condition=Q(dismissed_at__isnull=True)
+                | (Q(blocked_at__isnull=False) & ~Q(role=EmployeeRole.OWNER)),
+                name="dismissed_member_access_closed",
+            ),
             models.CheckConstraint(condition=Q(work_status__in=WorkStatus.values), name="membership_work_status_valid"),
             models.CheckConstraint(condition=Q(work_status_version=0, work_status_changed_at__isnull=True, work_status=WorkStatus.UNAVAILABLE) | Q(work_status_version__gt=0, work_status_changed_at__isnull=False), name="membership_work_status_initial"),
             models.UniqueConstraint(
@@ -236,6 +242,8 @@ class OrganizationMembership(models.Model):
         self.save(update_fields=["blocked_at"])
 
     def unblock(self) -> None:
+        if self.dismissed_at is not None:
+            raise ValidationError("Dismissed memberships cannot be unblocked")
         self.blocked_at = None
         self.save(update_fields=["blocked_at"])
 

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from chatballs.i18n import current_language
 from chatballs.identity.avatars import own_avatar_url
+from chatballs.identity.instance_access import can_manage_platform
 from chatballs.identity.models import HumanUser, OrganizationMembership
 from chatballs.identity.policy import get_effective_access
 from chatballs.identity.sessions import revoke_user_sessions
@@ -78,6 +79,7 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         # Администратор установки видит раздел «Платформа» и хранилище
         # файлов: это свойства инсталляции, а не организации.
         "isInstanceAdmin": user.is_instance_admin,
+        "canManagePlatform": can_manage_platform(user),
         "memberships": memberships,
     }
 

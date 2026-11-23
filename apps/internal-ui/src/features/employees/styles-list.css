@@ -1,3 +1,5 @@
+@import "./styles-filters.css";
+
 /* Список сотрудников (дизайн-базлайн v2, «Сотрудники Baseline», кадры E1/E2).
    Значения — из макета: строки 62px, бейджи 22px, фильтры 34px. */
 
@@ -60,80 +62,6 @@
   box-shadow: none;
   font-size: 13px;
   font-weight: 600;
-}
-
-/* --- Фильтры --- */
-
-.employees-filters {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.employees-page .employees-search {
-  width: 300px;
-}
-
-.employees-filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.employees-filter-group > span:first-child {
-  color: var(--n-4);
-  font-size: 12.5px;
-}
-
-.employees-filters-spacer {
-  flex: 1;
-}
-
-.employees-filters .segmented {
-  align-items: normal;
-  gap: normal;
-  padding: 3px;
-  border-radius: 9px;
-  background: var(--n-9);
-}
-
-.employees-filters .segmented button {
-  height: 28px;
-  padding: 0 11px;
-  border-radius: 7px;
-  font-weight: 600;
-}
-
-.employees-filters .segmented button.active {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-}
-
-/* Фильтр «Группа» — общий селект списка, ширина из макета. */
-.employees-group-filter {
-  min-width: 120px;
-  justify-content: space-between;
-  padding: 0 10px;
-}
-
-.employees-reset {
-  height: 34px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--n-4);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.employees-reset.is-dirty {
-  color: var(--primary-text);
-}
-
-.employees-reset:hover {
-  background: var(--n-9);
 }
 
 .employees-error {

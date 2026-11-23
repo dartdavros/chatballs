@@ -1,3 +1,4 @@
+import { canManagePlatform } from "../../auth/access";
 import { ParticipantLimitCard } from "./ParticipantLimitCard";
 import { RatingSettingsCard } from "../ratings/RatingSettingsCard";
 import { RuleSettingsCard } from "../handling-rules/RuleSettingsCard";
@@ -36,7 +37,7 @@ export function SettingsSectionBody({ section, user, onUserUpdated, reload, grou
   if (section === "transfer") return <><TransferSettings /><ParticipantLimitCard canManage={canManageSettings(user)} /></>;
   if (section === "queue") return <QueuePolicyCard canManage={canManageSettings(user)} />;
   if (section === "communication") return <CommunicationSettingsCard canManage={canManageSettings(user)} canManageRelay={user.isInstanceAdmin} />;
-  if (section === "platform") return <PlatformSettingsCard canManage={user.isInstanceAdmin} organizationName={user.organizationName} />;
+  if (section === "platform") return <PlatformSettingsCard canManage={canManagePlatform(user)} organizationName={user.organizationName} />;
   if (section === "storage") return <StorageSettingsCard canManage={user.isInstanceAdmin} />;
   if (section === "demo") return <DemoDataCard reload={reload} />;
   if (section === "templates") return <ReplyTemplateLibrary onChanged={onTemplatesChanged} />;

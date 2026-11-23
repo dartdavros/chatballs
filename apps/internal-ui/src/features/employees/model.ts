@@ -2,7 +2,8 @@ import { shortDateYear } from "../../shared/utils";
 import type { Employee, EmployeeAuditEvent, Role } from "../../types";
 import { t } from "../../i18n";
 
-export type EmployeeStatus = "active" | "blocked" | "invited";
+export type EmployeeStatus = "active" | "blocked" | "invited" | "dismissed";
+export type EmployeeStatusFilter = "all" | EmployeeStatus;
 export type EmployeeRoleFilter = "all" | Role;
 
 export type EmployeeForm = {
@@ -40,6 +41,7 @@ const ROLE_BADGE: Record<Role, { text: string; bg: string; color: string }> = {
 };
 
 const STATUS_BADGE: Record<EmployeeStatus, { text: string; bg: string; color: string }> = {
+  dismissed: { text: t("employees.dismissed"), bg: "var(--n-9)", color: "var(--n-3)" },
   active: { text: t("shared.active"), bg: "var(--success-bg)", color: "var(--success-text)" },
   invited: { text: t("shared.invited"), bg: "var(--warning-bg)", color: "var(--warning-text)" },
   blocked: { text: t("shared.blocked"), bg: "var(--error-bg)", color: "var(--error-text)" },
@@ -67,6 +69,7 @@ export function invitationStatusBadge() {
 }
 
 export function employeeStatusKey(employee: Employee): EmployeeStatus {
+  if (employee.dismissedAt) return "dismissed";
   if (employee.isBlocked) return "blocked";
   if (employee.mustChangePassword) return "invited";
   return "active";

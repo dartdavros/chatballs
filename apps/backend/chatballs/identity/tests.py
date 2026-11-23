@@ -1036,4 +1036,4 @@ class EmployeeGovernanceTests(TestCase):
         self.assertTrue(by_email["emp@example.com"]["permissions"]["canBlock"])
         self.assertTrue(by_email["emp@example.com"]["permissions"]["canChangeRole"])
         self.assertFalse(by_email["owner@example.com"]["permissions"]["canBlock"])
-        self.assertTrue(by_email["owner@example.com"]["permissions"]["canUpdateProfile"])
+        self.assertFalse(by_email["owner@example.com"]["permissions"]["canUpdateProfile"])

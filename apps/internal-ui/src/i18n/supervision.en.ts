@@ -2,7 +2,7 @@ import type { supervisionRu } from "./supervision.ru";
 export const supervisionEn: Record<keyof typeof supervisionRu, import("@chatballs/shared").Message> = {
   "supervision.role": "Supervisor",
   "supervision.role_help": "Supervisors also see statistics for their groups.",
-  "supervision.role_lead": "The owner appoints administrators; administrators appoint employees.",
+  "supervision.role_lead": "Owners and administrators appoint administrators, supervisors and employees. Only the owner can transfer ownership.",
   "supervision.member_count": { one: "{count} employee", other: "{count} employees" },
   "supervision.lead": "Views and manages conversations in selected groups: assigns and transfers them, adds colleagues, writes internal comments, and views these groups’ statistics, ratings and quality analysis. Does not add administrative rights.",
   "supervision.groups_changed": "Groups under supervision changed",

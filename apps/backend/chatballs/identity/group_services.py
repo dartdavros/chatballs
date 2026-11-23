@@ -11,6 +11,7 @@ from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.employee_access import update_employee_access
 from chatballs.identity.group_models import EmployeeGroup, EmployeeGroupMember
+from chatballs.identity.governance import EmployeeAction, can_manage_employee
 from chatballs.identity.models import OrganizationMembership
 from chatballs.identity.policy import ResourceScope, authorize
 
@@ -56,8 +57,20 @@ def _color(value):
     return text.lower()
 
 
-def _set_members(group, members):
+def _require_member_changes(context, group, members):
+    current = {member.pk: member for member in OrganizationMembership.objects.filter(
+        group_links__group=group,
+    )}
+    wanted = {member.pk: member for member in members}
+    for membership_id in current.keys() ^ wanted.keys():
+        member = current.get(membership_id) or wanted[membership_id]
+        if not can_manage_employee(context.membership, member, EmployeeAction.CHANGE_GROUPS):
+            raise PermissionDenied()
+
+
+def _set_members(context, group, members):
     if members is not None:
+        _require_member_changes(context, group, members)
         group.member_links.all().delete()
         EmployeeGroupMember.objects.bulk_create([
             EmployeeGroupMember(organization_id=group.organization_id, group=group, employee=member)
@@ -91,7 +104,7 @@ def create_group(context, data, *, request=None):
                 name=str(data.get("name", "")).strip(), color=color)
     except (ModelValidationError, IntegrityError):
         raise ValidationError({"detail": t("admin.group_name_taken")}) from None
-    _set_members(group, members)
+    _set_members(context, group, members)
     _audit(context, "identity.group_created", group.id, request, {"name": group.name})
     return {"group": group_payload(group)}
 
@@ -110,7 +123,7 @@ def update_group(context, group_id, data, *, request=None):
                 group.save()
         except (ModelValidationError, IntegrityError):
             raise ValidationError({"detail": t("admin.group_name_taken")}) from None
-    _set_members(group, members)
+    _set_members(context, group, members)
     _audit(context, "identity.group_updated", group.id, request)
     return {"group": group_payload(group)}
 
@@ -118,6 +131,7 @@ def update_group(context, group_id, data, *, request=None):
 @transaction.atomic
 def delete_group(context, group_id, *, request=None):
     group = _group(context, group_id)
+    _require_member_changes(context, group, [])
     name = group.name
     supervisors = OrganizationMembership.objects.filter(
         organization_id=context.organization_id, supervision_links__group=group,

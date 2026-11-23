@@ -23,6 +23,7 @@ class CheckInState(models.Model):
     )
     installation_id = models.UUIDField(default=uuid4, editable=False)
     next_attempt_at = models.DateTimeField(null=True, blank=True)
+    announcement_retry_at = models.DateTimeField(null=True, blank=True)
     attempt_id = models.UUIDField(null=True, blank=True)
     last_attempted_version = models.CharField(max_length=255, blank=True, default="")
     rate_limited = models.BooleanField(default=False)

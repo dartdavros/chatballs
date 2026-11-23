@@ -6,7 +6,7 @@ from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.command_outcomes import CommandOutcome
 from chatballs.identity.instance_settings import InstanceSettings
-from chatballs.integrations.action_catalog.authority import require_instance
+from chatballs.integrations.action_catalog.authority import require_platform_settings
 
 _FIELDS = ["tools_private_network", "tools_private_network_enabled_by", "tools_private_network_enabled_at", "updated_at"]
 
@@ -21,13 +21,13 @@ def tools_network_payload(row: InstanceSettings) -> dict[str, object]:
 
 
 def read(user):
-    require_instance(user)
+    require_platform_settings(user)
     return CommandOutcome({"toolsNetwork": tools_network_payload(InstanceSettings.load())})
 
 
 @transaction.atomic
 def update(user, body, *, request=None):
-    user = require_instance(user)
+    user = require_platform_settings(user)
     body = body if isinstance(body, dict) else {}
     enabled = body.get("enabled")
     if not isinstance(enabled, bool):

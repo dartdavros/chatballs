@@ -15,8 +15,8 @@ before the next effect. Internal comments remain internal.
 - Conversations: search, open, counters, employee directory, activity history,
   participation journal, visitor state, claim, return, close, spam, assignment,
   group, priority, note, labels and archiving.
-- Contacts: search, card, changes, merge and unmerge. Only the organization owner
-  can merge contacts.
+- Contacts: search, card, changes, merge and unmerge. Organization owners and
+  administrators can merge and unmerge contacts.
 - Labels, participants, transfers, reasons and assignment policies.
 - Reply templates: personal and shared libraries, categories, labels, variables,
   rendered content and management permissions.

@@ -55,11 +55,11 @@ def claim_locked_conversation(*, context: TenantContext, conversation: Conversat
         raise ClaimError(t("conversations.unavailable"))
     require_independent_operation(context, conversation)
     _require_open(conversation)
-    # Владелец (OWNER) может перехватить диалог у любого оператора; прочие сотрудники
+    # Владелец и администратор могут перехватить диалог у любого оператора; прочие сотрудники
     # не могут забрать диалог, уже назначенный другому оператору.
-    is_owner = authorize(context.membership, "ownership.transfer", ResourceScope(context.organization_id))
+    can_reassign = authorize(context.membership, "employees.manage", ResourceScope(context.organization_id))
     if (
-        not is_owner
+        not can_reassign
         and conversation.control_mode == ControlMode.HUMAN
         and conversation.assigned_operator_id
         and conversation.assigned_operator_id != operator.id

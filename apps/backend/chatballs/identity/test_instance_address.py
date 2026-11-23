@@ -195,7 +195,7 @@ class InstanceSettingsAccessTests(TestCase):
         )
         self.assertEqual(response.status_code, 200, response.content)
 
-    def test_organization_owner_reads_but_cannot_change(self) -> None:
+    def test_organization_owner_manages_platform_but_not_storage(self) -> None:
         client = self._client(self.other_owner)
         self.assertEqual(client.get("/api/v1/instance/settings/").status_code, 200)
         self.assertEqual(client.get("/api/v1/instance/storage/").status_code, 200)
@@ -204,9 +204,9 @@ class InstanceSettingsAccessTests(TestCase):
             {"publicHost": "crm.example.test", "publicScheme": "https"},
             format="json",
         )
-        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(denied.status_code, 200)
         self.assertEqual(
-            client.post("/api/v1/instance/settings/email-check/", {}, format="json").status_code, 403
+            client.post("/api/v1/instance/settings/email-check/", {}, format="json").status_code, 400
         )
         self.assertEqual(
             client.patch("/api/v1/instance/storage/", {"backend": "LOCAL"}, format="json").status_code,

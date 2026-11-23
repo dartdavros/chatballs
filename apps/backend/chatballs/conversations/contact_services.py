@@ -10,7 +10,6 @@ from chatballs.conversations.models import Contact
 from chatballs.conversations.selectors import visible_conversations_for
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
-from chatballs.identity.models import EmployeeRole
 from chatballs.identity.policy import ResourceScope, authorize
 
 
@@ -42,21 +41,15 @@ def change_card(context, contact_id, data, *, request=None):
     return {"client": client_detail(context.organization_id, contact_id)}
 
 
-def _owner(context):
-    _require(context, "customers.manage")
-    if context.membership is None or context.membership.role != EmployeeRole.OWNER:
-        raise PermissionDenied({"detail": t("sales.merge_owner_only")})
-
-
 def merge(context, contact_id, source_id, reason, *, request=None):
-    _owner(context)
+    _require(context, "customers.manage")
     merge_contacts(organization=context.organization, target_id=contact_id, source_id=source_id,
         reason=reason, actor=context.actor_user, request=request)
     return {"client": client_detail(context.organization_id, contact_id)}
 
 
 def unmerge(context, contact_id, merge_id, reason, *, request=None):
-    _owner(context)
+    _require(context, "customers.manage")
     revert_merge(organization=context.organization, merge_id=merge_id, reason=reason,
         actor=context.actor_user, request=request)
     return {"client": client_detail(context.organization_id, contact_id)}

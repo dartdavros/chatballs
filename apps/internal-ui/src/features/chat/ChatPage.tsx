@@ -49,7 +49,7 @@ export function ChatPage({
   }, [user.organizationPublicId]);
   return (
     <ConversationWorkspace
-      isOwner={user.role === "OWNER"}
+      isOwner={isManager(user)}
       canDelete={isManager(user)}
       retainsReplyAfterTransfer={isManager(user)}
       initialConversationId={initialConversationId}

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": 34,
+  "revision": 35,
   "title": "Chatballs — архитектура контакт-центра",
   "elements": [
     {
@@ -7092,6 +7092,585 @@
         "0041",
         "0030",
         "0031"
+      ]
+    },
+    {
+      "id": "external-chatballs-backoffice",
+      "kind": "system",
+      "name": "Chatballs Backoffice",
+      "description": "Принимает суточный check-in и независимо передаёт подключённой установке полные SSE-снимки действующих и будущих публикаций после сохранения и переподключения.",
+      "technology": "HTTPS JSON",
+      "state": "current",
+      "external": true,
+      "code": [],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "component-installation-check-in",
+      "kind": "component",
+      "name": "Связь установки с Backoffice",
+      "description": "Ведёт надёжное расписание check-in, отправляет минимальный HTTPS-запрос и сохраняет независимый результат и список сообщений. Читает внешний адрес для разрешённой попытки и добавляет пригодное очищенное значение в check-in. Выполняет проверку на первом цикле после смены запущенной версии с учётом разрешения, действующей попытки и ожидания после 429.",
+      "technology": "Python / Django / PostgreSQL / HTTPS",
+      "parent": "container-backend",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/events/management/commands/run_worker.py",
+        "apps/backend/chatballs/updates/services.py",
+        "apps/backend/chatballs/updates/check_in.py",
+        "apps/backend/chatballs/updates/check_in_state.py",
+        "apps/backend/chatballs/updates/check_in_client.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+        "apps/backend/chatballs/events/management/commands/run_worker.py",
+        "apps/backend/chatballs/updates/services.py",
+        "compose.yaml",
+        "apps/backend/chatballs/updates/check_in.py",
+        "apps/backend/chatballs/updates/check_in_state.py",
+        "apps/backend/chatballs/updates/check_in_client.py",
+        "apps/backend/chatballs/identity/instance_settings.py",
+        "apps/backend/chatballs/updates/migrations/0004_check_in_version_schedule.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-check-in-scheduler",
+      "kind": "code",
+      "name": "Планирование check-in",
+      "description": "Штатный poller забирает разрешённую попытку по времени из durable состояния, выполняет ограниченный по времени запрос вне транзакции и записывает результат только для актуальной попытки. Получает актуальный внешний адрес и передаёт его HTTP-клиенту после проверки настройки. Передаёт фактически запущенную версию при резервировании и отправке, чтобы смена версии делала одну попытку доступной на первом цикле.",
+      "technology": "Python / Django",
+      "parent": "component-installation-check-in",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/events/management/commands/run_worker.py",
+        "apps/backend/chatballs/updates/check_in.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/events/management/commands/run_worker.py",
+        "compose.yaml",
+        "apps/backend/chatballs/updates/check_in.py",
+        "apps/backend/chatballs/identity/instance_settings.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-check-in-http",
+      "kind": "code",
+      "name": "Клиент check-in v1",
+      "description": "Отправляет обязательные UUID и фактическую версию и необязательный очищенный `public_url` на существующий HTTPS endpoint. Разбирает `announcements` и ошибки, включая Retry-After.",
+      "technology": "Python / HTTPS",
+      "parent": "component-installation-check-in",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/updates/check_in_client.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+        "apps/backend/chatballs/updates/github.py",
+        "apps/backend/chatballs/updates/check_in_client.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-check-in-store",
+      "kind": "code",
+      "name": "Состояние check-in установки",
+      "description": "Хранит UUIDv4 уровня установки, резервирование попытки, время следующей попытки и снимок сервисных сообщений отдельно от UpdateState. Копия получает свою идентичность. Хранит версию последней зарезервированной попытки. Смена версии позволяет опередить суточный срок при отсутствии активной попытки и действующего срока после 429. Резервирование сохраняет новую версию атомарно с идентификатором попытки.",
+      "technology": "Django ORM / PostgreSQL",
+      "parent": "component-installation-check-in",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/updates/check_in_state.py",
+        "apps/backend/chatballs/updates/migrations/0002_check_in_state.py",
+        "apps/backend/chatballs/identity/management/commands/prepare_installation_copy.py",
+        "scripts/task-env-clone.ps1",
+        "apps/backend/chatballs/updates/migrations/0004_check_in_version_schedule.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/updates/models.py",
+        "apps/backend/chatballs/identity/instance_settings.py",
+        "scripts/task-env-clone.ps1",
+        "compose.task.yaml",
+        "apps/backend/chatballs/updates/migrations/0002_check_in_state.py",
+        "apps/backend/chatballs/identity/management/commands/prepare_installation_copy.py",
+        "apps/backend/chatballs/updates/migrations/0004_check_in_version_schedule.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-check-in-settings",
+      "kind": "code",
+      "name": "Настройка внешних обращений установки",
+      "description": "Сохраняет общую настройку с проверкой прав администратора и передаёт её выпуску обновлений и check-in. Предоставляет check-in явно настроенный внешний адрес без подстановки localhost.",
+      "technology": "Python / Django",
+      "parent": "component-identity",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/identity/instance_settings.py",
+        "apps/backend/chatballs/identity/instance_commands.py",
+        "apps/backend/chatballs/identity/instance_payloads.py",
+        "apps/backend/chatballs/integrations/action_catalog/instance_schemas.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/identity/instance_settings.py",
+        "apps/backend/chatballs/identity/instance_commands.py",
+        "apps/backend/chatballs/identity/instance_payloads.py",
+        "apps/backend/chatballs/integrations/action_catalog/instance_schemas.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-check-in-release-guard",
+      "kind": "code",
+      "name": "Ограничение проверок GitHub",
+      "description": "Серверная проверка запрещает новые запросы GitHub при выключенной настройке, в том числе вызов из каталога действий.",
+      "technology": "Python / Django",
+      "parent": "component-updates",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/updates/services.py",
+        "apps/backend/chatballs/updates/commands.py",
+        "apps/backend/chatballs/integrations/action_catalog/updates.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/events/management/commands/run_worker.py",
+        "apps/backend/chatballs/updates/commands.py",
+        "apps/backend/chatballs/updates/services.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "ui-installation-check-in",
+      "kind": "component",
+      "name": "Настройка связи и сервисные сообщения",
+      "description": "Администратор установки управляет одной настройкой и читает сервисные сообщения в карточке «Обновления» на странице «Настройки → Платформа». Пустой ответ, ожидание, отключение, ошибка и сохранение отражаются по утверждённому макету.",
+      "technology": "React / TypeScript",
+      "parent": "container-workbench",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "apps/internal-ui/src/features/updates/UpdatesCard.tsx"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "apps/internal-ui/src/features/updates/UpdatesCard.tsx",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата"
+      ],
+      "decisions": [
+        "0027"
+      ],
+      "planned": {
+        "name": "Настройка внешних обращений установки",
+        "description": "Администратор установки управляет общей настройкой в карточке «Обновления». Карточка сохраняет сведения о релизах и показывает состояния сохранения переключателя. Подсказка переключателя сообщает о передаче идентификатора и настроенного внешнего адреса в Backoffice.",
+        "technology": "React / TypeScript",
+        "parent": "container-workbench",
+        "code": [
+          "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+          "apps/internal-ui/src/features/updates/UpdatesCard.tsx",
+          "apps/internal-ui/src/features/updates/ExternalChecksPanel.tsx"
+        ],
+        "evidence": [
+          ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+          ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+          ".skaro/docs/chatballs-installation-check-in.md",
+          "design/drafts/service-announcement-banner/index.html",
+          "design/baseline/installation-check-in/platform-updates.dc.html",
+          "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+          "apps/internal-ui/src/features/updates/UpdatesCard.tsx",
+          "apps/internal-ui/src/features/updates/ExternalChecksPanel.tsx",
+          "design/baseline/installation-check-in/service-announcement-banner.dc.html"
+        ],
+        "decisions": [
+          "0027"
+        ]
+      }
+    },
+    {
+      "id": "code-ui-installation-check-in",
+      "kind": "code",
+      "name": "Интерфейс настройки внешних обращений",
+      "description": "Отображает переключатель, сохраняет значение через штатный API и синхронизирует подтверждённое состояние с верхней полосой. Обновляет текст подсказки и доступную подпись через словари интерфейса.",
+      "technology": "React / TypeScript",
+      "parent": "ui-installation-check-in",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "apps/internal-ui/src/features/updates/UpdatesCard.tsx",
+        "apps/internal-ui/src/features/updates/ExternalChecksPanel.tsx",
+        "apps/internal-ui/src/features/updates/useExternalChecks.ts",
+        "apps/internal-ui/src/i18n/ru.ts",
+        "apps/internal-ui/src/i18n/en.ts"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "apps/internal-ui/src/features/updates/UpdatesCard.tsx",
+        "apps/internal-ui/src/features/updates/ExternalChecksPanel.tsx",
+        "apps/internal-ui/src/features/updates/useExternalChecks.ts",
+        "apps/internal-ui/src/i18n/ru.ts",
+        "apps/internal-ui/src/i18n/en.ts",
+        "design/baseline/installation-check-in/service-announcement-banner.dc.html"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-employee-offboarding",
+      "kind": "code",
+      "parent": "component-identity",
+      "name": "Увольнение и выборка по доступу",
+      "description": "Идемпотентная команда увольнения в текущей организации, различение блокировки и увольнения, отзыв доступа и выборка сотрудников до пагинации.",
+      "technology": "Python / Django / DRF / PostgreSQL",
+      "code": [
+        "apps/backend/chatballs/identity/models.py",
+        "apps/backend/chatballs/identity/employee_security_commands.py",
+        "apps/backend/chatballs/identity/employee_urls.py",
+        "apps/backend/chatballs/identity/governance.py",
+        "apps/backend/chatballs/identity/employee_queries.py",
+        "apps/backend/chatballs/identity/employee_selectors.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md",
+        "apps/backend/chatballs/identity/employee_security_commands.py",
+        "apps/backend/chatballs/identity/models.py",
+        "apps/backend/chatballs/identity/policy.py",
+        "apps/backend/chatballs/conversations/consumers.py",
+        "apps/backend/chatballs/conversations/queue.py"
+      ],
+      "decisions": [
+        "0012",
+        "0033"
+      ],
+      "state": "planned",
+      "external": false
+    },
+    {
+      "id": "code-ui-employee-access-filter",
+      "kind": "code",
+      "parent": "ui-employees",
+      "name": "Увольнение и фильтры сотрудников",
+      "description": "Принятые фильтры роли и статуса (активен, приглашён, заблокирован, уволен), увольнение в опасной зоне карточки с подтверждением. Общий список исключает уволенных.",
+      "technology": "React / TypeScript",
+      "code": [
+        "apps/internal-ui/src/features/employees/EmployeesFilters.tsx",
+        "apps/internal-ui/src/features/employees/EmployeesListPage.tsx",
+        "apps/internal-ui/src/features/employees/EmployeeSecuritySections.tsx",
+        "apps/internal-ui/src/features/employees/api.ts"
+      ],
+      "evidence": [
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md",
+        "design/baseline/Сотрудники/Сотрудники (новая модель).dc.html",
+        "apps/internal-ui/src/features/employees/EmployeesFilters.tsx",
+        "apps/internal-ui/src/features/employees/EmployeesListPage.tsx",
+        "apps/internal-ui/src/features/employees/EmployeeSecuritySections.tsx",
+        "apps/internal-ui/src/features/employees/api.ts"
+      ],
+      "decisions": [
+        "0012",
+        "0033"
+      ],
+      "state": "planned",
+      "external": false
+    },
+    {
+      "id": "code-check-in-announcements-api",
+      "kind": "code",
+      "name": "Выдача сервисных сообщений установки",
+      "description": "Проверяет актуальное право управления Платформой и выдаёт полный снимок расписания с часами Backoffice. Старый check-in остаётся совместимым. Время показа определяют исходные starts_at/ends_at.",
+      "technology": "Python / Django REST Framework / PostgreSQL",
+      "parent": "component-installation-check-in",
+      "state": "current",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/updates/views.py",
+        "apps/backend/chatballs/identity/instance_urls.py",
+        "apps/backend/chatballs/updates/check_in_state.py",
+        "apps/backend/chatballs/updates/announcement_state.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата",
+        "apps/backend/chatballs/updates/views.py",
+        "apps/backend/chatballs/identity/instance_urls.py",
+        "apps/backend/chatballs/updates/check_in_state.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "ui-installation-announcement-banner",
+      "kind": "component",
+      "name": "Верхний баннер сервисных сообщений",
+      "description": "Показывает администратору установки над оболочкой первое незакрытое свежее сообщение в порядке Backoffice. Выводит полный заголовок и текст с абзацами и допустимую внешнюю ссылку. Кнопка закрытия переключает очередь.",
+      "parent": "container-workbench",
+      "technology": "React / TypeScript",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/internal-ui/src/layout/Shell.tsx",
+        "apps/internal-ui/src/features/updates/ServiceAnnouncementBanner.tsx"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html",
+        "apps/internal-ui/src/layout/Shell.tsx",
+        "apps/internal-ui/src/features/updates/ExternalChecksPanel.tsx"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-ui-installation-announcement-banner",
+      "kind": "code",
+      "name": "Отображение и очередь сервисных сообщений",
+      "description": "По realtime-сигналу перечитывает снимок. Показывает сообщения только при starts_at <= now < ends_at по часам Backoffice; таймер меняет баннер на обеих границах, без ожидания суточной отметки.",
+      "parent": "ui-installation-announcement-banner",
+      "technology": "React / TypeScript",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/internal-ui/src/features/updates/ServiceAnnouncementBanner.tsx",
+        "apps/internal-ui/src/features/updates/useExternalChecks.ts",
+        "apps/internal-ui/src/features/updates/publicationSchedule.ts"
+      ],
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html",
+        "apps/internal-ui/src/layout/Shell.tsx",
+        "apps/internal-ui/src/features/updates/useExternalChecks.ts",
+        "apps/backend/chatballs/updates/views.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "code-ui-platform-access",
+      "parent": "ui-settings",
+      "name": "Доступ к разделу «Платформа»",
+      "description": "Использует право из сессии в меню, прямом открытии и карточках «Платформы», сохраняет отдельную проверку для TURN и хранилища.",
+      "technology": "React / TypeScript",
+      "kind": "code",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/internal-ui/src/features/settings/sections.ts",
+        "apps/internal-ui/src/features/settings/SettingsSectionBody.tsx",
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "apps/internal-ui/src/features/onboarding/steps.ts"
+      ],
+      "evidence": [
+        "apps/internal-ui/src/features/settings/sections.ts",
+        "apps/internal-ui/src/features/settings/SettingsSectionBody.tsx",
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "apps/internal-ui/src/features/onboarding/steps.ts",
+        ".skaro/adr/0024-administrator-ustanovki-i-nastroyki-inst.md",
+        ".skaro/specs/0015-interfeys-organizatsii.md"
+      ],
+      "decisions": [
+        "0024",
+        "0027",
+        "0032"
+      ]
+    },
+    {
+      "id": "code-platform-access",
+      "parent": "component-identity",
+      "name": "Полномочия управления «Платформой»",
+      "description": "Проверяет действующее членство OWNER/ADMIN или признак администратора установки, сообщает право в сессии и ограничивает команды и поля общих настроек.",
+      "technology": "Python / Django",
+      "kind": "code",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/identity/auth/common.py",
+        "apps/backend/chatballs/identity/instance_views.py",
+        "apps/backend/chatballs/identity/instance_commands.py",
+        "apps/backend/chatballs/identity/instance_email_commands.py",
+        "apps/backend/chatballs/identity/instance_tools_views.py",
+        "apps/backend/chatballs/identity/instance_tools_commands.py",
+        "apps/backend/chatballs/integrations/action_catalog/authority.py"
+      ],
+      "evidence": [
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/identity/auth/common.py",
+        "apps/backend/chatballs/identity/instance_views.py",
+        "apps/backend/chatballs/identity/instance_commands.py",
+        "apps/backend/chatballs/identity/instance_email_commands.py",
+        "apps/backend/chatballs/identity/instance_tools_views.py",
+        "apps/backend/chatballs/identity/instance_tools_commands.py",
+        "apps/backend/chatballs/integrations/action_catalog/authority.py",
+        ".skaro/adr/0024-administrator-ustanovki-i-nastroyki-inst.md",
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0032-instrumenty-agenta-mcp-servery-i-http-za.md"
+      ],
+      "decisions": [
+        "0024",
+        "0027",
+        "0032"
+      ]
+    },
+    {
+      "id": "code-employee-owner-access",
+      "parent": "component-identity",
+      "name": "Защита действующего владельца",
+      "description": "Запрещает административные изменения данных, роли и доступа действующего владельца. Передача владения разрешена только самому действующему владельцу.",
+      "technology": "Python / Django",
+      "kind": "code",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/identity/governance.py",
+        "apps/backend/chatballs/identity/employee_security_commands.py",
+        "apps/backend/chatballs/identity/ownership_commands.py",
+        "apps/backend/chatballs/identity/policy.py"
+      ],
+      "evidence": [
+        "apps/backend/chatballs/identity/governance.py",
+        "apps/backend/chatballs/identity/employee_security_commands.py",
+        "apps/backend/chatballs/identity/ownership_commands.py",
+        "apps/backend/chatballs/identity/policy.py",
+        ".skaro/adr/0012-multitenantnost-membership-i-izolyatsiya.md",
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md"
+      ],
+      "decisions": [
+        "0012",
+        "0025"
+      ]
+    },
+    {
+      "id": "code-ui-employee-owner-access",
+      "parent": "ui-employees",
+      "name": "Действия на карточке владельца",
+      "description": "Показывает другим сотрудникам карточку владельца только для чтения по серверным правам. Действующему владельцу доступно подтверждение передачи владения.",
+      "technology": "React / TypeScript",
+      "kind": "code",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/internal-ui/src/features/employees/EmployeeSecuritySections.tsx",
+        "apps/internal-ui/src/features/employees/OwnershipTransferModal.tsx"
+      ],
+      "evidence": [
+        "apps/internal-ui/src/features/employees/EmployeeSecuritySections.tsx",
+        "apps/internal-ui/src/features/employees/OwnershipTransferModal.tsx",
+        ".skaro/adr/0012-multitenantnost-membership-i-izolyatsiya.md",
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md"
+      ],
+      "decisions": [
+        "0012",
+        "0025"
+      ]
+    },
+    {
+      "id": "code-update-access",
+      "parent": "component-updates",
+      "name": "Полномочия обновлений и сообщений",
+      "description": "Проверяет право «Платформы» перед ручной проверкой и обновлением и выдачей сервисных сообщений.",
+      "technology": "Python / Django",
+      "kind": "code",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/updates/views.py",
+        "apps/backend/chatballs/updates/commands.py"
+      ],
+      "evidence": [
+        "apps/backend/chatballs/updates/views.py",
+        "apps/backend/chatballs/updates/commands.py",
+        ".skaro/adr/0024-administrator-ustanovki-i-nastroyki-inst.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md"
+      ],
+      "decisions": [
+        "0024",
+        "0027",
+        "0032"
+      ]
+    },
+    {
+      "id": "code-publication-subscriber",
+      "kind": "code",
+      "name": "Исходящий поток публикаций",
+      "description": "Штатный poller выбирает одного исполнителя advisory lock PostgreSQL, держит исходящий SSE, сохраняет расписание и Retry-After, публикует realtime-сигнал. Отключение останавливает новые обращения.",
+      "technology": "Python / Django REST Framework / PostgreSQL",
+      "parent": "component-installation-check-in",
+      "state": "planned",
+      "external": false,
+      "code": [
+        "apps/backend/chatballs/updates/announcement_subscriber.py",
+        "apps/backend/chatballs/updates/announcement_state.py"
+      ],
+      "evidence": [
+        "apps/backend/chatballs/updates/test_announcement_schedule.py",
+        ".skaro/docs/chatballs-installation-check-in.md"
+      ],
+      "decisions": [
+        "0027"
       ]
     }
   ],
@@ -16880,6 +17459,536 @@
       "decisions": [
         "0041"
       ]
+    },
+    {
+      "id": "rel-system-backoffice",
+      "source": "system-chatballs",
+      "target": "external-chatballs-backoffice",
+      "description": "Отмечает связь установки и получает действующие сервисные публикации.",
+      "technology": "HTTPS JSON",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md"
+      ],
+      "decisions": [
+        "0027"
+      ],
+      "planned": {
+        "source": "system-chatballs",
+        "target": "external-chatballs-backoffice",
+        "technology": "HTTPS JSON",
+        "evidence": [
+          ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+          ".skaro/docs/chatballs-installation-check-in.md",
+          ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+          "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+          "apps/backend/chatballs/updates/check_in_client.py"
+        ],
+        "decisions": [
+          "0027"
+        ],
+        "description": "Передаёт настроенный внешний адрес с UUID и версией в существующем check-in и получает сервисные публикации."
+      }
+    },
+    {
+      "id": "rel-backend-backoffice",
+      "source": "container-backend",
+      "target": "external-chatballs-backoffice",
+      "description": "Отправляет check-in с UUID и текущей версией с сервера установки.",
+      "technology": "HTTPS JSON",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+        "apps/backend/chatballs/events/management/commands/run_worker.py"
+      ],
+      "decisions": [
+        "0027"
+      ],
+      "planned": {
+        "source": "container-backend",
+        "target": "external-chatballs-backoffice",
+        "technology": "HTTPS JSON",
+        "evidence": [
+          ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+          ".skaro/docs/chatballs-installation-check-in.md",
+          ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+          "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+          "apps/backend/chatballs/events/management/commands/run_worker.py",
+          "apps/backend/chatballs/updates/check_in_client.py"
+        ],
+        "decisions": [
+          "0027"
+        ],
+        "description": "Отправляет серверный check-in с UUID, версией и необязательным настроенным внешним адресом."
+      }
+    },
+    {
+      "id": "rel-check-in-backoffice",
+      "source": "component-installation-check-in",
+      "target": "external-chatballs-backoffice",
+      "description": "Передаёт UUID, версию и очищенный `public_url` при наличии. Получает `200` с массивом `announcements` либо ошибку.",
+      "technology": "HTTPS JSON",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+        "apps/backend/chatballs/updates/check_in_client.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-check-in-postgres",
+      "source": "component-installation-check-in",
+      "target": "container-postgres",
+      "description": "Хранит общий UUID, срок и захват попытки, версию последней попытки, признак ожидания после 429 и снимок сообщений вне организаций.",
+      "technology": "Django ORM / SQL",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/identity/instance_settings.py",
+        "compose.yaml",
+        "apps/backend/chatballs/updates/check_in_state.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-check-in-policy",
+      "source": "component-installation-check-in",
+      "target": "component-identity",
+      "description": "Читает настройку перед новой попыткой и перед выдачей сохранённых сообщений.",
+      "technology": "Django application service",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/identity/instance_settings.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-check-in-code-reserve",
+      "source": "code-check-in-scheduler",
+      "target": "code-check-in-store",
+      "description": "Резервирует одну попытку для установки по сроку либо при смене запущенной версии, учитывая действующую попытку и срок ожидания после 429. Сохраняет версию при захвате, а после ответа записывает результат и срок следующей попытки.",
+      "technology": "Python / Django ORM",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/events/management/commands/run_worker.py",
+        "compose.yaml",
+        "apps/backend/chatballs/updates/check_in_state.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-check-in-code-send",
+      "source": "code-check-in-scheduler",
+      "target": "code-check-in-http",
+      "description": "Передаёт клиенту UUID, версию и очищенный внешний адрес при наличии.",
+      "technology": "Python",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/events/management/commands/run_worker.py",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+        "apps/backend/chatballs/updates/check_in.py",
+        "apps/backend/chatballs/updates/check_in_client.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-admin-check-in-ui",
+      "source": "person-instance-admin",
+      "target": "ui-installation-check-in",
+      "description": "Управляет получением обновлений и сервисных сообщений.",
+      "technology": "HTTPS",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-check-in-ui-policy",
+      "source": "ui-installation-check-in",
+      "target": "component-identity",
+      "description": "Читает и изменяет настройку через серверный API установки с проверкой прав.",
+      "technology": "HTTPS JSON",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "apps/backend/chatballs/identity/instance_settings.py",
+        "apps/internal-ui/src/features/settings/instance.ts",
+        "apps/backend/chatballs/identity/instance_commands.py",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-check-in-ui-messages",
+      "source": "ui-installation-check-in",
+      "target": "component-installation-check-in",
+      "description": "Карточка «Обновления» читает сообщения и состояние из отдельного API установки. Сервер проверяет администратора установки, настройку, ревизию и срок видимости.",
+      "technology": "HTTPS JSON",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/internal-ui/src/features/settings/PlatformSettingsCard.tsx",
+        "Chatballs Backoffice: .skaro/docs/chatballs-installation-check-in.md; docs/installations-api.md; docs/announcements-api.md",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/identity/instance_urls.py",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-employee-offboarding-ui-api",
+      "source": "code-ui-employee-access-filter",
+      "target": "code-employee-offboarding",
+      "description": "Отправляет подтверждённую команду и перечитывает список с ролью, доступом и остальными фильтрами.",
+      "technology": "HTTPS JSON",
+      "evidence": [
+        "apps/internal-ui/src/features/employees/api.ts",
+        "apps/backend/chatballs/identity/employee_urls.py",
+        "apps/backend/chatballs/identity/employee_queries.py",
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md"
+      ],
+      "decisions": [
+        "0012",
+        "0033"
+      ],
+      "state": "planned"
+    },
+    {
+      "id": "rel-employee-offboarding-membership",
+      "source": "code-employee-offboarding",
+      "target": "code-identity",
+      "description": "Проверяет цель и принадлежность организации, фиксирует состояние участия и аудит или читает отфильтрованную страницу.",
+      "technology": "Вызов Python / ORM / транзакция PostgreSQL",
+      "evidence": [
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md",
+        "apps/backend/chatballs/identity/employee_security_commands.py",
+        "apps/backend/chatballs/identity/models.py",
+        "apps/backend/chatballs/identity/policy.py",
+        "apps/backend/chatballs/conversations/consumers.py",
+        "apps/backend/chatballs/conversations/queue.py"
+      ],
+      "decisions": [
+        "0012",
+        "0033"
+      ],
+      "state": "planned"
+    },
+    {
+      "id": "rel-employee-offboarding-queue",
+      "source": "code-employee-offboarding",
+      "target": "code-collaboration",
+      "description": "Завершает активные назначения и возвращает открытые диалоги в штатную очередь, сохраняя историю.",
+      "technology": "Python / существующая очередь",
+      "evidence": [
+        "apps/backend/chatballs/conversations/queue.py",
+        "apps/backend/chatballs/identity/employee_security_commands.py",
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md"
+      ],
+      "decisions": [
+        "0012",
+        "0033"
+      ],
+      "state": "planned"
+    },
+    {
+      "id": "rel-employee-offboarding-realtime",
+      "source": "code-employee-offboarding",
+      "target": "component-tenancy",
+      "description": "Учитывает отзыв участия при HTTP, realtime и фоновых проверках в затронутой организации.",
+      "technology": "Python / Django / ASGI",
+      "evidence": [
+        "apps/backend/chatballs/identity/policy.py",
+        "apps/backend/chatballs/conversations/consumers.py",
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md"
+      ],
+      "decisions": [
+        "0012",
+        "0033"
+      ],
+      "state": "planned"
+    },
+    {
+      "id": "rel-check-in-code-read-announcements",
+      "source": "code-check-in-announcements-api",
+      "target": "code-check-in-store",
+      "description": "Читает согласованное состояние разрешения, снимок текущей ревизии и результат связи. Скрывает снимок после 24 часов, при отключении и до свежего ответа после включения.",
+      "technology": "Django ORM / PostgreSQL",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата",
+        "apps/backend/chatballs/updates/check_in_state.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-shell-installation-announcement-banner",
+      "source": "ui-shell",
+      "target": "ui-installation-announcement-banner",
+      "description": "Размещает верхнюю полосу над рабочей оболочкой для администратора установки.",
+      "technology": "React",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html",
+        "apps/internal-ui/src/layout/Shell.tsx"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-admin-installation-announcement-banner",
+      "source": "person-instance-admin",
+      "target": "ui-installation-announcement-banner",
+      "description": "Читает полное сообщение, по желанию открывает ссылку публикации и закрывает текущее сообщение.",
+      "technology": "Браузер",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-installation-announcement-banner-snapshot",
+      "source": "ui-installation-announcement-banner",
+      "target": "component-installation-check-in",
+      "description": "Получает текущий разрешённый список из существующего API установки вместе со сроком видимости.",
+      "technology": "HTTPS JSON",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html",
+        "apps/backend/chatballs/updates/views.py",
+        "apps/internal-ui/src/features/updates/useExternalChecks.ts"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-installation-external-checks-banner",
+      "source": "ui-installation-check-in",
+      "target": "ui-installation-announcement-banner",
+      "description": "После сохранения синхронизирует общую настройку. Выключение скрывает сообщения, включение позволяет показать свежий результат.",
+      "technology": "React",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html",
+        "apps/internal-ui/src/features/updates/ExternalChecksPanel.tsx",
+        "apps/internal-ui/src/features/updates/useExternalChecks.ts"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-installation-announcement-banner-code-api",
+      "source": "code-ui-installation-announcement-banner",
+      "target": "code-check-in-announcements-api",
+      "description": "Читает GET /api/v1/instance/update/announcements/ и учитывает подтверждённое разрешение и срок видимости.",
+      "technology": "HTTPS JSON",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        "design/drafts/service-announcement-banner/index.html",
+        "apps/backend/chatballs/updates/views.py",
+        "apps/internal-ui/src/features/updates/useExternalChecks.ts"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-check-in-public-address",
+      "source": "component-installation-check-in",
+      "target": "component-identity",
+      "description": "Для разрешённой попытки читает актуальный внешний адрес из существующих настроек установки.",
+      "technology": "Python / Django",
+      "state": "current",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/docs/chatballs-installation-check-in.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/updates/check_in.py",
+        "apps/backend/chatballs/identity/instance_settings.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-code-ui-platform-access",
+      "source": "code-ui-platform-access",
+      "target": "code-platform-access",
+      "description": "Сессия сообщает право, общий API настроек проверяет актуальные полномочия и поля каждой операции.",
+      "technology": "HTTPS JSON",
+      "state": "planned",
+      "evidence": [
+        ".skaro/adr/0024-administrator-ustanovki-i-nastroyki-inst.md",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/internal-ui/src/features/settings/sections.ts"
+      ],
+      "decisions": [
+        "0024",
+        "0027",
+        "0032"
+      ]
+    },
+    {
+      "id": "rel-code-platform-update-access",
+      "source": "code-update-access",
+      "target": "code-platform-access",
+      "description": "Команды обновлений и чтения сообщений используют общую серверную проверку права «Платформы».",
+      "technology": "Python",
+      "state": "planned",
+      "evidence": [
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "apps/backend/chatballs/updates/commands.py",
+        "apps/backend/chatballs/identity/instance_access.py"
+      ],
+      "decisions": [
+        "0024",
+        "0027",
+        "0032"
+      ]
+    },
+    {
+      "id": "rel-code-ui-employee-owner-access",
+      "source": "code-ui-employee-owner-access",
+      "target": "code-employee-owner-access",
+      "description": "Проверяет доступ к карточке владельца или передаёт подтверждённую действующим владельцем команду передачи владения.",
+      "technology": "HTTPS JSON",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0004-sotrudniki-roli-i-gruppy.md",
+        "apps/internal-ui/src/features/employees/EmployeeSecuritySections.tsx",
+        "apps/backend/chatballs/identity/employee_security_commands.py"
+      ],
+      "decisions": [
+        "0012",
+        "0025"
+      ]
+    },
+    {
+      "id": "rel-code-employee-owner-membership",
+      "source": "code-employee-owner-access",
+      "target": "code-identity",
+      "description": "Атомарно меняет владельца по команде действующего владельца. Административные изменения защищённого участия отклоняются.",
+      "technology": "Python",
+      "state": "planned",
+      "evidence": [
+        ".skaro/adr/0012-multitenantnost-membership-i-izolyatsiya.md",
+        "apps/backend/chatballs/identity/governance.py",
+        "apps/backend/chatballs/identity/ownership_commands.py"
+      ],
+      "decisions": [
+        "0012",
+        "0025"
+      ]
+    },
+    {
+      "id": "rel-publication-stream",
+      "source": "code-publication-subscriber",
+      "target": "external-chatballs-backoffice",
+      "description": "POST /public/v1/installations/publications/stream/: начальный снимок, изменения, heartbeat, reconnect.",
+      "technology": "HTTPS / SSE",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата",
+        "apps/backend/chatballs/updates/check_in_state.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
+    },
+    {
+      "id": "rel-publication-snapshot",
+      "source": "code-publication-subscriber",
+      "target": "code-check-in-announcements-api",
+      "description": "Сохраняет полный снимок и уведомляет оболочку об изменении расписания.",
+      "technology": "PostgreSQL / Redis realtime",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0005-ustanovka-razvertyvanie-i-zhiznennyy-tsi.md",
+        ".skaro/adr/0027-obnovlenie-ustanovki-iz-interfeysa.md",
+        "design/baseline/installation-check-in/platform-updates.dc.html",
+        "T-194: владелец подтвердил утверждение текущего макета в ответе на вопрос о решении проектного чата",
+        "apps/backend/chatballs/updates/check_in_state.py"
+      ],
+      "decisions": [
+        "0027"
+      ]
     }
   ],
   "views": [
@@ -23952,6 +25061,318 @@
         }
       ],
       "instances": []
+    },
+    {
+      "id": "view-backoffice-check-in-dynamic",
+      "kind": "dynamic",
+      "title": "Отметка связи, запись результата и отложенный повтор",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "component-installation-check-in",
+        "component-identity",
+        "container-postgres",
+        "external-chatballs-backoffice"
+      ],
+      "relationships": [
+        "rel-check-in-policy",
+        "rel-check-in-postgres",
+        "rel-check-in-backoffice"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-check-in-policy",
+          "description": "1. Poller читает общую настройку. При выключенной настройке исходящий вызов не планируется."
+        },
+        {
+          "relationship": "rel-check-in-postgres",
+          "description": "2. Poller сохраняет UUID при первом запуске и резервирует наступившую попытку по общему расписанию."
+        },
+        {
+          "relationship": "rel-check-in-backoffice",
+          "description": "3. За пределами транзакции отправляет UUID и версию. Backoffice регистрирует связь и возвращает список либо ошибку."
+        },
+        {
+          "relationship": "rel-check-in-postgres",
+          "description": "4. Записывает результат актуальной попытки и срок дальнейшей проверки. После временного сбоя резервирование повторяется по сохранённому сроку."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-code-employee-offboarding",
+      "kind": "code",
+      "title": "Код увольнения и выборки сотрудников",
+      "scope": "component-identity",
+      "elements": [
+        "code-employee-offboarding",
+        "code-identity"
+      ],
+      "relationships": [
+        "rel-employee-offboarding-membership"
+      ],
+      "steps": [],
+      "instances": [],
+      "state": "planned"
+    },
+    {
+      "id": "view-code-ui-employee-access-filter",
+      "kind": "code",
+      "title": "Код увольнения и фильтров в списке",
+      "scope": "ui-employees",
+      "elements": [
+        "code-ui-employee-access-filter"
+      ],
+      "relationships": [],
+      "steps": [],
+      "instances": [],
+      "state": "planned"
+    },
+    {
+      "id": "view-dynamic-employee-offboarding",
+      "kind": "dynamic",
+      "title": "Увольнение сотрудника в текущей организации",
+      "scope": "system-chatballs",
+      "elements": [
+        "code-ui-employee-access-filter",
+        "code-employee-offboarding",
+        "code-identity",
+        "code-collaboration",
+        "component-tenancy"
+      ],
+      "relationships": [
+        "rel-employee-offboarding-ui-api",
+        "rel-employee-offboarding-membership",
+        "rel-employee-offboarding-queue",
+        "rel-employee-offboarding-realtime"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-employee-offboarding-ui-api",
+          "description": "1. Владелец или администратор явно подтверждает увольнение."
+        },
+        {
+          "relationship": "rel-employee-offboarding-membership",
+          "description": "2. Сервер проверяет организацию, права и цель, фиксирует увольнение и аудит."
+        },
+        {
+          "relationship": "rel-employee-offboarding-queue",
+          "description": "3. Открытые назначения прекращаются, диалоги возвращаются в штатную очередь."
+        },
+        {
+          "relationship": "rel-employee-offboarding-realtime",
+          "description": "4. Последующие HTTP, realtime и фоновые проверки отклоняют доступ в этой организации."
+        },
+        {
+          "relationship": "rel-employee-offboarding-ui-api",
+          "description": "5. Интерфейс перечитывает список. Уволенный виден через явный фильтр."
+        }
+      ],
+      "instances": [],
+      "state": "planned"
+    },
+    {
+      "id": "view-dynamic-employee-access-filter",
+      "kind": "dynamic",
+      "title": "Выбор роли и уровня доступа в списке сотрудников",
+      "scope": "system-chatballs",
+      "elements": [
+        "code-ui-employee-access-filter",
+        "code-employee-offboarding",
+        "code-identity"
+      ],
+      "relationships": [
+        "rel-employee-offboarding-ui-api",
+        "rel-employee-offboarding-membership"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-employee-offboarding-ui-api",
+          "description": "1. Пользователь меняет роль или уровень доступа."
+        },
+        {
+          "relationship": "rel-employee-offboarding-membership",
+          "description": "2. Сервер ограничивает данные текущей организацией и областью просмотра, затем фильтрует до пагинации."
+        },
+        {
+          "relationship": "rel-employee-offboarding-ui-api",
+          "description": "3. Интерфейс показывает страницу и счётчик по выбранным фильтрам."
+        }
+      ],
+      "instances": [],
+      "state": "planned"
+    },
+    {
+      "id": "view-backoffice-check-in-upgrade-dynamic",
+      "kind": "dynamic",
+      "title": "Check-in на первом цикле после обновления",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "component-installation-check-in",
+        "component-identity",
+        "container-postgres",
+        "external-chatballs-backoffice"
+      ],
+      "relationships": [
+        "rel-check-in-policy",
+        "rel-check-in-postgres",
+        "rel-check-in-public-address",
+        "rel-check-in-backoffice"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-check-in-policy",
+          "description": "1. Воркер новой версии проверяет общую настройку на первом цикле. При отключении попытки нет."
+        },
+        {
+          "relationship": "rel-check-in-postgres",
+          "description": "2. В транзакции воркер сравнивает запущенную версию с версией последней попытки. При смене версии резервирует одну попытку с прежним UUID, если нет действующей попытки или срока после 429. При той же версии соблюдает сохранённый срок."
+        },
+        {
+          "relationship": "rel-check-in-public-address",
+          "description": "3. Для разрешённой попытки воркер читает актуальный внешний адрес установки."
+        },
+        {
+          "relationship": "rel-check-in-backoffice",
+          "description": "4. Воркер передаёт UUID, фактически запущенную версию и пригодный внешний адрес по действующему контракту."
+        },
+        {
+          "relationship": "rel-check-in-postgres",
+          "description": "5. Записывает результат и дальнейший срок. При 429 срок остаётся обязательным после смены версии."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-code-platform-access",
+      "kind": "code",
+      "title": "Код авторизации раздела «Платформа»",
+      "scope": "component-identity",
+      "elements": [
+        "code-platform-access"
+      ],
+      "relationships": [],
+      "steps": [],
+      "state": "planned",
+      "instances": []
+    },
+    {
+      "id": "view-code-employee-owner-access",
+      "kind": "code",
+      "title": "Код операций над участием владельца",
+      "scope": "component-identity",
+      "elements": [
+        "code-employee-owner-access",
+        "code-identity"
+      ],
+      "relationships": [
+        "rel-code-employee-owner-membership"
+      ],
+      "steps": [],
+      "state": "planned",
+      "instances": []
+    },
+    {
+      "id": "view-dynamic-platform-access",
+      "kind": "dynamic",
+      "title": "Администратор открывает «Платформу» и сохраняет настройку",
+      "scope": "system-chatballs",
+      "elements": [
+        "code-ui-platform-access",
+        "code-platform-access",
+        "container-backend",
+        "container-postgres"
+      ],
+      "relationships": [
+        "rel-code-ui-platform-access",
+        "rel-backend-postgres"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-code-ui-platform-access",
+          "description": "После входа интерфейс получает право в сессии и показывает раздел «Платформа»."
+        },
+        {
+          "relationship": "rel-code-ui-platform-access",
+          "description": "Пользователь меняет адрес, язык, почту, внешние обращения или политику локальной сети. Сервер проверяет действующее право и поля запроса."
+        },
+        {
+          "relationship": "rel-backend-postgres",
+          "description": "Сервер сохраняет общую настройку и аудит. Запрос без права не изменяет данные."
+        },
+        {
+          "relationship": "rel-code-ui-platform-access",
+          "description": "Карточка показывает подтверждённый результат."
+        }
+      ],
+      "state": "planned",
+      "instances": []
+    },
+    {
+      "id": "view-dynamic-employee-owner-access",
+      "kind": "dynamic",
+      "title": "Сервер защищает действующего владельца",
+      "scope": "system-chatballs",
+      "elements": [
+        "code-ui-employee-owner-access",
+        "code-employee-owner-access",
+        "code-identity"
+      ],
+      "relationships": [
+        "rel-code-ui-employee-owner-access",
+        "rel-code-employee-owner-membership"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-code-ui-employee-owner-access",
+          "description": "Администратор открывает карточку владельца в режиме чтения."
+        },
+        {
+          "relationship": "rel-code-ui-employee-owner-access",
+          "description": "Попытка администратора напрямую изменить данные, роль или доступ владельца поступает на сервер."
+        },
+        {
+          "relationship": "rel-code-employee-owner-membership",
+          "description": "Сервер отклоняет действие, включая блокировку и разблокировку, сохраняя данные, роль и доступ владельца."
+        },
+        {
+          "relationship": "rel-code-employee-owner-membership",
+          "description": "Удаление и увольнение владельца отклоняются. Передача владения разрешена только текущему владельцу, с атомарной сменой ролей."
+        },
+        {
+          "relationship": "rel-code-ui-employee-owner-access",
+          "description": "Интерфейс получает новые данные и серверные флаги."
+        }
+      ],
+      "state": "planned",
+      "instances": []
+    },
+    {
+      "state": "planned",
+      "steps": [],
+      "instances": [],
+      "id": "view-code-ui-platform-access",
+      "kind": "code",
+      "scope": "ui-settings",
+      "title": "Код доступа к разделу «Платформа» в интерфейсе",
+      "elements": [
+        "code-ui-platform-access"
+      ],
+      "relationships": []
+    },
+    {
+      "state": "planned",
+      "steps": [],
+      "instances": [],
+      "id": "view-code-ui-employee-owner-access",
+      "kind": "code",
+      "scope": "ui-employees",
+      "title": "Код защиты карточки владельца",
+      "elements": [
+        "code-ui-employee-owner-access"
+      ],
+      "relationships": []
     }
   ],
   "specifications": [

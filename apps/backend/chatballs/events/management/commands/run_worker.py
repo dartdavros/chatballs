@@ -32,6 +32,7 @@ from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.lookup import iter_organizations
 from chatballs.updates.check_in import check_in_if_due
+from chatballs.updates.announcement_subscriber import ensure_announcement_subscriber
 from chatballs.updates.services import check_for_updates
 
 logger = logging.getLogger(__name__)
@@ -138,6 +139,7 @@ class Command(BaseCommand):
             # на звонки. Проверки дешёвые: почти всегда это сравнение времени.
             now = time.monotonic()
             if does_polling and now - last_check_in_sweep >= CHECK_IN_SWEEP_INTERVAL:
+                ensure_announcement_subscriber()
                 last_check_in_sweep = now
                 try:
                     check_in_if_due()

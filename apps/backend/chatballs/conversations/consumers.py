@@ -39,6 +39,7 @@ from chatballs.identity.work_status_access import may_read_directory, may_receiv
 from chatballs.identity.work_status_realtime import WORK_STATUS_EVENT, work_status_group
 from chatballs.notifications.realtime import user_group
 from chatballs.presence import touch
+from chatballs.updates.announcement_state import ANNOUNCEMENT_GROUP
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.lookup import organization_by_public_id
 
@@ -74,9 +75,11 @@ class ConversationEventsConsumer(AsyncJsonWebsocketConsumer):
         # Уведомления адресованы человеку, а не организации: у каждого своя группа.
         self.personal = user_group(user.id)
         await self.channel_layer.group_add(self.personal, self.channel_name)
+        await self.channel_layer.group_add(ANNOUNCEMENT_GROUP, self.channel_name)
         await self.accept()
 
     async def disconnect(self, code: int) -> None:
+        await self.channel_layer.group_discard(ANNOUNCEMENT_GROUP, self.channel_name)
         if self.organization_id is not None and self.user_id is not None:
             # Не «его нет», а «здесь он был в последний раз».
             await database_sync_to_async(touch)(self.organization_id, self.user_id)
@@ -125,7 +128,9 @@ class ConversationEventsConsumer(AsyncJsonWebsocketConsumer):
     async def fanout(self, event: dict) -> None:
         payload = event["payload"]
         kind = payload.get("type")
-        if kind == WORK_STATUS_EVENT:
+        if kind == "announcements.changed":
+            allowed = await self._may_manage_platform()
+        elif kind == WORK_STATUS_EVENT:
             allowed = await self._may_receive_work_status(payload.get("userId"))
         elif kind in {"conversation.changed", COMMENTS_EVENT}:
             conversation_id = payload.get("conversationId")
@@ -143,6 +148,14 @@ class ConversationEventsConsumer(AsyncJsonWebsocketConsumer):
             allowed = False
         if allowed:
             await self.send_json(payload)
+
+    @database_sync_to_async
+    def _may_manage_platform(self):
+        from chatballs.identity.instance_access import can_manage_platform
+        from chatballs.identity.models import HumanUser
+
+        user = HumanUser.objects.filter(pk=self.user_id, is_active=True).first()
+        return can_manage_platform(user)
 
     @database_sync_to_async
     def _may_receive(self) -> bool:

@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="945" viewBox="0 0 1920 945" font-family="Segoe UI,Arial,sans-serif"><defs><filter id="shadow" x="-30%" y="-20%" width="160%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-opacity="0.14"/></filter></defs>
+<rect x="0" y="0" width="1920" height="945" rx="0" fill="#f5f6f8" stroke="none"/>
+<rect x="0" y="0" width="260" height="945" rx="0" fill="#fafafa" stroke="none"/>
+<path d="M259 0L259 945" stroke="#f0f0f0"/>
+<rect x="14" y="16" width="28" height="28" rx="7" fill="#00594d" stroke="none"/>
+<text x="21" y="38" font-size="25" fill="white" font-weight="600" font-style="italic">S</text>
+<text x="60" y="37" font-size="13" fill="#262626" font-weight="600" >Сурсил</text>
+<svg x="225" y="24" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+<svg x="20" y="69" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" /></svg>
+<text x="48" y="83" font-size="13" fill="#262626" font-weight="400" >Чат</text>
+<svg x="20" y="108" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+<text x="48" y="122" font-size="13" fill="#262626" font-weight="400" >Контакты</text>
+<svg x="20" y="147" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 14h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM4 14h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"/></svg>
+<text x="48" y="161" font-size="13" fill="#262626" font-weight="400" >Статистика</text>
+<svg x="20" y="198" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.6h10a3.4 3.4 0 0 1 3.4 3.4v6.2a3.4 3.4 0 0 1-3.4 3.4h-6.2l-3.4 2.8v-2.8H7A3.4 3.4 0 0 1 3.6 14.2V8A3.4 3.4 0 0 1 7 4.6zM12 4.6V2.9M12 1.4v.01M9 9.4v1.4M15 9.4v1.4M9.2 13.4c.8 1 1.7 1.5 2.8 1.5s2-.5 2.8-1.5M1.6 9.8v2.6M22.4 9.8v2.6" /></svg>
+<text x="48" y="212" font-size="13" fill="#262626" font-weight="400" >Агенты</text>
+<svg x="20" y="237" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.44 7.85c-.05.32.06.65.29.88l1.57 1.57c.47.47.7 1.09.7 1.7s-.23 1.23-.7 1.7l-1.61 1.61a.98.98 0 0 1-.84.28c-.47-.07-.8-.48-.97-.93a2.5 2.5 0 1 0-3.21 3.21c.45.17.86.5.93.97a.98.98 0 0 1-.28.84l-1.61 1.61a2.4 2.4 0 0 1-1.7.7 2.4 2.4 0 0 1-1.7-.7l-1.57-1.57a1.03 1.03 0 0 0-.88-.29c-.49.07-.84.5-1.02.97a2.5 2.5 0 1 1-3.24-3.24c.46-.18.9-.53.97-1.02a1.03 1.03 0 0 0-.29-.88l-1.57-1.57A2.4 2.4 0 0 1 2 12c0-.62.24-1.23.7-1.7L4.23 8.77c.24-.24.58-.35.92-.3.51.08.88.53 1.07 1.01a2.5 2.5 0 1 0 3.26-3.26c-.48-.2-.93-.56-1.01-1.07-.05-.34.06-.68.3-.92L10.3 2.7A2.4 2.4 0 0 1 12 2c.62 0 1.23.24 1.7.7l1.57 1.57c.23.23.56.34.88.29.49-.07.84-.5 1.02-.97a2.5 2.5 0 1 1 3.24 3.24c-.46.18-.9.53-.97 1.02Z" /></svg>
+<text x="48" y="251" font-size="13" fill="#262626" font-weight="400" >Навыки</text>
+<svg x="20" y="275" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14V6.5a1 1 0 0 0-1-1H10M6.5 10v7.5a1 1 0 0 0 1 1H14"/></svg>
+<text x="48" y="289" font-size="13" fill="#262626" font-weight="400" >Сценарии</text>
+<svg x="20" y="313" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.4 9.4 13.8 11.2 12 15.8 10.2 11.2 5.6 9.4 10.2 7.6z" /><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" /><path d="M5 14l.6 1.6L7.2 16.2 5.6 16.8 5 18.4l-.6-1.6L2.8 16.2l1.6-.6z" /></svg>
+<text x="48" y="327" font-size="13" fill="#262626" font-weight="400" >AI-провайдеры</text>
+<svg x="20" y="351" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01" /></svg>
+<text x="48" y="365" font-size="13" fill="#262626" font-weight="400" >MCP и HTTP</text>
+<svg x="20" y="403" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z" /></svg>
+<text x="48" y="417" font-size="13" fill="#262626" font-weight="400" >База знаний</text>
+<svg x="20" y="442" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /></svg>
+<text x="48" y="456" font-size="13" fill="#262626" font-weight="400" >Порталы</text>
+<svg x="20" y="494" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4z" /></svg>
+<text x="48" y="508" font-size="13" fill="#262626" font-weight="400" >Виджеты</text>
+<svg x="20" y="533" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" /></svg>
+<text x="48" y="547" font-size="13" fill="#262626" font-weight="400" >Мессенджеры</text>
+<svg x="20" y="571" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l9 6 9-6" /></svg>
+<text x="48" y="585" font-size="13" fill="#262626" font-weight="400" >Почта</text>
+<svg x="20" y="610" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z" /></svg>
+<text x="48" y="624" font-size="13" fill="#262626" font-weight="400" >Интеграции</text>
+<rect x="10" y="652" width="239" height="36" rx="8" fill="#e7f5f4" stroke="none"/>
+<svg x="20" y="662" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0c7f74" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+<text x="48" y="676" font-size="13" fill="#0c7f74" font-weight="400" >Сотрудники</text>
+<svg x="20" y="701" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="9" y2="6" /><line x1="3" y1="6" x2="5" y2="6" /><circle cx="7" cy="6" r="2" /><line x1="21" y1="12" x2="13" y2="12" /><line x1="3" y1="12" x2="9" y2="12" /><circle cx="11" cy="12" r="2" /><line x1="21" y1="18" x2="15" y2="18" /><line x1="3" y1="18" x2="11" y2="18" /><circle cx="13" cy="18" r="2" /></svg>
+<text x="48" y="715" font-size="13" fill="#262626" font-weight="400" >Настройки</text>
+<path d="M14 181H246" stroke="#f0f0f0"/>
+<path d="M14 386H246" stroke="#f0f0f0"/>
+<path d="M14 478H246" stroke="#f0f0f0"/>
+<path d="M14 641H246" stroke="#f0f0f0"/>
+<path d="M14 883H246" stroke="#f0f0f0"/>
+<svg x="20" y="849" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+<text x="48" y="862" font-size="13" fill="#262626" font-weight="400" >Помощь</text>
+<svg x="229" y="850" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#bfbfbf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9" /></svg>
+<circle cx="31" cy="914" r="17" fill="#0f9b8e"/>
+<text x="20" y="919" font-size="12" fill="white" font-weight="600" >АН</text>
+<text x="58" y="910" font-size="13" fill="#262626" font-weight="400" >Андрей</text>
+<text x="58" y="928" font-size="11" fill="#237a3f" font-weight="400" >◉ Готов · с 17 ноя, 19:41</text>
+<svg x="225" y="907" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+<text x="512" y="49" font-size="20" fill="#1f1f1f" font-weight="700" >Сотрудники</text>
+<text x="512" y="72" font-size="13" fill="#8c8c8c" font-weight="400" >Роли и группы · показано 2 из 2</text>
+<rect x="1484" y="26" width="184" height="34" rx="8" fill="#0f9b8e" stroke="none"/>
+<svg x="1497" y="35" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+<text x="1521" y="48" font-size="13" fill="white" font-weight="600" >Добавить сотрудника</text>
+<rect x="512" y="91" width="300" height="34" rx="8" fill="#fff" stroke="#e8e8e8"/>
+<svg x="524" y="100" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#bfbfbf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+<text x="547" y="113" font-size="13" fill="#bfbfbf" font-weight="400" >Поиск по имени, email, должности…</text>
+<rect x="782" y="99" width="18" height="18" rx="3" fill="#f5f5f5" stroke="none"/>
+<text x="789" y="112" font-size="11" fill="#8c8c8c" font-weight="400" >/</text>
+<text x="826" y="113" font-size="12.5" fill="#8c8c8c" font-weight="400" >Роль</text>
+<g id="role-trigger" role="button" tabindex="0" aria-label="Роль" style="cursor:pointer">
+<rect x="862" y="91" width="145" height="34" rx="8" fill="#fff" stroke="#e8e8e8"/>
+<text x="874" y="113" font-size="13" fill="#262626" font-weight="400" id="role-value">Все</text>
+<svg x="984" y="102" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+</g>
+<text x="1021" y="113" font-size="12.5" fill="#8c8c8c" font-weight="400" >Статус</text>
+<g id="status-trigger" role="button" tabindex="0" aria-label="Статус" style="cursor:pointer">
+<rect x="1073" y="91" width="132" height="34" rx="8" fill="#fff" stroke="#e8e8e8"/>
+<text x="1085" y="113" font-size="13" fill="#262626" font-weight="400" id="status-value">Все</text>
+<svg x="1182" y="102" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+</g>
+<text x="1219" y="113" font-size="12.5" fill="#8c8c8c" font-weight="400" >Группа</text>
+<g id="group-trigger" role="button" tabindex="0" aria-label="Группа" style="cursor:pointer">
+<rect x="1269" y="91" width="120" height="34" rx="8" fill="#fff" stroke="#e8e8e8"/>
+<text x="1281" y="113" font-size="13" fill="#262626" font-weight="400" id="group-value">Все</text>
+<svg x="1366" y="102" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+</g>
+<text x="1403" y="113" font-size="12.5" fill="#8c8c8c" font-weight="400" >Рабочий статус</text>
+<g id="work-trigger" role="button" tabindex="0" aria-label="Рабочий статус" style="cursor:pointer">
+<rect x="1502" y="91" width="65" height="34" rx="8" fill="#fff" stroke="#e8e8e8"/>
+<text x="1514" y="113" font-size="13" fill="#262626" font-weight="400" id="work-value">Все</text>
+<svg x="1544" y="102" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+</g>
+<text x="1600" y="113" font-size="13" fill="#8c8c8c" font-weight="400" >Сбросить</text>
+<rect x="512" y="142" width="1156" height="198" rx="12" fill="white" stroke="#f0f0f0"/>
+<rect x="513" y="143" width="1154" height="35" rx="11" fill="#fafafa" stroke="none"/>
+<text x="532" y="164" font-size="11" fill="#8c8c8c" font-weight="600" >СОТРУДНИК</text>
+<text x="710" y="164" font-size="11" fill="#8c8c8c" font-weight="600" >РОЛЬ</text>
+<text x="934" y="164" font-size="11" fill="#8c8c8c" font-weight="600" >ДОЛЖНОСТЬ</text>
+<text x="1049" y="164" font-size="11" fill="#8c8c8c" font-weight="600" >ГРУППЫ</text>
+<text x="1176" y="164" font-size="11" fill="#8c8c8c" font-weight="600" >РАБОЧИЙ СТАТУС</text>
+<text x="1389" y="164" font-size="11" fill="#8c8c8c" font-weight="600" >ДОСТУП</text>
+<text x="1503" y="164" font-size="11" fill="#8c8c8c" font-weight="600" >ВХОД</text>
+<path d="M513 178H1667" stroke="#f0f0f0"/>
+<circle cx="550" cy="209" r="18" fill="#c4456b"/>
+<text x="539" y="214" font-size="12" fill="white" font-weight="600" >АД</text>
+<circle cx="565" cy="222" r="4" fill="#bfbfbf"/>
+<text x="581" y="206" font-size="13.5" fill="#262626" font-weight="600" >Администратор</text>
+<text x="581" y="223" font-size="11.5" fill="#8c8c8c" font-weight="400" >admin@sursil.ru</text>
+<rect x="710" y="198" width="64.8" height="22" rx="5" fill="#e7f5f4" stroke="none"/>
+<text x="718" y="213" font-size="11.5" fill="#0c7f74" font-weight="500" >Владелец</text>
+<text x="934" y="214" font-size="13" fill="#262626" font-weight="400" >Владелец</text>
+<text x="1049" y="214" font-size="12.5" fill="#bfbfbf" font-weight="400" >Без группы</text>
+<svg x="1176" y="202" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" /></svg>
+<text x="1194" y="214" font-size="12.5" fill="#8c8c8c" font-weight="400" >Недоступен</text>
+<rect x="1389" y="198" width="65.69999999999999" height="22" rx="5" fill="#edf8e9" stroke="none"/>
+<circle cx="1399" cy="209" r="3" fill="#237a3f"/>
+<text x="1408" y="213" font-size="11.5" fill="#237a3f" font-weight="500" >Активен</text>
+<text x="1503" y="214" font-size="12.5" fill="#8c8c8c" font-weight="400" >11 ч назад</text>
+<svg x="1624" y="201" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+<path d="M513 240H1667" stroke="#f0f0f0"/>
+<circle cx="550" cy="271" r="18" fill="#4c6ef0"/>
+<text x="539" y="276" font-size="12" fill="white" font-weight="600" >АН</text>
+<circle cx="565" cy="284" r="4" fill="#52c41a"/>
+<text x="581" y="268" font-size="13.5" fill="#262626" font-weight="600" >Андрей</text>
+<text x="581" y="285" font-size="11.5" fill="#8c8c8c" font-weight="400" >andrey@edevs.tech</text>
+<rect x="710" y="260" width="95.3" height="22" rx="5" fill="#ece4f5" stroke="none"/>
+<text x="718" y="275" font-size="11.5" fill="#722ed1" font-weight="500" >Администратор</text>
+<text x="934" y="276" font-size="13" fill="#262626" font-weight="400" >Интегратор</text>
+<rect x="1049" y="260" width="77.9" height="22" rx="5" fill="#f5f5f5" stroke="none"/>
+<circle cx="1059" cy="271" r="3" fill="#262626"/>
+<text x="1068" y="275" font-size="11.5" fill="#262626" font-weight="500" >Операторы</text>
+<circle cx="1059" cy="271" r="3" fill="#2aa876"/>
+<svg x="1176" y="255" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#52c41a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+<text x="1194" y="268" font-size="12.5" fill="#237a3f" font-weight="400" >Готов принимать</text>
+<text x="1176" y="286" font-size="11" fill="#8c8c8c" font-weight="400" >с 17 ноя, 19:41</text>
+<rect x="1389" y="260" width="65.69999999999999" height="22" rx="5" fill="#edf8e9" stroke="none"/>
+<circle cx="1399" cy="271" r="3" fill="#237a3f"/>
+<text x="1408" y="275" font-size="11.5" fill="#237a3f" font-weight="500" >Активен</text>
+<text x="1503" y="276" font-size="12.5" fill="#8c8c8c" font-weight="400" >1 ч назад</text>
+<svg x="1624" y="263" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+<path d="M513 302H1667" stroke="#f0f0f0"/>
+<text x="532" y="326" font-size="12" fill="#8c8c8c" font-weight="400" >Показано 2 из 2</text>
+<text x="1174" y="326" font-size="11.5" fill="#8c8c8c" font-weight="400" >Точка на фото — приложение открыто. Рабочий статус сотрудник меняет только сам.</text>
+<g id="role-menu" style="display:inline" filter="url(#shadow)">
+<rect x="862" y="131" width="186" height="182" rx="8" fill="#fff" stroke="#f0f0f0"/>
+<g data-kind="role" data-value="Все" role="button" tabindex="0" style="cursor:pointer">
+<rect x="867" y="137" width="176" height="32" rx="5" fill="#e7f5f4" stroke="none"/>
+<text x="875" y="158" font-size="13" fill="#0c7f74" font-weight="400" >Все</text>
+<svg x="1021" y="146" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f9b8e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+</g>
+<g data-kind="role" data-value="Владелец" role="button" tabindex="0" style="cursor:pointer">
+<rect x="867" y="171" width="176" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="875" y="192" font-size="13" fill="#262626" font-weight="400" >Владелец</text>
+</g>
+<g data-kind="role" data-value="Администратор" role="button" tabindex="0" style="cursor:pointer">
+<rect x="867" y="205" width="176" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="875" y="226" font-size="13" fill="#262626" font-weight="400" >Администратор</text>
+</g>
+<g data-kind="role" data-value="Супервизор" role="button" tabindex="0" style="cursor:pointer">
+<rect x="867" y="239" width="176" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="875" y="260" font-size="13" fill="#262626" font-weight="400" >Супервизор</text>
+</g>
+<g data-kind="role" data-value="Сотрудник" role="button" tabindex="0" style="cursor:pointer">
+<rect x="867" y="273" width="176" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="875" y="294" font-size="13" fill="#262626" font-weight="400" >Сотрудник</text>
+</g>
+</g>
+<g id="status-menu" style="display:none" filter="url(#shadow)">
+<rect x="1073" y="131" width="182" height="182" rx="8" fill="#fff" stroke="#f0f0f0"/>
+<g data-kind="status" data-value="Все" role="button" tabindex="0" style="cursor:pointer">
+<rect x="1078" y="137" width="172" height="32" rx="5" fill="#e7f5f4" stroke="none"/>
+<text x="1086" y="158" font-size="13" fill="#0c7f74" font-weight="400" >Все</text>
+<svg x="1228" y="146" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f9b8e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+</g>
+<g data-kind="status" data-value="Активен" role="button" tabindex="0" style="cursor:pointer">
+<rect x="1078" y="171" width="172" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="1086" y="192" font-size="13" fill="#262626" font-weight="400" >Активен</text>
+</g>
+<g data-kind="status" data-value="Приглашён" role="button" tabindex="0" style="cursor:pointer">
+<rect x="1078" y="205" width="172" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="1086" y="226" font-size="13" fill="#262626" font-weight="400" >Приглашён</text>
+</g>
+<g data-kind="status" data-value="Заблокирован" role="button" tabindex="0" style="cursor:pointer">
+<rect x="1078" y="239" width="172" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="1086" y="260" font-size="13" fill="#262626" font-weight="400" >Заблокирован</text>
+</g>
+<g data-kind="status" data-value="Уволен" role="button" tabindex="0" style="cursor:pointer">
+<rect x="1078" y="273" width="172" height="32" rx="5" fill="#fff" stroke="none"/>
+<text x="1086" y="294" font-size="13" fill="#262626" font-weight="400" >Уволен</text>
+</g>
+</g>
+</svg>

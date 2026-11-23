@@ -1,4 +1,5 @@
 import { skillsRu } from "./skills.ru";
+import { employeesRu } from "./employees.ru";
 import { externalMessagesRu } from "./external-agent.ru";
 import { speechRu } from "./speech.ru";
 import { siteEventsRu } from "./site-events.ru";
@@ -43,6 +44,7 @@ import { operationModesRu } from "./operation-modes.ru";
 import { transferMessages } from "./transfers.ru";
 
 export const ru = {
+  ...employeesRu,
   ...externalMessagesRu,
   ...siteEventsRu,
   ...speechRu,
@@ -147,7 +149,7 @@ export const ru = {
   "admin.follow_link_email_set_new": "Перейдите по ссылке из письма, чтобы задать новый пароль.",
   "admin.former_owner_s_new_role": "Новая роль прежнего владельца",
   "admin.full_access_exactly_one_per": "Полный доступ. Ровно один в организации. Изменяется только через передачу владения.",
-  "admin.full_access_identical_owner_owner": "Полный доступ, идентичен владельцу. Единственное отличие владельца — его нельзя удалить.",
+  "admin.full_access_identical_owner_owner": "Права как у владельца, кроме передачи владения. Изменять, блокировать, удалять или увольнять владельца нельзя.",
   "admin.generate_show_me": "Сгенерировать и показать мне",
   "admin.good_password": "Хороший пароль",
   "admin.good_see": "Рады вас видеть!",
@@ -178,7 +180,7 @@ export const ru = {
   "admin.never_signed": "не входил",
   "admin.new_operator": "Новый сотрудник",
   "admin.new_owner_administrators_only": "Новый владелец · только администраторы",
-  "admin.new_owner_gains_full_access": "Новый владелец получит полный доступ. Вы потеряете права владельца, включая передачу владения и управление администраторами. Операция аудируется и необратима без повторной передачи.",
+  "admin.new_owner_gains_full_access": "Новый владелец получит право передавать владение и защиту от изменений другими сотрудниками. Ваш доступ будет определяться выбранной ролью. Передачу можно отменить только новой передачей владения.",
   "admin.no_access_code": "Нет доступа к коду?",
   "admin.no_email_after_couple_minutes": "Письмо не пришло за пару минут? Проверьте «Спам» или повторите запрос — ссылка действует 30 минут.",
   "admin.no_events_yet": "Событий пока нет",
@@ -210,8 +212,8 @@ export const ru = {
   "admin.organization_ownership_transferred": "Передано владение организацией",
   "admin.owner": "→ Владелец",
   "admin.owner_admin_have_identical_rights": "OWNER и ADMIN идентичны по правам; EMPLOYEE работает только в чате.",
-  "admin.owner_cannot_blocked_or_deleted": "Владельца нельзя заблокировать или удалить, поэтому других опасных действий на его карточке нет.",
-  "admin.owner_cannot_deleted_blocked_or": "Владельца нельзя удалить, заблокировать или сменить ему роль — единственный путь изменения роли владельца это передача владения.",
+  "admin.owner_cannot_blocked_or_deleted": "Владельца нельзя изменять, блокировать, удалять или увольнять. Только он сам может передать владение.",
+  "admin.owner_cannot_deleted_blocked_or": "Карточка владельца доступна только для просмотра. Изменять, блокировать, удалять или увольнять владельца нельзя. Передать владение может только он сам.",
   "admin.owner_s_role_changes_only": "Роль владельца меняется только через передачу владения.",
   "admin.ownership_passes_administrator_only_they": "Владение передаётся только администратору: у него уже полный доступ, и после передачи он получит защищённые действия владельца. Операция атомарна, аудируется и требует подтверждения.",
   "admin.ownership_transfer": "Передача владения",

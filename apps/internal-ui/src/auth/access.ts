@@ -10,6 +10,10 @@ const EMPLOYEE_ROUTES: ReadonlySet<RouteKey> = new Set<RouteKey>([
   "replyTemplates",
 ]);
 
+export function canManagePlatform(user: SessionUser): boolean {
+  return user.canManagePlatform ?? user.isInstanceAdmin;
+}
+
 export function isManager(user: SessionUser): boolean {
   return user.role === "OWNER" || user.role === "ADMIN";
 }

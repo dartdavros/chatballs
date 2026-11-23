@@ -204,15 +204,19 @@ class ContactsMergeApiTests(TestCase):
         self.assertEqual(merged["object"], f"Контакт · {self.target.id}")
         self.assertEqual(merged["result"], "Выполнено")
 
-    def test_admin_cannot_merge(self) -> None:
+    def test_admin_merges_and_unmerges(self) -> None:
         response = self.admin_client.post(
             self._merge_url(),
             {"sourceId": self.source.id, "reason": "Один человек, совпал телефон"},
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
         self.source.refresh_from_db()
-        self.assertIsNone(self.source.merged_into_id)
+        self.assertEqual(self.source.merged_into_id, self.target.pk)
+        merge_id = response.json()["client"]["merges"][0]["id"]
+        undone = self.admin_client.delete(self._merge_url(),
+            {"mergeId": merge_id, "reason": "Separate contacts"}, format="json")
+        self.assertEqual(undone.status_code, 200)
 
     def test_reason_is_required_by_the_api(self) -> None:
         response = self.owner_client.post(

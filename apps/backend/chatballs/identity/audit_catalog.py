@@ -95,6 +95,7 @@ AUDIT_ACTION_LABELS: dict[str, str] = {
     "updates.install_requested": "audit.action_updates_install_requested",
     "identity.employee_updated": "audit.action_identity_employee_updated",
     "identity.employee_blocked": "audit.action_identity_employee_blocked",
+    "identity.employee_dismissed": "audit.action_identity_employee_dismissed",
     "identity.employee_unblocked": "audit.action_identity_employee_unblocked",
     "identity.employee_role_changed": "audit.action_identity_employee_role_changed",
     "identity.employee_groups_changed": "audit.action_identity_employee_groups_changed",

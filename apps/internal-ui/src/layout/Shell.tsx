@@ -9,7 +9,7 @@ import { useNotificationAlerts } from "../features/notifications/useNotification
 import { fetchWaitingCount } from "../features/conversations/model";
 import { useRealtime, useRealtimeEvent } from "../features/realtime/RealtimeProvider";
 import { useChatScope } from "../features/chat/useChatScope";
-import { isManager } from "../auth/access";
+import { canManagePlatform, isManager } from "../auth/access";
 import { DemoInstallBanner } from "../features/settings/DemoInstallBanner";
 import { Sidebar } from "./Sidebar";
 import { OnboardingLauncher } from "../features/onboarding/OnboardingLauncher";
@@ -30,7 +30,7 @@ export function Shell({ navigationVersion, route, setRoute, settingsSection, ope
   openKnowledgeEditorRoute: (knowledgeId: number | null) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openChannelRoute: (channelId: number) => void; openSupportPortalRoute: (portalId: number) => void; openPortalSettingsRoute: (portalId: number, section?: PortalSettingsSectionKey) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void; onSwitchOrganization: (organizationPublicId: string) => void; onOrganizationCreated: (identity: AuthenticatedUser, organizationPublicId: string) => void }) {
   useLanguage();
   useDocumentTitle(routeTitle(route));
-  const externalChecks = useExternalChecks(user.isInstanceAdmin);
+  const externalChecks = useExternalChecks(canManagePlatform(user));
   const main = useRef<HTMLElement>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -156,7 +156,7 @@ export function Shell({ navigationVersion, route, setRoute, settingsSection, ope
     <ExternalChecksContext.Provider value={externalChecks}>
       <OnboardingProvider value={onboarding}>
         <div className="hub-frame">
-          {user.isInstanceAdmin && (
+          {canManagePlatform(user) && (
             <ServiceAnnouncementBanner
               announcements={externalChecks.announcements}
               onDismissLast={() => main.current?.focus({ preventScroll: true })}
@@ -166,7 +166,7 @@ export function Shell({ navigationVersion, route, setRoute, settingsSection, ope
             <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} onSwitchOrganization={onSwitchOrganization} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
             <div className="hub-main">
               {manager && <DemoInstallBanner reload={reload} />}
-              <UpdateBanner enabled={user.isInstanceAdmin} />
+              <UpdateBanner enabled={canManagePlatform(user)} />
               {/* Верхней панели нет ни у одной роли (дизайн-базлайн v2): заголовок и
                   «назад» живут в самой странице, уведомления — в меню профиля сайдбара. */}
               <main ref={main} tabIndex={-1} className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""} ${isSettings ? "settings-scroll" : ""} ${isProfile ? "profile-scroll" : ""} ${isContacts ? "contacts-scroll" : ""} ${isAgents ? "agents-scroll" : ""} ${isEmployees ? "employees-scroll" : ""} ${isAudit ? "audit-scroll" : ""} ${isPortals ? "portals-scroll" : ""} ${isKnowledge || isKnowledgeEditor ? "knowledge-scroll" : ""}`}>

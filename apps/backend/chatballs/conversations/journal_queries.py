@@ -5,6 +5,7 @@ from rest_framework.exceptions import ValidationError
 
 from chatballs.api.pagination import page_payload, paginate
 from chatballs.conversations.participant_services import participation_history
+from chatballs.conversations.participant_payloads import leave_reason_text
 from chatballs.conversations.read_services import require_inbox_access
 from chatballs.conversations.transfer_models import ConversationTransfer
 from chatballs.i18n import t
@@ -43,7 +44,8 @@ def journal_payload(row):
         "occurredAt": row["occurredAt"].isoformat(),
         "actorName": row["actorName"] or row["actorEmail"] or "",
         "subjectName": row["subjectName"] or row["subjectEmail"] or "",
-        "reason": row["reasonText"], "comment": row["commentText"],
+        "reason": leave_reason_text(row["reasonText"]) if row["kind"] == "LEFT" else row["reasonText"],
+        "comment": row["commentText"],
         "reasonChanged": row["kind"] == "TRANSFER" and row["currentReasonName"] != row["reasonText"],
         "reasonInactive": not row["reasonActive"],
     }

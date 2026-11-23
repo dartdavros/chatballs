@@ -10,6 +10,7 @@ from chatballs.identity import (
 )
 
 urlpatterns = [
+    path("<int:user_id>/dismiss/", employee_security_views.EmployeeDismissView.as_view(), name="employee-dismiss"),
     path("me/work-status/", work_status_views.OwnWorkStatusView.as_view(), name="own-work-status"),
     path("me/work-status/history/", work_status_views.WorkStatusHistoryView.as_view(), name="own-work-status-history"),
     path("<int:user_id>/work-status/", work_status_views.EmployeeWorkStatusView.as_view(), name="employee-work-status"),

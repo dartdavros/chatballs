@@ -1,7 +1,7 @@
 import { api } from "../../api/client";
 import type { PagedPayload } from "../../shared/usePagedResource";
 import type { Employee, EmployeeInvitation, Role } from "../../types";
-import type { EmployeeRoleFilter } from "./model";
+import type { EmployeeRoleFilter, EmployeeStatusFilter } from "./model";
 
 // Действия над сотрудником (дизайн-базлайн v2, кадры E2, E3, E5–E8).
 // Пароль первичного доступа сервер отдаёт ровно один раз — открытым он нигде
@@ -54,8 +54,17 @@ export async function blockEmployee(userId: number, block: boolean): Promise<voi
   await api(`/api/v1/employees/${userId}/${block ? "block" : "unblock"}/`, { method: "POST" });
 }
 
+export async function dismissEmployee(userId: number): Promise<Employee> {
+  const payload = await api<{ employee: Employee }>(`/api/v1/employees/${userId}/dismiss/`, {
+    method: "POST",
+    body: JSON.stringify({ confirmed: true }),
+  });
+  return payload.employee;
+}
+
 // Список сотрудников: страница, роль, группа и поиск считает сервер (кадры E1/E2).
 export type EmployeeListQuery = {
+  status?: EmployeeStatusFilter;
   workStatus?: import("../work-status/model").WorkStatusCode | "all";
   role: EmployeeRoleFilter;
   groupId: number | "all";
@@ -67,11 +76,12 @@ export type EmployeeListQuery = {
 export type EmployeesPayload = PagedPayload<Employee> & { invitations?: EmployeeInvitation[] };
 
 export function fetchEmployees(
-  { role, groupId, query, workStatus }: EmployeeListQuery,
+  { role, groupId, query, workStatus, status }: EmployeeListQuery,
   page: number,
 ): Promise<EmployeesPayload> {
   const params = new URLSearchParams({ page: String(page) });
   if (role !== "all") params.set("role", role);
+  if (status && status !== "all") params.set("status", status);
   if (workStatus && workStatus !== "all") params.set("workStatus", workStatus);
   if (groupId !== "all") params.set("group", String(groupId));
   if (query.trim()) params.set("q", query.trim());

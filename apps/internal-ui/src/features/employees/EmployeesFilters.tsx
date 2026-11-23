@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import { Segmented } from "../../shared/ui";
 import { FilterDropdown, SearchInput } from "../../shared/ui-controls";
 import type { EmployeeGroup } from "../../types";
-import type { EmployeeRoleFilter } from "./model";
+import { roleBadge, type EmployeeRoleFilter, type EmployeeStatusFilter } from "./model";
+import { EmployeeFilterSelect } from "./EmployeeFilterSelect";
 import { t } from "../../i18n";
 import { statusLabel, workStatusCodes, type WorkStatusCode } from "../work-status/model";
 
@@ -19,6 +19,8 @@ export function EmployeesFilters({
   setGroupId,
   setQuery,
   setRole,
+  status,
+  setStatus,
   workStatus,
   setWorkStatus,
 }: {
@@ -30,20 +32,31 @@ export function EmployeesFilters({
   setGroupId: (groupId: number | "all") => void;
   setQuery: (query: string) => void;
   setRole: (role: EmployeeRoleFilter) => void;
+  status: EmployeeStatusFilter;
+  setStatus: (status: EmployeeStatusFilter) => void;
   workStatus: WorkStatusCode | "all";
   setWorkStatus: (status: WorkStatusCode | "all") => void;
 }) {
   const [groupOpen, setGroupOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
-  const dirty = query.trim() !== "" || role !== "all" || groupId !== "all" || workStatus !== "all";
+  const dirty = query.trim() !== "" || role !== "all" || status !== "all" || groupId !== "all" || workStatus !== "all";
   const group = groups.find((item) => item.id === groupId) ?? null;
   return (
     <div className="employees-filters">
       <SearchInput className="employees-search" value={query} onChange={setQuery} hotkey="/" placeholder={t("admin.search_by_name_email_or")} />
-      <div className="employees-filter-group">
-        <span>{t("common.role")}</span>
-        <Segmented value={role} setValue={setRole} items={[["all", t("common.all")], ["OWNER", t("common.owner")], ["ADMIN", t("common.administrator")], ["EMPLOYEE", t("common.operator")]]} />
-      </div>
+      <EmployeeFilterSelect<EmployeeRoleFilter> label={t("common.role")} value={role} onChange={setRole}
+        className="employees-role-filter" options={[
+          { value: "all", label: t("common.all") },
+          ...(["OWNER", "ADMIN", "SUPERVISOR", "EMPLOYEE"] as const).map(value => ({ value, label: roleBadge(value).text })),
+        ]} />
+      <EmployeeFilterSelect<EmployeeStatusFilter> label={t("employees.status")} value={status} onChange={setStatus}
+        className="employees-status-filter" options={[
+          { value: "all", label: t("common.all") },
+          { value: "active", label: t("shared.active") },
+          { value: "invited", label: t("shared.invited") },
+          { value: "blocked", label: t("shared.blocked") },
+          { value: "dismissed", label: t("employees.dismissed") },
+        ]} />
       {groups.length > 0 && (
         <div className="employees-filter-group">
           <span>{t("common.group")}</span>

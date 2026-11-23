@@ -28,6 +28,8 @@ def _pending(organization_id: int):
 
 def pending_invitations_payload(organization: Organization, params) -> list[dict[str, object]]:
     """Строки приглашений с теми же фильтрами, что у списка сотрудников."""
+    if params.get("status", ROLE_ANY) not in (ROLE_ANY, "invited"):
+        return []
     # До принятия приглашения членства нет, а значит нет и рабочего статуса:
     # под фильтр по статусу приглашение не подходит никогда.
     if params.get("workStatus") not in (None, "", ROLE_ANY):

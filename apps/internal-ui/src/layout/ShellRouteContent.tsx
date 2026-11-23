@@ -69,7 +69,7 @@ export function ShellRouteContent({ settingsSection, openSettings, chatScope, se
       {route === "qualityAnalysis" && selectedConversationId !== null && <QualityAnalysisPage key={selectedConversationId} id={selectedConversationId} user={user} back={() => openConversation(selectedConversationId)} />}
       {route === "organizationCreate" && <OrganizationCreatePage user={user} onCreated={onOrganizationCreated} onBack={() => setRoute("chat")} />}
       {route === "salesClients" && <SalesClientsPage openClient={openClient} openChannels={setRoute} />}
-      {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} canEdit={hasCapability(user, "customers.manage")} canMerge={user.role === "OWNER"} openConversation={openConversation} openClient={openClient} openClients={() => setRoute("salesClients")} />}
+      {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} canEdit={hasCapability(user, "customers.manage")} canMerge={hasCapability(user, "customers.manage")} openConversation={openConversation} openClient={openClient} openClients={() => setRoute("salesClients")} />}
       {route === "chat" && (
         <ChatPage
           initialConversationId={selectedConversationId}
