@@ -12,7 +12,10 @@ from chatballs.identity.instance_settings import (
     invalidate_cache,
     split_address,
 )
-from chatballs.integrations.action_catalog.authority import require_instance, require_platform_settings
+from chatballs.integrations.action_catalog.authority import (
+    require_instance,
+    require_platform_settings,
+)
 from chatballs.support_portals.addressing import validate_domain
 
 SCHEMES = ("http", "https")

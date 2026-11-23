@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from chatballs.channels.models import Channel
-from chatballs.conversations.models import Contact, Conversation, ControlMode
+from chatballs.conversations.models import Contact, ControlMode, Conversation
 from chatballs.conversations.participant_models import ConversationParticipant
 from chatballs.identity.employee_dismissal import dismiss_employee
 from chatballs.identity.employee_queries import list_employees

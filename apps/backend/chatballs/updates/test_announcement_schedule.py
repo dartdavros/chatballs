@@ -5,7 +5,12 @@ from django.test import TestCase
 from django.utils import timezone
 
 from chatballs.identity.instance_settings import InstanceSettings
-from chatballs.updates.announcement_state import AnnouncementState, parse_schedule, save_schedule, schedule_snapshot
+from chatballs.updates.announcement_state import (
+    AnnouncementState,
+    parse_schedule,
+    save_schedule,
+    schedule_snapshot,
+)
 from chatballs.updates.announcement_subscriber import _configuration, _defer_retry
 from chatballs.updates.check_in_state import CheckInState
 

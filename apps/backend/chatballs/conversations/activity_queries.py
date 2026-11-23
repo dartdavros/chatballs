@@ -4,9 +4,9 @@ from rest_framework import serializers
 
 from chatballs.api.pagination import paginate
 from chatballs.conversations.activity_history import history_index, history_records, history_sources
+from chatballs.conversations.participant_payloads import leave_reason_text
 from chatballs.conversations.read_services import visible_conversation
 from chatballs.conversations.transfer_display import transfer_history_payload
-from chatballs.conversations.participant_payloads import leave_reason_text
 
 
 class HistoryInput(serializers.Serializer):

@@ -4,7 +4,11 @@ from dataclasses import dataclass
 
 from rest_framework.exceptions import PermissionDenied
 
-from chatballs.identity.instance_access import can_manage_platform, can_view_instance_settings, is_instance_admin
+from chatballs.identity.instance_access import (
+    can_manage_platform,
+    can_view_instance_settings,
+    is_instance_admin,
+)
 from chatballs.identity.models import HumanUser
 from chatballs.integrations.action_catalog.contracts import NativeAccessDenied
 from chatballs.integrations.adapters.contracts import DEFAULT_LIMITS

@@ -39,9 +39,9 @@ from chatballs.identity.work_status_access import may_read_directory, may_receiv
 from chatballs.identity.work_status_realtime import WORK_STATUS_EVENT, work_status_group
 from chatballs.notifications.realtime import user_group
 from chatballs.presence import touch
-from chatballs.updates.announcement_state import ANNOUNCEMENT_GROUP
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.lookup import organization_by_public_id
+from chatballs.updates.announcement_state import ANNOUNCEMENT_GROUP
 
 logger = logging.getLogger(__name__)
 

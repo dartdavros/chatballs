@@ -1,7 +1,7 @@
 """Protected participant display shared by API and scenarios."""
 
-from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.i18n import t
+from chatballs.identity.avatars import user_avatar_url_in
 
 
 def leave_reason_text(reason):

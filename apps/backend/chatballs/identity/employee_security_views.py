@@ -2,8 +2,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from chatballs.identity import employee_security_commands as commands
-from chatballs.identity.employee_dismissal import dismiss_employee
 from chatballs.identity.employee_api import response_for
+from chatballs.identity.employee_dismissal import dismiss_employee
 
 
 class EmployeeResetPasswordView(APIView):

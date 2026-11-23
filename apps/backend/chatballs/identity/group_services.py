@@ -10,8 +10,8 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.employee_access import update_employee_access
-from chatballs.identity.group_models import EmployeeGroup, EmployeeGroupMember
 from chatballs.identity.governance import EmployeeAction, can_manage_employee
+from chatballs.identity.group_models import EmployeeGroup, EmployeeGroupMember
 from chatballs.identity.models import OrganizationMembership
 from chatballs.identity.policy import ResourceScope, authorize
 

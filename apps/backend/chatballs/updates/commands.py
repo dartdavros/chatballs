@@ -3,7 +3,10 @@ from django.db import transaction
 
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.command_outcomes import CommandOutcome
-from chatballs.integrations.action_catalog.authority import require_instance, require_platform_settings
+from chatballs.integrations.action_catalog.authority import (
+    require_instance,
+    require_platform_settings,
+)
 from chatballs.updates.models import UpdateState
 from chatballs.updates.services import (
     InstallNotPossible,

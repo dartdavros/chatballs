@@ -10,6 +10,7 @@ from chatballs.identity.models import EmployeeRole, HumanUser, OrganizationMembe
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.ingress import membership_routes_for_user
 
+
 def is_instance_admin(user: object) -> bool:
     return (
         isinstance(user, HumanUser)

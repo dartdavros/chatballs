@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.identity.command_http import command_response
-from chatballs.identity.instance_access import InstanceSettingsPermission, CanManagePlatform
+from chatballs.identity.instance_access import CanManagePlatform, InstanceSettingsPermission
 from chatballs.updates import commands
-from chatballs.updates.check_in_state import announcement_snapshot
 from chatballs.updates.announcement_state import schedule_snapshot
+from chatballs.updates.check_in_state import announcement_snapshot
 
 
 class UpdateStateView(APIView):

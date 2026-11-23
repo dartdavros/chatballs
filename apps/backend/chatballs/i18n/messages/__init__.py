@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from chatballs.i18n.messages import (
-    employees_en,
-    employees_ru,
     assistance_en,
     assistance_ru,
     comments_en,
@@ -13,6 +11,8 @@ from chatballs.i18n.messages import (
     diagnostics_ru,
     email_continuation_en,
     email_continuation_ru,
+    employees_en,
+    employees_ru,
     en,
     external_agents_en,
     external_agents_ru,

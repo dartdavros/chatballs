@@ -18,6 +18,9 @@ class AnnouncementState(models.Model):
     publications = models.JSONField(default=list)
     clock_offset_ms = models.BigIntegerField(default=0)
 
+    def __str__(self):
+        return "Backoffice publication schedule"
+
 
 def parse_schedule(payload):
     publications = parse_announcements(payload)
