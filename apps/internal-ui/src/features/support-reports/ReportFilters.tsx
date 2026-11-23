@@ -3,9 +3,9 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import { t } from "../../i18n";
 import { Icon } from "../../shared/icons";
-import { FilterDropdown } from "../../shared/ui-controls";
+import { Button, FilterDropdown } from "../../shared/ui-controls";
 import type { EmployeeGroupRef } from "../../types";
-import { dateLabel, hasFilters, periodLabel } from "./presentation";
+import { dateLabel, periodLabel } from "./presentation";
 import type { ReportDirectory, ReportFilters as Filters } from "./types";
 
 export function ReportFilters({ filters, directory, groups, change, reset, periodOpen, setPeriodOpen }: {
@@ -22,27 +22,29 @@ export function ReportFilters({ filters, directory, groups, change, reset, perio
     { key: "connection" as const, options: connections.map((item) => ({ value: String(item.id), label: item.name })) },
   ];
   return <div className="report-filters">
-    <label className="report-filter report-period"><span>{t("reports.period")}</span>
-      <span className="report-range-field">
+    <div className="report-range-field">
       <DatePicker.RangePicker value={[dayjs(filters.start), dayjs(filters.end)]} inputReadOnly allowClear={false} open={periodOpen} onOpenChange={setPeriodOpen}
         format={(value) => dateLabel(value.format("YYYY-MM-DD"), filters.timezone)}
         id={{ start: "report-start", end: "report-end" }} aria-label={t("reports.period")}
         suffixIcon={<Icon name="chevron" size={13} />} separator="–"
         onChange={(value) => value?.[0] && value[1] && change({ ...filters, start: value[0].format("YYYY-MM-DD"), end: value[1].format("YYYY-MM-DD") })} />
-      <span className="report-range-label" aria-hidden="true">{periodLabel(filters)}</span>
+      <span className="report-range-label" aria-hidden="true">
+        <i className="ui-filter-caption">{t("reports.period")}:</i>
+        <span className="ui-filter-label">{periodLabel(filters)}</span>
       </span>
-    </label>
+    </div>
     {choices.map(({ key, options }) => {
-      const groupLabel = directory.restricted && key === "group" ? groups.map(row => row.name).join(", ") : t("reports.all");
+      const restrictedGroup = key === "group" && directory.restricted;
+      const groupLabel = restrictedGroup ? groups.map(row => row.name).join(", ") : t("reports.all");
       const all = key === "timezone" ? options : [{ value: "", label: t("reports.all") }, ...options];
       const value = filters[key];
-      return <div className={`report-filter report-filter-${key}`} key={key} title={directory.restricted && key === "group" ? t("reports.controlled_groups_hint") : undefined}><span>{t(`reports.${key}`)}</span>
-        <FilterDropdown label={key === "group" && !value ? groupLabel : all.find((item) => item.value === value)?.label ?? t("reports.all")} options={all}
-          selected={key === "group" && directory.restricted ? [value] : value && (key !== "timezone" || value !== directory.timezone) ? [value] : []} open={open === key} onOpenChange={(show) => setOpen(show ? key : "")}
-          className="report-filter-trigger row-menu-button"
-          onSelect={(selected) => { change({ ...filters, [key]: selected, ...(key === "transport" ? { connection: "" } : {}) }); setOpen(""); }} />
-      </div>;
+      const dropdown = <FilterDropdown key={key} caption={`${t(`reports.${key}`)}:`}
+        label={key === "group" && !value ? groupLabel : all.find((item) => item.value === value)?.label ?? t("reports.all")}
+        options={all} selected={restrictedGroup || (value && (key !== "timezone" || value !== directory.timezone)) ? [value] : []}
+        open={open === key} onOpenChange={(show) => setOpen(show ? key : "")}
+        onSelect={(selected) => { change({ ...filters, [key]: selected, ...(key === "transport" ? { connection: "" } : {}) }); setOpen(""); }} />;
+      return restrictedGroup ? <span className="report-filter-hint" key={key} title={t("reports.controlled_groups_hint")}>{dropdown}</span> : dropdown;
     })}
-    <button className={`link report-reset ${hasFilters(filters) ? "" : "is-muted"}`} type="button" onClick={reset}>{t("reports.reset")}</button>
+    <Button variant="secondary" onClick={reset}>{t("reports.reset")}</Button>
   </div>;
 }

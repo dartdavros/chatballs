@@ -87,11 +87,11 @@ export function DialogList({ title = t("common.conversations"), searchPlaceholde
         <DialogTab active={listTab === "queue"} onClick={() => setListTab("queue")}>{t("conversations.common_queue")}{queueCount > 0 && <b>{queueCount}</b>}</DialogTab>
         <DialogTab active={listTab === "onMe"} onClick={() => setListTab("onMe")}>{t("conversations.on_me")}{onMeCount > 0 && <b>{onMeCount}</b>}</DialogTab>
       </div>
-      {hint}
       {/* Что значат две вкладки ожидания — прямо там, где их выбирают. */}
       {(listTab === "queue" || listTab === "onMe") && (
         <div className="sales-dialog-tabs-note">{t("conversations.queue_tabs_note")}</div>
       )}
+      {hint && <div className="notice-anchor">{hint}</div>}
       <div className="sales-dialog-list-body" onScroll={onScroll}>
         {errorText && <div className="sales-wait-note sales-load-error">{errorText}</div>}
         {/* Кадр S1: пустой список без призыва к действию. Под фильтром и

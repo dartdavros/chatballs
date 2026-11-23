@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 
-import { Icon } from "./icons";
+import { NoticeCloseButton } from "./NoticeCloseButton";
 import { t } from "../i18n";
 
 // Реестр inline-подсказок первого визита (дизайн-базлайн v2, кадр A1; §6 —
@@ -33,7 +33,7 @@ export function Hint({ id, children }: { id: string; children: ReactNode }) {
   return (
     <div className="hub-hint">
       <p>{children}</p>
-      <button aria-label={t("shared.hide_hint")} type="button" onClick={dismiss}><Icon name="xCircle" size={13} /></button>
+      <NoticeCloseButton label={t("shared.hide_hint")} onClick={dismiss} />
     </div>
   );
 }

@@ -21,9 +21,22 @@ export function RunJournal({ open, openRetention }: { open: (id: string) => void
       <div className="run-table-body" aria-busy={result.loading}>{result.loading ? Array.from({ length: 9 }, (_, row) => <div className="run-table-row run-skeleton" key={row} aria-hidden="true">{Array.from({ length: 6 }, (_, column) => <i key={column} />)}</div>)
         : result.error ? <div className="run-empty"><strong>{result.error}</strong><p>{t("runs.load_failed_text")}</p><Button variant="secondary" onClick={() => void result.reload()}>{t("runs.retry")}</Button></div>
         : !result.data?.items.length ? <div className="run-empty"><strong>{t(filters.q || filters.connection || filters.initiator || filters.group ? "runs.nothing_found" : "runs.empty")}</strong><p>{t(filters.q || filters.connection || filters.initiator || filters.group ? "runs.change_filters" : "runs.empty_text")}</p></div>
-        : result.data.items.map(run => <div className="run-table-row" key={run.id}><span className="mono">{fmt.number(run.number)}</span>
-          <div><button type="button" className="link is-strong" onClick={() => open(run.id)}>{run.name}</button><small>{run.connection}</small></div>
-          <span className="run-initiator"><Avatar employee={{ fullName: run.initiator, email: "", avatarUrl: "" }} />{run.initiator}</span><span>{run.conversationId ? fmt.number(run.conversationId) : "—"}</span><span>{fmt.shortDateTime(run.createdAt)}</span><RunStatus state={run.state} label={run.stateLabel} /></div>)}
+        : result.data.items.map(run => (
+          <div className="run-table-row" key={run.id}>
+            <span className="run-number run-cell-muted">{fmt.number(run.number)}</span>
+            <div>
+              <button type="button" className="link is-strong" title={run.name} onClick={() => open(run.id)}>{run.name}</button>
+              <small title={run.connection}>{run.connection}</small>
+            </div>
+            <span className="run-initiator">
+              <Avatar employee={{ fullName: run.initiator, email: "", avatarUrl: "" }} />
+              <span title={run.initiator}>{run.initiator}</span>
+            </span>
+            <span className="run-cell-muted">{run.conversationId ? fmt.number(run.conversationId) : "—"}</span>
+            <span className="run-cell-muted">{fmt.shortDateTime(run.createdAt)}</span>
+            <RunStatus state={run.state} label={run.stateLabel} />
+          </div>
+        ))}
       </div><Pagination className="run-pagination" page={page} pageCount={Math.max(1, Math.ceil((result.data?.count ?? 0) / 25))}
         onPage={next => { if (!result.loading) setPage(next); }} note={result.loading ? t("runs.loading") : t("runs.shown", { shown: fmt.number(result.data?.items.length ?? 0), count: fmt.number(result.data?.count ?? 0) })} />
     </div>

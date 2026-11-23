@@ -2,15 +2,22 @@
 .run-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
 .run-filters > .ui-search-input { width: 280px; flex: 0 0 280px; }
 .run-filters .readonly-field { width: 180px; }
-.run-filter-spacer { flex: 1; }
-.run-filters .segmented { font-size: 12px; }
+.run-filters > .segmented { margin-inline-start: auto; font-size: 12px; }
 .scenario-workspace .integrations-tabs { margin-bottom: 18px; }
 .run-table { border: 1px solid var(--n-8); border-radius: 12px; background: var(--surface-card); box-shadow: var(--shadow-xs); overflow: hidden; }
-.run-table-row { display: grid; grid-template-columns: 64px minmax(0,1.6fr) minmax(0,1.1fr) minmax(0,1.1fr) 110px 170px; gap: 12px; align-items: center; padding: 0 20px; min-height: 56px; box-sizing: border-box; border-top: 1px solid var(--n-9); }
+.run-table-row { display: grid; grid-template-columns: 64px minmax(0,1.6fr) minmax(0,1.1fr) minmax(0,1.1fr) 110px 170px; gap: 12px; align-items: center; padding: 0 20px; min-height: 56px; box-sizing: border-box; border-top: 1px solid var(--n-9); font-size: 12.5px; line-height: 1.5; }
 .run-table-row > * { min-width: 0; overflow-wrap: anywhere; }
+.run-cell-muted { color: var(--n-3); }
+.run-number { font-family: var(--font-mono); }
+.run-table-row .link.is-strong { max-width: 100%; font-size: 13.5px; font-weight: 600; text-align: start; }
+.run-table-row .link.is-strong,
+.run-table-row small,
+.run-initiator > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .run-table-row small { display: block; color: var(--n-4); font-size: 12px; }
 .run-initiator { display: flex; align-items: center; gap: 7px; }
 .run-initiator .avatar { width: 22px; height: 22px; flex: none; font-size: 9.5px; }
+.run-table-row > .status-pill { justify-self: start; max-width: 100%; min-height: 22px; padding: 0 8px; font-size: 11.5px; font-weight: 600; }
+.run-table-row > .status-pill span { width: 6px; height: 6px; flex: none; }
 .run-table-row.is-head { min-height: 38px; padding-top: 10px; padding-bottom: 10px; background: var(--surface-sidebar); border-bottom: 1px solid var(--n-8); color: var(--n-4); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 .run-table-body { min-height: 496px; position: relative; }
 .run-skeleton i { height: 10px; border-radius: 5px; background: var(--n-8); animation: run-pulse 1.4s ease-in-out infinite; }

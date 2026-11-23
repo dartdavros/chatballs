@@ -4,19 +4,34 @@
 .report-header h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; color: var(--n-1); }
 .report-header p { margin: 5px 0 0; font-size: 13px; color: var(--n-4); }
 .report-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
-.report-filter { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
-.report-filter > span { font-size: 12.5px; color: var(--n-4); white-space: nowrap; }
-.report-filter-trigger.ui-filter-button { width: auto; min-width: 110px; height: 34px; justify-content: space-between; padding: 0 10px; border: 1px solid var(--n-7); border-radius: 8px; background: var(--surface-card); color: var(--n-2); font-size: 13px; }
-.report-filter-trigger.ui-filter-button.is-active { border-color: var(--primary); background: var(--surface-card); color: var(--n-2); }
-.report-filter-trigger.ui-filter-button > svg { flex: none; }
-.report-filter-timezone .report-filter-trigger { min-width: 170px; }
-.report-period .ant-picker { width: 180px; height: 34px; padding: 0 10px; border-color: var(--primary); border-radius: 8px; background: var(--surface-card); }
-.report-period .ant-picker-input input { font-size: 13px; color: var(--n-2); text-align: center; }
-.report-period .ant-picker-range-separator { padding: 0 2px; }
-.report-range-field { position: relative; display: inline-flex; }
+.report-filter-hint { display: inline-flex; min-width: 0; max-width: 100%; }
+.report-range-field { position: relative; display: inline-flex; min-width: 0; max-width: 100%; }
+.report-range-field > .ant-picker {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+  border-color: var(--primary);
+  border-radius: 8px;
+  background: var(--primary-bg);
+}
 .report-range-field .ant-picker-input, .report-range-field .ant-picker-range-separator { opacity: 0; }
-.report-range-label { position: absolute; inset: 0 30px 0 10px; display: flex; align-items: center; pointer-events: none; white-space: nowrap; font-size: 13px; color: var(--n-2); }
-.report-reset { margin-left: auto; font-size: 13px; }
+.report-range-field .ant-picker-suffix, .report-range-label .ui-filter-caption { color: var(--primary-text); }
+.report-range-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  min-width: 0;
+  padding-inline: 13px 33px;
+  pointer-events: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary-text);
+}
+.report-filters > .secondary-button { margin-inline-start: auto; }
 .support-reports .ui-underline-tabs { gap: 4px; border-bottom: 1px solid var(--n-8); }
 .support-reports .ui-underline-tabs button { padding: 9px 10px; margin-bottom: -1px; font-size: 13px; font-weight: 400; color: var(--n-4); }
 .support-reports .ui-underline-tabs button.active { font-weight: 600; color: var(--primary-text); }

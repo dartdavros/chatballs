@@ -134,10 +134,6 @@
   margin: 0;
 }
 
-.app-dropdown.work-status-menu .ant-dropdown-menu-item button {
-  white-space: normal;
-}
-
 .app-dropdown.work-status-menu .ant-dropdown-menu-item button.is-checked {
   color: var(--n-2);
   background: var(--primary-bg);
@@ -196,15 +192,17 @@
 }
 
 .work-status-notice.is-connection {
+  position: absolute;
+  inset-block-end: 10px;
+  inset-inline: 14px;
   align-items: center;
-  margin: 0 14px 10px;
-  padding: 8px 10px;
+  padding: 8px 30px 8px 10px;
   background: var(--warning-bg);
   border: 1px solid var(--warning-border);
   line-height: 1.4;
 }
 
-.work-status-notice.is-connection svg {
+.work-status-notice.is-connection > svg {
   flex: none;
   color: var(--warning-text);
 }

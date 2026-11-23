@@ -1,5 +1,5 @@
 import { createElement, type ReactNode } from "react";
-import { MessageCircle, MessagesSquare, ServerCog, Workflow, type IconNode } from "lucide";
+import { MessageCircle, MessagesSquare, ServerCog, Workflow, X, type IconNode } from "lucide";
 
 import { AgentIcon, Loader } from "@chatballs/ui";
 
@@ -101,8 +101,7 @@ export function Icon({ name, size = 17, strokeWidth = 1.8 }: { name: "layout" | 
     // Треугольник «внимание» из таблицы ICON макетов «Профиль» и «Агенты»
     // (в макете «Чат сотрудника» тот же смысл нарисован иначе — см. warning).
     alert: <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />,
-    // Крестик «убрать» — таблица ICON макетов.
-    close: <path d="M18 6 6 18M6 6l12 12" />,
+    close: lucidePaths(X),
     xCircle: <><circle cx="12" cy="12" r="9" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></>,
     chevron: <polyline points="6 9 12 15 18 9" />,
     chevronLeft: <polyline points="15 6 9 12 15 18" />,

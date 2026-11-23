@@ -6,8 +6,9 @@ import type { RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
 import { Avatar } from "../shared/ui";
 import { t } from "../i18n";
+import { WorkStatusConnectionNotice } from "../features/work-status/WorkStatusConnectionNotice";
 import { PresenceDot } from "../features/work-status/WorkStatusLabel";
-import { WorkStatusConnectionNotice, WorkStatusSaveError, WorkStatusSelector } from "../features/work-status/WorkStatusSelector";
+import { WorkStatusSaveError, WorkStatusSelector } from "../features/work-status/WorkStatusSelector";
 import type { OwnWorkStatus } from "../features/work-status/useOwnWorkStatus";
 
 export function SidebarUserMenu({ user, route, setRoute, onLogout, unreadCount = 0, onOpenNotifications, workStatus }: { user: SessionUser; route: RouteKey; setRoute: (route: RouteKey) => void; onLogout: () => void; unreadCount?: number; onOpenNotifications?: () => void; workStatus: OwnWorkStatus }) {
@@ -29,7 +30,7 @@ export function SidebarUserMenu({ user, route, setRoute, onLogout, unreadCount =
   ];
   return (
     <>
-      <WorkStatusConnectionNotice state={workStatus} />
+      <WorkStatusConnectionNotice connectionLost={workStatus.connectionLost} />
       {/* Кадр K2: статус и меню пользователя — две отдельные кнопки одного блока. */}
       <div className={`profile-link ${active ? "is-active" : ""}`}>
         <span className="profile-avatar"><Avatar user={user} /><PresenceDot online={workStatus.online} own /></span>

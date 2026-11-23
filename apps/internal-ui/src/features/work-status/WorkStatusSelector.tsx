@@ -36,7 +36,7 @@ export function WorkStatusSelector({ state, organization }: { state: OwnWorkStat
       // Меню не закрывается выбором: в нём видно «сохраняем…» и результат.
       onOpenChange={(next, info) => { if (info.source !== "menu") setOpen(next); }}
       placement="topLeft"
-      overlayClassName="app-dropdown work-status-menu"
+      overlayClassName="app-dropdown has-wrapped-options work-status-menu"
       menu={{ items }}
     >
       <button type="button" className="row-menu-button work-status-trigger" title={t("work_status.title")} aria-busy={Boolean(pending)}>
@@ -67,17 +67,6 @@ function StatusOption({ code, state, onPick }: { code: WorkStatusCode; state: Ow
       {pending && isSaved && <small>{t("work_status.current")}</small>}
       {!pending && isSaved && <Icon name="check" size={15} />}
     </button>
-  );
-}
-
-/** Плашка над блоком пользователя (кадр S5): связь потеряна, статус прежний. */
-export function WorkStatusConnectionNotice({ state }: { state: OwnWorkStatus }) {
-  if (!state.connectionLost) return null;
-  return (
-    <div className="work-status-notice is-connection" role="status">
-      <Icon name="refresh" size={14} />
-      {t("work_status.connection_lost")}
-    </div>
   );
 }
 

@@ -51,6 +51,37 @@
   background: var(--error-bg);
 }
 
+.notice-anchor {
+  position: relative;
+  z-index: 1;
+  flex: none;
+}
+
+.notice-close {
+  position: absolute;
+  /* Вместе с рамкой плашки в 1px отступ от внешнего края составляет 5px. */
+  inset-block-start: 4px;
+  inset-inline-end: 4px;
+  display: grid;
+  place-items: start end;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--n-4);
+}
+
+.notice-close:hover {
+  color: var(--n-2);
+}
+
+.notice-close:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
 /* Цветные hover для кнопок запроса звонка в шапке диалога — по образцу is-danger.
    Токены дизайн-системы base.css: success и primary. База ui-icon-button
    остаётся белой с outline-иконкой; характерный цвет проявляется только на hover. */

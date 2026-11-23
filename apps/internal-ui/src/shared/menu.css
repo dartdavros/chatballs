@@ -83,6 +83,15 @@
   white-space: nowrap;
 }
 
+.app-dropdown.has-wrapped-options .ant-dropdown-menu-title-content {
+  min-width: 0;
+}
+
+.app-dropdown.has-wrapped-options .ant-dropdown-menu-item :is(button, a.link) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .app-dropdown .ant-dropdown-menu-item button.warning {
   color: var(--warning-text);
 }

@@ -150,6 +150,12 @@
   overflow-y: auto;
 }
 
+.sales-dialog-list > .notice-anchor > .hub-hint {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline: 12px;
+}
+
 /* Строка диалога (решение 4). Активная — фон n9, без акцентной полосы. */
 /* Кадр S1: пустой список без призыва к действию. */
 .sales-dialog-list-empty {
@@ -499,13 +505,11 @@ img.sales-dialog-avatar {
   object-fit: cover;
 }
 
-/* Inline-подсказка первого визита (кадр A1). */
+/* Подсказка первого визита. */
 .hub-hint {
+  position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  margin: 10px 12px 0;
-  padding: 9px 10px 9px 12px;
+  padding: 9px 30px 9px 12px;
   border: 1px solid var(--primary-border);
   border-radius: 8px;
   background: var(--primary-bg);
@@ -517,23 +521,6 @@ img.sales-dialog-avatar {
   color: var(--n-2);
   font-size: 12.5px;
   line-height: 1.45;
-}
-
-.hub-hint button {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  border: 0;
-  border-radius: 5px;
-  color: var(--n-4);
-  background: transparent;
-}
-
-.hub-hint button:hover {
-  background: rgba(0, 0, 0, 0.06);
 }
 
 /* «на вас · вернётся через N мин» (макет «Очередь и уведомления», кадр Q3):

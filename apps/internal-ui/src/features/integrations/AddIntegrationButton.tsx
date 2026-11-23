@@ -12,7 +12,7 @@ export function AddIntegrationButton({ onEntry, onServer, label }: {
   const [open, setOpen] = useState(false);
   const option = (icon: "message" | "server" | "swap", title: string, hint: string) =>
     <button type="button"><i><Icon name={icon} size={15} /></i><span><strong>{title}</strong><small>{hint}</small></span></button>;
-  return <Dropdown open={open} onOpenChange={setOpen} trigger={["click"]} overlayClassName="app-dropdown is-server-add" menu={{
+  return <Dropdown open={open} onOpenChange={setOpen} trigger={["click"]} overlayClassName="app-dropdown has-wrapped-options is-server-add" menu={{
     onClick: ({ key }) => { setOpen(false); if (key === "entry") onEntry?.(); else onServer(key as ServerKind); },
     items: [
     ...(onEntry ? [{ type: "group" as const, label: t("servers.entry"), children: [

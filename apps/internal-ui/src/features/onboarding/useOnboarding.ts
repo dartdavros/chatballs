@@ -28,7 +28,7 @@ export type OnboardingApi = {
   doneCount: number;
   /** Заголовок приветствия числом-словом, как в макете: «Восемь шагов…». */
   welcomeTitle: string;
-  /** Есть что донастроить и человек уже закрывал визард — показываем пилюлю. */
+  /** Возврат после открытия раздела, пока пользователь явно не закрыл мастер. */
   showLauncher: boolean;
   available: boolean;
   open: () => void;
@@ -65,6 +65,7 @@ export function useOnboardingState({ user, setRoute, openSettings }: {
   const platformAccess = canManagePlatform(user);
   const steps = useMemo(() => operationModeSteps(platformAccess, state.operationMode), [platformAccess, state.operationMode]);
   const [loaded, setLoaded] = useState(false);
+  const [closedInSession, setClosedInSession] = useState(false);
   const [view, setView] = useState<OnboardingView>(null);
   const [index, setIndex] = useState(0);
   const [tourIndex, setTourIndex] = useState<number | null>(null);
@@ -117,6 +118,13 @@ export function useOnboardingState({ user, setRoute, openSettings }: {
   // функция перезапускала бы замер на каждом рендере Shell.
   const hideTour = useCallback(() => setTourIndex(null), []);
 
+  function closeWizard(action: "dismiss" | "complete") {
+    setClosedInSession(true);
+    setTourIndex(null);
+    setView(null);
+    void act(action);
+  }
+
   const api: OnboardingApi = {
     steps,
     state,
@@ -128,7 +136,8 @@ export function useOnboardingState({ user, setRoute, openSettings }: {
     // в макете число написано словом, а не цифрой.
     welcomeTitle: state.operationMode === "OPERATORS_ONLY" ? t("onboarding.welcome_operators") : steps.length === 7 ? t("onboarding.welcome_title_7") : t("onboarding.welcome_title_8"),
     available,
-    showLauncher: available && loaded && view === null && tourIndex === null && doneCount < steps.length,
+    showLauncher: available && loaded && !closedInSession && !state.dismissedAt && !state.completedAt
+      && view === null && tourIndex === null && doneCount < steps.length,
     open: () => {
       void refresh();
       setIndex(0);
@@ -173,25 +182,14 @@ export function useOnboardingState({ user, setRoute, openSettings }: {
       if (!step) return;
       if (step.target.section) openSettings(step.target.section);
       else setRoute(step.target.route);
-      // Закрываем окно, но не отмечаем «закрыл»: человек ушёл настраивать и
-      // вернётся пилюлей в углу.
+      // Переход из шага временно прячет мастер, до явного закрытия.
       setTourIndex(null);
       setView(null);
     },
-    dismiss: () => {
-      setTourIndex(null);
-      setView(null);
-      void act("dismiss");
-    },
-    complete: () => {
-      setTourIndex(null);
-      setView(null);
-      void act("complete");
-    },
+    dismiss: () => closeWizard("dismiss"),
+    complete: () => closeWizard("complete"),
     completeToChat: () => {
-      setTourIndex(null);
-      setView(null);
-      void act("complete");
+      closeWizard("complete");
       setRoute("chat");
     },
     restart: () => {

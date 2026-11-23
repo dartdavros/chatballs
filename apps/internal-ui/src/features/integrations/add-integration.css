@@ -2,7 +2,7 @@
 .app-dropdown.is-server-add .ant-dropdown-menu-item-group-title { padding: 8px 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--n-4); }
 .app-dropdown.is-server-add .ant-dropdown-menu-item button > i { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--n-9); color: var(--n-3); }
 .app-dropdown.is-server-add .ant-dropdown-menu-item strong { font-size: 13px; font-weight: 600; color: var(--n-1); }
-.app-dropdown.is-server-add .ant-dropdown-menu-item button { align-items: flex-start; gap: 10px; white-space: normal; }
+.app-dropdown.is-server-add .ant-dropdown-menu-item button { align-items: flex-start; gap: 10px; }
 .app-dropdown.is-server-add .ant-dropdown-menu-item button > span { flex: 1; min-width: 0; }
 .app-dropdown.is-server-add .ant-dropdown-menu-item button small { color: var(--n-4); font-size: 11.5px; font-weight: 400; line-height: 1.4; }
 .integration-add-button.primary-button.row-menu-button { width: auto; min-height: 34px; height: 34px; padding: 0 12px 0 14px; gap: 7px; border-radius: 8px; font-size: 13px; color: var(--on-primary); background: var(--primary); }
