@@ -11,7 +11,7 @@
    ширину окна. */
 .hub-page.contacts-page-shell {
   width: 100%;
-  max-width: 1220px;
+  max-width: var(--workspace-width);
   margin: 0 auto;
 }
 
@@ -19,7 +19,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 26px 32px 40px;
+  padding: 26px var(--workspace-gutter) 40px;
 }
 
 /* --- Шапка --- */

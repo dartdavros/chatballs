@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { api } from "../../api/client";
 import { t } from "../../i18n";
 import { EmptyState, LoadingState } from "../../shared/ui";
@@ -14,7 +14,7 @@ export function IntegrationList({ items, providers = false, servers = false, loa
   servers?: boolean;
   loading?: boolean;
   failed?: boolean;
-  empty: string;
+  empty: ReactNode;
   reload: () => void;
   onEdit: (integration: Integration) => void;
 }) {
@@ -40,12 +40,12 @@ export function IntegrationList({ items, providers = false, servers = false, loa
   }
 
   const handlers = { testingId, onTest: test, onEdit, onToggleActive: toggleActive, onDelete: setDeleting };
-  return <div className="integrations-section">
+  return <div className={servers ? "integrations-section is-server-list" : "integrations-section"}>
     {error && <p className="integration-form-error" role="alert">{error}</p>}
     {loading ? <LoadingState /> : failed ? <>
       <EmptyState title={t("navigation.connections_load_failed")} />
       <Button variant="secondary" onClick={reload}>{t("common.try_again")}</Button>
-    </> : items.length === 0 ? <EmptyState title={empty} /> : providers
+    </> : items.length === 0 ? empty : providers
       ? <ProvidersTable items={items} {...handlers} />
       : <ConnectionsTable items={items} context={servers ? "servers" : "channels"} {...handlers} />}
     {deleting && <DeleteIntegrationDialog integration={deleting} onClose={() => setDeleting(null)}

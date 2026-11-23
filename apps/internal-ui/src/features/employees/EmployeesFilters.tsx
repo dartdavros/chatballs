@@ -45,12 +45,12 @@ export function EmployeesFilters({
     <div className="employees-filters">
       <SearchInput className="employees-search" value={query} onChange={setQuery} hotkey="/" placeholder={t("admin.search_by_name_email_or")} />
       <EmployeeFilterSelect<EmployeeRoleFilter> label={t("common.role")} value={role} onChange={setRole}
-        className="employees-role-filter" options={[
+        options={[
           { value: "all", label: t("common.all") },
           ...(["OWNER", "ADMIN", "SUPERVISOR", "EMPLOYEE"] as const).map(value => ({ value, label: roleBadge(value).text })),
         ]} />
       <EmployeeFilterSelect<EmployeeStatusFilter> label={t("employees.status")} value={status} onChange={setStatus}
-        className="employees-status-filter" options={[
+        options={[
           { value: "all", label: t("common.all") },
           { value: "active", label: t("shared.active") },
           { value: "invited", label: t("shared.invited") },
@@ -61,7 +61,6 @@ export function EmployeesFilters({
         <div className="employees-filter-group">
           <span>{t("common.group")}</span>
           <FilterDropdown
-            className="employees-group-filter"
             label={group ? group.name : t("common.all")}
             open={groupOpen}
             options={[{ value: "all", label: t("common.all") }, ...groups.map((item) => ({ value: String(item.id), label: item.name }))]}
@@ -82,7 +81,6 @@ export function EmployeesFilters({
           onSelect={(value) => setWorkStatus(value as WorkStatusCode | "all")}
         />
       </div>
-      <div className="employees-filters-spacer" />
       <button className={`employees-reset ${dirty ? "is-dirty" : ""}`} type="button" onClick={resetFilters}>{t("common.reset")}</button>
     </div>
   );

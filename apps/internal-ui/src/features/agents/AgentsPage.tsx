@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { t } from "../../i18n";
 import { Pagination } from "../../shared/Pagination";
-import { Icon } from "../../shared/icons";
+import { ListEmptyState } from "../../shared/ListEmptyState";
 import { Button } from "../../shared/ui-controls";
 import { usePagedResource } from "../../shared/usePagedResource";
 import type { EmployeeGroup } from "../../types";
@@ -38,14 +38,9 @@ export function AgentsPage({
       </header>
       {agents.errorText && <div className="agents-error">{agents.errorText}</div>}
       {agents.total === 0 ? (
-        <div className="agents-empty">
-          <span><Icon name="robot" size={24} strokeWidth={1.8} /></span>
-          <div>
-            <strong>{t("ai.agent_answers_customers_first_create")}</strong>
-            <p>{t("ai.name_group_all_takes_start")}</p>
-          </div>
-          <Button variant="primary" className="agents-create is-wide" onClick={() => setCreating(true)}>{t("profile.create_agent")}</Button>
-        </div>
+        <ListEmptyState icon="robot" title={t("ai.agent_answers_customers_first_create")}
+          text={t("ai.name_group_all_takes_start")}
+          action={<Button variant="primary" onClick={() => setCreating(true)}>{t("profile.create_agent")}</Button>} />
       ) : (
         <div className="agents-table">
           <div className="agents-thead">

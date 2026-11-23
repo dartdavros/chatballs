@@ -1,4 +1,4 @@
-.hub-scroll:has(.support-reports) { padding: 26px 32px 40px; background: var(--surface-feed); }
+.hub-scroll:has(.support-reports) { padding-block: 26px 40px; background: var(--surface-feed); }
 .support-reports { display: flex; flex-direction: column; gap: 16px; }
 .report-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .report-header h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; color: var(--n-1); }

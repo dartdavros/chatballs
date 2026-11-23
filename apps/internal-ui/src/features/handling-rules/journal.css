@@ -24,4 +24,3 @@
 .handling-journal-status.is-failed { background: var(--error-bg); color: var(--error-text); }
 .handling-journal-empty { margin: 0; padding: 12px 24px 14px; font-size: 12px; color: var(--n-4); border-top: 1px solid var(--n-9); }
 .handling-journal-note { margin: 0; padding: 12px 24px 14px; font-size: 12px; line-height: 1.5; color: var(--n-4); border-top: 1px solid var(--n-9); }
-.settings-content-inner:has(.handling-journal-card) { max-width: 1180px; }

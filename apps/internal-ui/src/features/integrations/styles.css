@@ -4,6 +4,15 @@
   gap: 20px;
 }
 
+.integrations-section.is-server-list {
+  --list-empty-state-min-height: 338px;
+  min-height: var(--list-empty-state-min-height);
+}
+
+.integrations-section.is-server-list > .loading-state {
+  min-height: var(--list-empty-state-min-height);
+}
+
 /* Табы «Подключения / Провайдеры» (SPEC-CHATBALLS-0025 §2.1) — по образцу sales-orders-tabs. */
 .integrations-tabs {
   gap: 4px;

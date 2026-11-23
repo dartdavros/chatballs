@@ -11,6 +11,7 @@ import { IntegrationList } from "./IntegrationList";
 import { IntegrationWorkspaceLayout } from "./IntegrationWorkspaceLayout";
 import type { ServerKind } from "./external/types";
 import type { Integration, IntegrationKind } from "./model";
+import { ServerListEmptyState } from "./ServerListEmptyState";
 import { SpeechSettingsContent } from "./speech/SpeechSettingsContent";
 import { WORKSPACE_PROVIDERS, workspaceItems, workspaceLabels, type IntegrationWorkspaceMode, type ServerFilter } from "./workspaceModel";
 import "./styles.css";
@@ -57,7 +58,10 @@ function WorkspaceContent({ mode, openWebIntegration, openServer, createServer }
             { key: "HTTP", label: t("navigation.http_requests") }]} />}
         <IntegrationList items={items} providers={mode === "providers"} servers={mode === "servers"}
           loading={integrations.loading} failed={integrations.failed}
-          empty={labels.empty} reload={integrations.reload} onEdit={onEdit} />
+          empty={mode === "servers"
+            ? <ServerListEmptyState filter={serverFilter} title={labels.empty} createServer={createServer} />
+            : <EmptyState title={labels.empty} />}
+          reload={integrations.reload} onEdit={onEdit} />
       </>}
     {form && form.kind !== "SPEECH_PROVIDER" && <IntegrationForm key={form.initial?.id ?? "new"}
       initial={form.initial} kind={form.kind} allowedProviders={WORKSPACE_PROVIDERS[mode]}
