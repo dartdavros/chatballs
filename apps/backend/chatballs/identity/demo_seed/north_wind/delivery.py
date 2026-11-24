@@ -68,11 +68,3 @@ def delivery_check_result(state, *, customer, order_number, reference):
         return {"pending": True}
     status = shipment_status(state, customer=customer, order_number=order_number)
     return {**status, "confirmedEta": bool(status.get("eta"))}
-
-
-def settle_mail(state, *, proposal_number, status):
-    mail = state["mailbox"].get(proposal_number)
-    if mail is None or mail["status"] != "queued" or status not in {"sent", "failed", "unknown"}:
-        raise ShopError("mail_transition_unavailable")
-    mail["status"] = status
-    return mail

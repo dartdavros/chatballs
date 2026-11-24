@@ -12,7 +12,6 @@ import "./quote.css";
 const errorCopy: Partial<Record<string, ShopMessageKey>> = {
   party_stock_unavailable: "proposal_stock_error", party_budget_exceeded: "proposal_budget_error",
   invalid_party: "proposal_draft_error", quote_changed: "proposal_quote_changed",
-  unknown_demo_address: "proposal_email_error",
 };
 
 export function ProposalForm({token, products, onBack}: {token: string; products: Product[]; onBack: () => void}) {
@@ -22,8 +21,6 @@ export function ProposalForm({token, products, onBack}: {token: string; products
 
   const selected = catalogue?.options.find(option => option.id === draft.productId);
   const product = products.find(item => item.id === draft.productId);
-  const recipients = catalogue?.emailRecipients ?? [];
-  const emailValid = recipients.includes(draft.email.trim().toLowerCase());
   let problem = "";
   if (selected && !selected.available) problem = t("proposal_stock_error");
   else if (selected && !selected.withinBudget) problem = t("proposal_budget_error");
@@ -39,7 +36,7 @@ export function ProposalForm({token, products, onBack}: {token: string; products
       <div className="quote-layout">
         <div className="quote-form-main">
           <PartyFields draft={draft} catalogue={catalogue} problem={problem} onChange={form.update} />
-          <ContactFields draft={draft} recipients={recipients} onChange={form.update} />
+          <ContactFields draft={draft} onChange={form.update} />
         </div>
         <aside className="quote-review" aria-labelledby="quote-review-title">
           <div className="quote-section-heading"><span>3</span><h2 id="quote-review-title">{t("proposal_review")}</h2></div>
@@ -53,15 +50,13 @@ export function ProposalForm({token, products, onBack}: {token: string; products
             <Icon name={problem ? "AlertCircle" : "FileText"} size={24} />
             <p>{problem || t(draft.productId ? "proposal_calculating" : "proposal_select_to_quote")}</p>
           </div>}
-          <label className="quote-email-confirmation">
-            <input type="checkbox" required checked={draft.confirmed} disabled={!emailValid}
+          <label className="quote-confirmation">
+            <input type="checkbox" required checked={draft.confirmed}
               onChange={event => form.update({confirmed: event.target.checked})} />
-            <span>{t("proposal_confirm_prefix")} <strong>{draft.email || t("proposal_confirm_email")}</strong>
-              {" "}{t("proposal_confirm_suffix")}</span>
+            <span>{t("proposal_confirm")}</span>
           </label>
-          {draft.email && !emailValid && <p className="office-field-error quote-confirm-error">{t("proposal_email_error")}</p>}
           {error && <p className="quote-submit-error" role="alert">{t(errorCopy[error] ?? "proposal_server_error")}</p>}
-          <button type="submit" className="office-primary-button" disabled={pending || !quote || !emailValid}>
+          <button type="submit" className="office-primary-button" disabled={pending || !quote}>
             {t(pending ? "proposal_submitting" : "proposal_submit")}
             <Icon name={pending ? "LoaderCircle" : "ArrowRight"} size={17} />
           </button>

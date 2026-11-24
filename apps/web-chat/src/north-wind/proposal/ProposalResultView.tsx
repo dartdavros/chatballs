@@ -12,7 +12,7 @@ export function ProposalResultView({result, products, onBack}: {
   result: ProposalResult; products: Product[]; onBack: () => void;
 }) {
   const [documentOpen, showDocument] = useState(false);
-  const {proposal, mail} = result;
+  const {proposal} = result;
   const {quote} = proposal;
   const product = products.find(item => item.id === quote.productId);
   return <section className="quote-result">
@@ -41,11 +41,6 @@ export function ProposalResultView({result, products, onBack}: {
         <p className="quote-document-valid">{t("proposal_expires", {date: fmt.fullDate(proposal.validUntil)})}</p>
       </div>
       <aside className="quote-result-aside">
-        <div className={`office-mail-status office-mail-status--${mail.status}`} role="status">
-          <Icon name={mail.status === "sent" ? "CheckCircle2" : mail.status === "queued" ? "Clock" : "AlertCircle"} size={19} />
-          <div><strong>{t(`proposal_${mail.status}_title`)}</strong>
-            <p>{t(`proposal_${mail.status}_details`)}</p><span>{mail.recipient}</span></div>
-        </div>
         <section className="quote-manager-card"><Icon name="User" size={22} />
           <div><h2>{t("proposal_lead", {number: proposal.crmReference})}</h2>
             <p>{t("proposal_owner")}</p><span>{t("proposal_lead_note")}</span></div>

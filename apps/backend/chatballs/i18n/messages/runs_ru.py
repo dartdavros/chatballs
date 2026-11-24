@@ -4,7 +4,6 @@ MESSAGES = {
     "north_wind.delivery_check": "Запросить уточнение доставки",
     "north_wind.delivery_delayed": "Отправление задержано",
     "north_wind.proposal_title": "Коммерческое предложение {number}",
-    "north_wind.proposal_mail_body": "Ваше коммерческое предложение {number} готово. Документ доступен по ссылке в диалоге.",
     "north_wind.proposal_crm_note": "Коммерческое предложение сохранено в заявке {number}. {url}",
     "north_wind.proposal_brand": "СЕВЕРНЫЙ ВЕТЕР",
     "north_wind.proposal_trade": "Горнолыжная одежда для организаций",

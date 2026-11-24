@@ -91,13 +91,6 @@ DEMO_REMOVE_REQUESTED = "demo.remove_requested"
 DEMO_REINSTALL_REQUESTED = "demo.reinstall_requested"
 
 
-@register("demo.proposal_mail")
-def handle_demo_proposal_mail(payload: dict, context: TenantContext | None) -> None:
-    from chatballs.identity.demo_seed.north_wind.proposal_workflow import send_proposal_mail
-
-    send_proposal_mail(payload, context)
-
-
 def _demo_dataset(payload: dict, context: TenantContext | None):
     from chatballs.identity.demo_models import DemoDataset
     from chatballs.identity.operation_modes import lock_organization

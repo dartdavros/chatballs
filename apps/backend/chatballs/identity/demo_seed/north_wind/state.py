@@ -70,11 +70,7 @@ def initial_state():
         },
         "crm": {},
         "deliveries": {},
-        "mailbox": {},
         "channelDeliveries": [],
-        "emailRecipients": [
-            "school@severny-veter.test", "school+failed@severny-veter.test", "school+unknown@severny-veter.test",
-        ],
         "requests": {},
     }
 

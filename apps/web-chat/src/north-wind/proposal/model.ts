@@ -1,7 +1,6 @@
 import type { ProductId, Size } from "../model";
 
 export type City = "kazan" | "innopolis" | "chelny";
-export type MailState = "queued" | "sent" | "failed" | "unknown";
 
 export type ProposalDraft = {
   productId: ProductId | "";
@@ -61,10 +60,9 @@ export type ProposalResult = {
     documentPath: string;
     downloadPath: string;
   };
-  mail: {status: MailState; recipient: string};
   lead: {proposal: string; assignee: string};
 };
 
 export type PartyResponse = {
-  quantity: number; options: PartyOption[]; destinations: Destination[]; emailRecipients: string[];
+  quantity: number; options: PartyOption[]; destinations: Destination[];
 };

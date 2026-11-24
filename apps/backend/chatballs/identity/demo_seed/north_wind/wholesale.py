@@ -1,4 +1,4 @@
-"""Quantity pricing, proposal and local CRM/email results."""
+"""Quantity pricing, proposal and local CRM results."""
 
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -40,7 +40,7 @@ def party_options(state, *, quantities, city, budget=None):
     destinations = [{"id": key, "price": price, "days": days} for key, (price, days) in DELIVERY.items()]
     return {
         "quantity": quantity, "city": city, "options": options,
-        "destinations": destinations, "emailRecipients": state["emailRecipients"],
+        "destinations": destinations,
     }
 
 
@@ -76,8 +76,6 @@ def prepare_party_quote(state, *, product_id, quantities, city, budget=None):
 def create_proposal(state, *, quote_id, company, contact, email, address, confirmed):
     if confirmed is not True:
         raise ShopError("confirmation_required")
-    if email not in state["emailRecipients"]:
-        raise ShopError("unknown_demo_address")
     if not all(value.strip() for value in (company, contact, address)):
         raise ShopError("proposal_fields_required")
     quote = state["partyQuotes"].get(quote_id)
@@ -103,5 +101,4 @@ def create_proposal(state, *, quote_id, company, contact, email, address, confir
         "proposal": result["number"], "company": company, "contact": contact, "email": email,
         "assignee": "elena", "status": "open", "quantity": current["quantity"], "total": current["total"],
     }
-    state["mailbox"][result["number"]] = {"status": "queued", "recipient": email}
     return result

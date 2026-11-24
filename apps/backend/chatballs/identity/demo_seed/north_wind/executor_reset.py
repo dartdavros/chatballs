@@ -1,7 +1,11 @@
 """Clear the old executor scope after the demo transaction publishes its result."""
 
 from chatballs.events.services import DomainEvent, enqueue_event
-from chatballs.identity.demo_seed.north_wind.executor_scope import EXECUTOR_URL, RESET_EVENT, scope_key
+from chatballs.identity.demo_seed.north_wind.executor_scope import (
+    EXECUTOR_URL,
+    RESET_EVENT,
+    scope_key,
+)
 from chatballs.identity.demo_seed.north_wind.executor_transport import send_external
 from chatballs.integrations.adapters.auth import OutboundRequest
 from chatballs.integrations.adapters.contracts import Limits

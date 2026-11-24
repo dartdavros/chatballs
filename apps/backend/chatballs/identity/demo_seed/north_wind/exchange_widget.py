@@ -1,7 +1,10 @@
 """Open the native widget on the verified sample customer's support thread."""
 
 from chatballs.identity.demo_seed.north_wind.orders import find_order
-from chatballs.identity.demo_seed.north_wind.prepared_widget import issue_prepared_session, locked_dataset
+from chatballs.identity.demo_seed.north_wind.prepared_widget import (
+    issue_prepared_session,
+    locked_dataset,
+)
 from chatballs.identity.demo_seed.north_wind.state import ShopError
 from chatballs.tenancy.database import tenant_atomic
 

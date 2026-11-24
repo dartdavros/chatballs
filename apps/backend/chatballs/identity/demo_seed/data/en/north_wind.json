@@ -34,7 +34,7 @@
     {"key":"loyalty","customer":"Andrey Kovalyov","responsible":"svetlana","group":"operators","priority":"LOW","awaiting":"CUSTOMER","labels":["loyalty","order"]},
     {"key":"fitting","customer":"Olga Mironova","responsible":"anna","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["fitting"]},
     {"key":"exchange","customer":"Andrey Kovalyov","orderNumber":2042,"responsible":"anna","group":"support","priority":"HIGH","awaiting":"OPERATOR","labels":["exchange","defect"]},
-    {"key":"proposal","customer":"Vysota Ski School","responsible":"elena","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["wholesale","mail"]},
+    {"key":"proposal","customer":"Vysota Ski School","responsible":"elena","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["wholesale"]},
     {"key":"team","customer":"Irina Belova","question":"The zip broke on my Ridge Motion in size M. I’ve attached a photo. I leave tomorrow. Can I swap it at Gorki?","responsible":"anna","group":"support","priority":"HIGH","awaiting":"OPERATOR","labels":["defect","urgent"]},
     {"key":"delivery","customer":"Pavel Orlov","responsible":"igor","group":"delivery","priority":"HIGH","awaiting":"OPERATOR","labels":["delivery","urgent"]},
     {"key":"formatted","customer":"Ekaterina Lebedeva","responsible":"igor","group":"support","priority":"LOW","awaiting":"CUSTOMER","labels":["pickup","order"]},

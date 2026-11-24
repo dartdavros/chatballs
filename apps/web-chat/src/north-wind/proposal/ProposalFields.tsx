@@ -76,7 +76,7 @@ export function PartyFields({draft, onChange, catalogue, problem}: Props & {cata
   </section>;
 }
 
-export function ContactFields({draft, onChange, recipients}: Props & {recipients: string[]}) {
+export function ContactFields({draft, onChange}: Props) {
   return <section className="quote-section" aria-labelledby="quote-contact-title">
     <div className="quote-section-heading"><span>2</span><h2 id="quote-contact-title">{t("proposal_contacts")}</h2></div>
     <div className="quote-contact-fields">
@@ -92,11 +92,9 @@ export function ContactFields({draft, onChange, recipients}: Props & {recipients
       </div>
       <div className="office-field">
         <label htmlFor="quote-email">{t("proposal_email")}</label>
-        <input id="quote-email" type="email" required maxLength={254} autoComplete="email" list="quote-demo-recipients"
+        <input id="quote-email" type="email" required maxLength={254} autoComplete="email"
           placeholder={t("proposal_email_example")} value={draft.email} onChange={event => onChange({email: event.target.value})} />
-        <datalist id="quote-demo-recipients">{recipients.map(email => <option key={email} value={email} />)}</datalist>
       </div>
     </div>
-    <p className="quote-contact-note">{t("proposal_contact_note")}</p>
   </section>;
 }

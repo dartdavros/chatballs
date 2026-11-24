@@ -25,7 +25,7 @@ def handoff(conversation, context, *, operation_id, summary="", reason=""):
     entered = enter_queue(conversation)
     conversation.save(update_fields=QUEUE_FIELDS)
     conversation.refresh_from_db()
-    record_queue_entry(conversation, entered=entered, actor_kind="AI")
+    record_queue_entry(conversation, entered=entered, operation_id=operation_id, actor_kind="AI")
     notify(
         context=context, type=NotificationType.OPERATOR_REQUESTED,
         audience=NotificationAudience.OPERATORS, audience_group=conversation.group,

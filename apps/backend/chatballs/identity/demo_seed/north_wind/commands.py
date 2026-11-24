@@ -18,7 +18,6 @@ from chatballs.identity.demo_seed.north_wind.catalog import (
 )
 from chatballs.identity.demo_seed.north_wind.delivery import (
     change_delivery,
-    settle_mail,
     shipment_status,
 )
 from chatballs.identity.demo_seed.north_wind.loyalty_cases import LOYALTY_CASES, select_loyalty_case
@@ -128,11 +127,6 @@ class ProposalInput(serializers.Serializer):
     confirmed = serializers.BooleanField()
 
 
-class MailInput(serializers.Serializer):
-    proposal_number = serializers.CharField(max_length=32)
-    status = serializers.ChoiceField(choices=("sent", "failed", "unknown"))
-
-
 class LoyaltyCaseInput(serializers.Serializer):
     case = serializers.ChoiceField(choices=LOYALTY_CASES)
 
@@ -155,6 +149,5 @@ WRITE_COMMANDS = {
     "fitting": (FittingInput, book_fitting),
     "party-quote": (PartyInput, prepare_party_quote),
     "proposal": (ProposalInput, create_proposal),
-    "mail-result": (MailInput, settle_mail),
     "loyalty-case": (LoyaltyCaseInput, select_loyalty_case),
 }

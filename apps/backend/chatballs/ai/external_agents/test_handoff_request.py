@@ -7,6 +7,7 @@ from django.db import transaction
 from django.test import TestCase
 
 from chatballs.ai.external_agents.config_models import ExternalAgentBinding, ExternalAgentConnection
+from chatballs.ai.external_agents.notice_models import ExternalAgentNotice
 from chatballs.ai.external_agents.operation_models import ExternalAgentOperation
 from chatballs.ai.external_agents.operation_testing import OperationData
 from chatballs.ai.external_agents.runtime_testing import RuntimeData
@@ -30,6 +31,9 @@ class HandoffRequestTests(OperationData, RuntimeData, TestCase):
         self.assertEqual(self.conversation.group, group)
         self.assertIsNone(self.conversation.assigned_operator_id)
         self.assertIsNotNone(self.conversation.waiting_since)
+        notice = ExternalAgentNotice.objects.get(conversation=self.conversation)
+        queued = self.conversation.domain_events.get(event_type="QUEUE_ENTERED", actor_kind="AI")
+        self.assertEqual(queued.operation_id, notice.operation_id)
         notification = Notification.objects.get(type="OPERATOR_REQUESTED")
         self.assertEqual(notification.body, body["summary"])
         self.assertEqual(notification.audience_group, group)

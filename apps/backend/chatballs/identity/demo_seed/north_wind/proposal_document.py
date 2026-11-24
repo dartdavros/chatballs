@@ -1,4 +1,4 @@
-"""Download a fixed commercial proposal independently of local mail delivery."""
+"""Open or download a fixed commercial proposal."""
 
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo

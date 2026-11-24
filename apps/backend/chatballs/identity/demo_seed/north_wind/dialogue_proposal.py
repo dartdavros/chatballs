@@ -50,10 +50,9 @@ def proposal_reply(dataset, context, draft, text, language, message_id):
         return Reply(summary + "\n" + tr("Пришлите отдельными строками поля «Компания:», «Контакт:», «Адрес:» и «Почта:».",
                                           "Send these fields on separate lines: Company:, Contact:, Address:, Email:."))
     serializer = ProposalInput(data={"quote_id": quote["id"], **details, "confirmed": True})
-    if not serializer.is_valid() or details["email"] not in state["emailRecipients"]:
-        prompt = tr("Проверьте реквизиты. Для демо используйте один из адресов: ",
-                    "Check the details. For this demonstration use one of these addresses: ")
-        return Reply(summary + "\n" + prompt + ", ".join(state["emailRecipients"]))
+    if not serializer.is_valid():
+        return Reply(summary + "\n" + tr("Проверьте реквизиты компании и рабочую почту.",
+                                         "Check the company details and work email."))
     details_display = tr("Компания, контакт, адрес и почта:", "Company, contact, address and email:")
     review = "\n".join((summary, details_display, *(details[key] for key in ("company", "contact", "address", "email"))))
     return Reply(review + "\n" + confirmation(draft, message_id, dict(serializer.validated_data), language))

@@ -4,7 +4,6 @@ MESSAGES = {
     "north_wind.delivery_check": "Request a delivery update",
     "north_wind.delivery_delayed": "Shipment delayed",
     "north_wind.proposal_title": "Commercial proposal {number}",
-    "north_wind.proposal_mail_body": "Your commercial proposal {number} is ready. The document is available from the conversation.",
     "north_wind.proposal_crm_note": "The commercial proposal is saved in lead {number}. {url}",
     "north_wind.proposal_brand": "NORTH WIND",
     "north_wind.proposal_trade": "Skiwear for organizations",

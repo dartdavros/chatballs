@@ -7,7 +7,6 @@ from django.test import SimpleTestCase
 from django.utils import timezone
 
 from chatballs.conversations.domain_event_test_base import DomainEventTestBase
-from chatballs.events.handlers import dispatch
 from chatballs.events.models import OutboxEvent
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
 from chatballs.identity.demo_seed.north_wind.after_sales import (
@@ -110,12 +109,12 @@ class NorthWindSalesTests(SimpleTestCase):
         self.assertEqual(proposal["quote"]["total"], 571600)
         self.assertEqual(state["wholesaleStock"]["alpine"]["XL"], 4)
         self.assertEqual(state["crm"][proposal["crmReference"]]["total"], proposal["quote"]["total"])
-        self.assertEqual(state["mailbox"][proposal["number"]]["status"], "queued")
+        self.assertNotIn("mailbox", state)
 
 
 class NorthWindProposalDocumentTests(DomainEventTestBase):
     @patch.dict("os.environ", {"CHATBALLS_LOCAL_NORTH_WIND": "1"})
-    def test_school_visit_creates_one_proposal_and_delivers_through_local_mail(self):
+    def test_school_visit_creates_one_proposal_and_schedules_no_mail(self):
         state = {**initial_state(), "storefront": {"widgetKey": "test", "language": "en"}}
         with tenant_atomic(self.context):
             dataset = DemoDataset.objects.create(
@@ -139,26 +138,24 @@ class NorthWindProposalDocumentTests(DomainEventTestBase):
         }
         response = client.post(path + "submit/", command, format="json", HTTP_IDEMPOTENCY_KEY="create-proposal")
         self.assertEqual(response.status_code, 200, response.data)
-        self.assertEqual(response.json()["mail"]["status"], "queued")
+        self.assertNotIn("mail", response.json())
         self.assertEqual(client.post(path + "submit/", command, format="json",
                                      HTTP_IDEMPOTENCY_KEY="create-proposal").json(), response.json())
         with tenant_atomic(self.context):
-            event = OutboxEvent.objects.get(event_type="demo.proposal_mail")
-        dispatch(event)
+            self.assertFalse(OutboxEvent.objects.filter(event_type="demo.proposal_mail").exists())
         result = client.post(path + "status/", {"number": "KP-205", "quote_id": quote["id"]}, format="json").json()
-        self.assertEqual(result["mail"]["status"], "sent")
+        self.assertNotIn("mail", result)
         self.assertEqual(result["lead"]["proposal"], "KP-205")
         self.assertEqual(client.get(result["proposal"]["downloadPath"]).status_code, 200)
 
     @patch.dict("os.environ", {"CHATBALLS_LOCAL_NORTH_WIND": "1"})
-    def test_document_is_accessible_after_mail_failure_and_expires_on_reinstall(self):
+    def test_document_can_be_opened_and_downloaded_until_reinstall(self):
         state = initial_state()
         quote = prepare_party_quote(state, product_id="alpine", quantities={"L": 4}, city="kazan")
         proposal = create_proposal(
             state, quote_id=quote["id"], company="<School>", contact="Irene",
             email="school@severny-veter.test", address="Kazan", confirmed=True,
         )
-        state["mailbox"][proposal["number"]]["status"] = "failed"
         generation = uuid4()
         with tenant_atomic(self.context):
             dataset = DemoDataset.objects.create(

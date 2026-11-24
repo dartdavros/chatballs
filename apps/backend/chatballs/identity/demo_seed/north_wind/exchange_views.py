@@ -8,7 +8,11 @@ from rest_framework.views import APIView
 
 from chatballs.identity.demo_seed.north_wind.after_sales import exchange_options, request_exchange
 from chatballs.identity.demo_seed.north_wind.catalog import pickup_point
-from chatballs.identity.demo_seed.north_wind.commands import ExchangeInput, ExchangeOptionsInput, OrderLookup
+from chatballs.identity.demo_seed.north_wind.commands import (
+    ExchangeInput,
+    ExchangeOptionsInput,
+    OrderLookup,
+)
 from chatballs.identity.demo_seed.north_wind.delivery import shipment_status
 from chatballs.identity.demo_seed.north_wind.exchange_widget import issue_exchange_session
 from chatballs.identity.demo_seed.north_wind.orders import find_order

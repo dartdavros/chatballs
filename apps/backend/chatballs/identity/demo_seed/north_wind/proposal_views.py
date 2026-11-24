@@ -5,8 +5,15 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
-from chatballs.identity.demo_seed.north_wind.commands import PartyInput, PartyOptionsInput, ProposalInput
-from chatballs.identity.demo_seed.north_wind.proposal_workflow import proposal_result, submit_proposal
+from chatballs.identity.demo_seed.north_wind.commands import (
+    PartyInput,
+    PartyOptionsInput,
+    ProposalInput,
+)
+from chatballs.identity.demo_seed.north_wind.proposal_workflow import (
+    proposal_result,
+    submit_proposal,
+)
 from chatballs.identity.demo_seed.north_wind.state import ShopError, execute_write, read_state
 from chatballs.identity.demo_seed.north_wind.storefront_views import _authorize, _error, _response
 from chatballs.identity.demo_seed.north_wind.wholesale import party_options, prepare_party_quote

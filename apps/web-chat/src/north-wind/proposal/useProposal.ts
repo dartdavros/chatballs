@@ -70,22 +70,6 @@ export function useProposal(token: string) {
     return () => clearTimeout(refresh);
   }, [quote]);
 
-  useEffect(() => {
-    if (result?.mail.status !== "queued") return;
-    let active = true;
-    const timer = setInterval(async () => {
-      try {
-        const next = await api<ProposalResult>("proposal/status", {
-          number: result.proposal.number, quote_id: result.proposal.quoteId,
-        });
-        if (active && next.mail.status !== "queued") setResult(next);
-      } catch (failure) {
-        if (active) setError(errorCode(failure));
-      }
-    }, 1500);
-    return () => { active = false; clearInterval(timer); };
-  }, [api, result]);
-
   function update(changes: Partial<ProposalDraft>) {
     setError("");
     setDraft(previous => ({

@@ -99,7 +99,7 @@ def _reply(turn, context, dataset, route, binding, draft):
             if route == "fitting" and error.code == "fitting_slot_unavailable":
                 return fitting_reply(dataset.shop_state, draft, "", language, turn.message.pk)
             return _failure(error.code, language)
-    if route == "proposal" and draft.get("proposal") and lowered in {"статус письма", "mail status"}:
+    if route == "proposal" and draft.get("proposal") and lowered in {"открыть кп", "open proposal"}:
         return _proposal_reply(proposal_result(context, dataset.generation, **draft["proposal"]), language)
     draft.pop("confirmation", None)
     if lowered in {"сотрудник", "оператор", "operator", "specialist"}:
@@ -144,14 +144,9 @@ def _submit(context, dataset, route, binding, draft, pending, language):
 def _proposal_reply(result, language):
     from chatballs.i18n import t
 
-    statuses = {"queued": ("Письмо ожидает отправки.", "Email is queued."),
-        "sent": ("Письмо отправлено.", "Email sent."), "failed": ("Отправка письма не удалась.", "Email failed."),
-        "unknown": ("Исход отправки неизвестен. Сотрудник сверит статус перед повтором.",
-                    "Email outcome is unknown. A specialist will check before retrying.")}
     proposal = result["proposal"]
     title = t("north_wind.proposal_title", language=language, number=proposal["number"])
-    message = title + "\n" + localized(language, *statuses[result["mail"]["status"]])
-    return Reply(message, document={"open": proposal["documentPath"], "download": proposal["downloadPath"],
+    return Reply(title, document={"open": proposal["documentPath"], "download": proposal["downloadPath"],
         "openLabel": localized(language, "Открыть КП", "Open proposal"),
         "downloadLabel": localized(language, "Скачать КП", "Download proposal")})
 
