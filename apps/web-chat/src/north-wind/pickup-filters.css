@@ -1,0 +1,7 @@
+.store-pickup-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 20px}
+.store-pickup-filter{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:5px 9px;border:1px solid #d7dbe2;border-radius:7px;background:#fff;color:#476a9f;font-size:12px;line-height:1.4}
+.store-pickup-filter.is-selected{border-color:#cfdcec;background:#f3f7ff;color:#1754d1}
+.store-pickup-filter select,.store-pickup-filter input{border:0;border-radius:4px;background:transparent;color:#1e304b;padding:2px;font:inherit}
+.store-pickup-filter select{cursor:pointer}
+.store-pickup-filter input{width:7ch;font-variant-numeric:tabular-nums}
+.store-pickup-filter :focus-visible{outline:2px solid #1754d1;outline-offset:2px}

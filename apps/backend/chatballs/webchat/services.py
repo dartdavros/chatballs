@@ -34,8 +34,7 @@ def post_message(session: WebSession, text: str) -> None:
         text=text,
         display_name=session.identity.display_name,
     )
-    ingest_inbound(session.connection, inbound)
-    _remember_widget(session)
+    _ingest_from_widget(session, inbound)
 
 
 def post_voice(session: WebSession, *, content: bytes, content_type: str, duration: int) -> None:
@@ -50,8 +49,7 @@ def post_voice(session: WebSession, *, content: bytes, content_type: str, durati
         voice_mime=content_type,
         voice_duration=duration,
     )
-    ingest_inbound(session.connection, inbound)
-    _remember_widget(session)
+    _ingest_from_widget(session, inbound)
 
 
 def post_file(session: WebSession, *, content: bytes, filename: str, content_type: str, caption: str = "") -> None:
@@ -72,8 +70,26 @@ def post_file(session: WebSession, *, content: bytes, filename: str, content_typ
         display_name=session.identity.display_name,
         files=(InboundFile(name=name, content_type=mime, size=len(content), content=content, is_image=mime.startswith("image/")),),
     )
-    ingest_inbound(session.connection, inbound)
-    _remember_widget(session)
+    _ingest_from_widget(session, inbound)
+
+
+def _ingest_from_widget(session, inbound, *, remember_widget=True):
+    from rest_framework.exceptions import PermissionDenied
+
+    from chatballs.identity.demo_seed.north_wind.storefront_artifacts import storefront_artifacts
+
+    with storefront_artifacts(session.connection) as current:
+        if not current:
+            raise PermissionDenied()
+        if inbound.text or inbound.voice_content:
+            from chatballs.identity.demo_seed.north_wind.prepared_widget import (
+                activate_prepared_dialogue,
+            )
+
+            activate_prepared_dialogue(session)
+        ingest_inbound(session.connection, inbound)
+        if remember_widget:
+            _remember_widget(session)
 
 
 def _remember_widget(session: WebSession) -> None:
@@ -118,4 +134,4 @@ def post_contact(session: WebSession, phone: str) -> None:
         display_name=session.identity.display_name,
         phone=phone,
     )
-    ingest_inbound(session.connection, inbound)
+    _ingest_from_widget(session, inbound, remember_widget=False)

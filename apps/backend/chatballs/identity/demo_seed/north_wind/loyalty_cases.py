@@ -19,13 +19,3 @@ def select_loyalty_case(state, *, case):
     state["excludedFromBonuses"] = exclusions
     return {"case": case, "bonusesAllowed": case != "excluded",
             **quote_order(state, customer="andrey", product_id="alpine", size="L", bonus=0)}
-
-
-def loyalty_profile(state, *, customer, product_id):
-    if customer != "andrey" or customer not in state["loyaltyMembers"]:
-        raise ShopError("profile_unavailable")
-    quote = quote_order(state, customer=customer, product_id=product_id, size="L", bonus=0)
-    language = state.get("historyLanguage", "ru")
-    return {"language": language, "product": product_id, "balance": quote["bonusBalance"],
-            "personalPrice": quote["personalPrice"], "allowed": product_id not in state["excludedFromBonuses"],
-            "maxBonus": quote["maxBonus"]}

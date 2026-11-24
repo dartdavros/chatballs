@@ -228,7 +228,8 @@ def update_integration(
         integration.config = _normalized_config(
             integration.provider, data.config, previous_config=previous_config
         )
-        for key in ("demoSeed", "demoGeneration"):
+        for key in ("demoSeed", "demoGeneration", "northWindStorefront", "northWindSupport", "northWindExecutorWidget",
+                    "northWindProfileWidget"):
             if key in previous_config:
                 integration.config[key] = previous_config[key]
     elif data.external is not None:

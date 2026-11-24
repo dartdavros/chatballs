@@ -1,0 +1,19 @@
+.north-wind-proposal{container:office-content / inline-size}
+.office-field{min-width:0;display:flex;flex-direction:column;gap:7px}
+.office-field>label{font-size:12px;line-height:1.4;color:#48515b;font-weight:550}
+.office-field input,.office-field select{width:100%;min-width:0;min-height:43px;border:1px solid #cfd7d2;background:#fff;color:#242a31;border-radius:4px;padding:10px 12px;line-height:1.5;font-size:14px}
+.office-field input::placeholder{color:#8b929b}
+.office-field input[aria-invalid=true],.office-field select[aria-invalid=true]{border-color:#af4439}
+.office-number-wrap{position:relative;min-width:0}
+.office-number-wrap input{padding-right:41px;font-variant-numeric:tabular-nums;appearance:textfield}
+.office-number-wrap input::-webkit-inner-spin-button,.office-number-wrap input::-webkit-outer-spin-button{appearance:none;margin:0}
+.office-number-wrap>span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#6b737e;font-size:12px;pointer-events:none}
+.office-select-wrap{position:relative;min-width:0}
+.office-select-wrap select{appearance:none;padding-right:34px}
+.office-select-wrap>svg{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#6b737e}
+.office-field-error{display:block;font-size:12px;line-height:1.5;color:#a4382f;overflow-wrap:anywhere}
+.office-primary-button,.office-text-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-width:0;text-decoration:none;line-height:1.5;font-size:13px;font-weight:550;white-space:normal}
+.office-primary-button{border:1px solid #235347;border-radius:4px;background:#235347;color:#fff;min-height:44px;padding:11px 17px}
+.office-primary-button:hover:not(:disabled){background:#173d34;border-color:#173d34}
+.office-primary-button:disabled{color:#79817c;background:#edf0ed;border-color:#e1e6e2;cursor:default}
+.office-text-button{padding:0;border:0;background:none;color:#235347;font-size:12px}

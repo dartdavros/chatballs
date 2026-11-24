@@ -24,6 +24,7 @@ services:
         condition: service_started
     environment:
       CHATBALLS_LOCAL_NORTH_WIND: "1"
+      CHATBALLS_NORTH_WIND_SITE_ORIGIN: "${CHATBALLS_NORTH_WIND_SITE_ORIGIN:-http://localhost}"
       CHATBALLS_HELP_BASE_DOMAIN: "${CHATBALLS_HELP_BASE_DOMAIN:-localhost}"
       CHATBALLS_HELP_PUBLIC_SCHEME: "${CHATBALLS_HELP_PUBLIC_SCHEME:-http}"
     networks: [default, demo-local]

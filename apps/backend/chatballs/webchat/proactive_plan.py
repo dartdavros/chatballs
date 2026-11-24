@@ -11,6 +11,8 @@ from chatballs.i18n import DEFAULT_LANGUAGE, customer_language
 from chatballs.integrations.execution.budgets import root_of
 from chatballs.integrations.execution.permissions import ExecutionDenied
 
+FIRST_REPLY_TASK = "Trusted scenario task for the first reply:\n"
+
 
 def instruction(run, step):
     frame = run.progress.filter(path=step.path).first()
@@ -37,7 +39,7 @@ def first_plan(turn, run, claim):
     if not messages or messages[-1].role != "user":
         raise ExecutionDenied("arguments")
     messages[-1] = ChatMessage(role="system", content=turn.pseudonymizer.mask(
-        "Trusted scenario task for the first reply:\n" + turn.query), masked=True)
+        FIRST_REPLY_TASK + turn.query), masked=True)
     if turn.agent.answer_language in {AnswerLanguage.MIRROR, AnswerLanguage.ORGANIZATION}:
         messages.append(ChatMessage(role="system", content=ANSWER_IN_FIXED_LANGUAGE.format(
             language=LANGUAGE_LABELS[customer_language(turn.agent.organization) or DEFAULT_LANGUAGE])))

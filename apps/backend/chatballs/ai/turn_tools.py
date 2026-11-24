@@ -56,6 +56,7 @@ def plan_turn_tools(
     conversation: Conversation | None = None,
     client: ClientData | None = None,
     decisions: list[dict] | None = None,
+    site_event_launch_id: int | None = None,
 ) -> list[TurnTool]:
     """Шаг в транзакции: включённые агенту инструменты, пригодные в этом ходе.
 
@@ -76,12 +77,17 @@ def plan_turn_tools(
         client = conversation_client_data(conversation)
     readable: dict[int, dict[str, ServerTool]] = {}
     planned: dict[str, TurnTool] = {}
+    from chatballs.identity.demo_seed.north_wind.loyalty_site import can_offer_loyalty_tool
+
     for item in enabled:
         server = item.integration
         decision = {"integrationId": server.id, "name": item.tool_name or server.config.get("tool_name", ""),
                     "modelSupportsTools": support, "reason": "offered"}
         if decisions is not None:
             decisions.append(decision)
+        if not can_offer_loyalty_tool(server, conversation, site_event_launch_id):
+            decision["reason"] = "required_client_data_unavailable"
+            continue
         if support is False:
             decision["reason"] = "model_does_not_support_tools"
             continue

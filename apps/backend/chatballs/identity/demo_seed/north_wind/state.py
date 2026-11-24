@@ -24,7 +24,7 @@ def initial_state():
         "priceAdjustments": {},
         "excludedFromBonuses": [],
         "stock": initial_stock(),
-        "nextOrder": 2042,
+        "nextOrder": 2048,
         "orders": {},
         "sampleOrders": {
             "2042": {

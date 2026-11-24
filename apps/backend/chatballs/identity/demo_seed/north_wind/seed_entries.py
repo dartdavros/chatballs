@@ -15,6 +15,7 @@ from chatballs.conversations.models import (
 from chatballs.conversations.participant_models import ConversationParticipant
 from chatballs.identity.demo_seed import manifest
 from chatballs.identity.demo_seed.loaders.common import backdate
+from chatballs.identity.demo_seed.north_wind.appointments import MOSCOW
 from chatballs.identity.demo_seed.north_wind.delivery_scenarios import (
     create_delivery_queue,
     load_delivery_scenarios,
@@ -53,8 +54,8 @@ def _load_histories(refs, data, history, templates, now):
     local_tools = dataset.shop_state.get("localTools")
     delivery_inbox = create_delivery_queue(refs, data["deliveryAutomation"])
     dialogs = []
-    for index, entry in enumerate(data["entries"], start=1):
-        at = now - timedelta(minutes=7 + index * 2)
+    cadence, starts = _shift_timing(now, len(data["entries"]))
+    for entry, at in zip(data["entries"], starts, strict=True):
         key = entry["key"]
         group = delivery_inbox[0] if key == "delivery" else refs.groups[entry["group"]]
         conversation = _conversation(refs, entry, group, at)
@@ -72,15 +73,23 @@ def _load_histories(refs, data, history, templates, now):
         if local_tools and key == "proposal":
             dataset.shop_state["proposalDialog"] = {"conversationId": conversation.pk, "managerId": refs.users["elena"].pk}
         if key == "team":
-            seed_team_photo(conversation, at + timedelta(seconds=5))
-            _team(refs, conversation, data["teamComments"], at)
+            seed_team_photo(conversation, at + cadence / 2)
+            _team(refs, conversation, data["teamComments"], at, cadence)
         if key == "delivery":
             conversation.labels.add(delivery_inbox[1])
             if local_tools:
                 load_delivery_scenarios(refs, conversation, data["deliveryAutomation"], inbox=delivery_inbox)
-        append_history(refs, conversation, history[key], at, templates)
+        append_history(refs, conversation, history[key], at, templates, cadence=cadence)
         seed_reply_facts(refs, conversation)
     return dialogs
+
+
+def _shift_timing(now, count):
+    local = now.astimezone(MOSCOW)
+    midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
+    # Floor to whole microseconds so rounding cannot place the earliest dialog before midnight.
+    cadence = min(timedelta(seconds=10), (local - midnight) // (42 + count * 12))
+    return cadence, [now - cadence * (42 + index * 12) for index in range(1, count + 1)]
 
 
 def _conversation(refs, entry, group, at):
@@ -114,7 +123,7 @@ def _entry_widget(key, entry):
     return None
 
 
-def _team(refs, conversation, comments, at):
+def _team(refs, conversation, comments, at, cadence):
     for offset, (key, text) in enumerate(zip(("svetlana", "igor"), comments, strict=True), start=1):
         membership = refs.memberships[key]
         participant = ConversationParticipant.objects.create(
@@ -125,4 +134,4 @@ def _team(refs, conversation, comments, at):
             organization=refs.organization, conversation=conversation, author=membership.user,
             audience="INTERNAL", text=text, operation_id=uuid4(),
         )
-        backdate(participant, at + timedelta(seconds=5 + offset), "joined_at")
+        backdate(participant, at + cadence * (5 + offset) / 10, "joined_at")

@@ -11,6 +11,42 @@ from chatballs.ai.turn_templates import PREPARE_REPLY
 
 
 class NorthWindOrderTurnTests(SimpleTestCase):
+    def test_loyalty_explains_the_http_balance_and_eligibility(self):
+        from chatballs.identity.demo_seed.north_wind.loyalty_site import LOYALTY_TASK, LOYALTY_TOOL
+        from chatballs.webchat.proactive_plan import FIRST_REPLY_TASK
+
+        provider = DemoProvider()
+        tools = [ToolSpec(name=LOYALTY_TOOL, description="", parameters={})]
+        messages = [ChatMessage(role="system", content=FIRST_REPLY_TASK + LOYALTY_TASK)]
+        pending = provider.chat(messages=messages, model="demo", tools=tools)
+        self.assertEqual(pending.tool_calls[0].arguments, {"product_id": "alpine"})
+        messages.extend((ChatMessage(role="assistant", content="", tool_calls=pending.tool_calls),
+                         ChatMessage(role="tool", tool_call_id=pending.tool_calls[0].id, content=json.dumps({
+                             "product": "alpine", "language": "ru", "balance": 600, "maxBonus": 600, "allowed": False,
+                         }))))
+        response = provider.chat(messages=messages, model="demo", tools=tools)
+        self.assertIn("600 бонусов", response.text)
+        self.assertIn("На эту модель бонусы не распространяются", response.text)
+        self.assertFalse(response.tool_calls)
+
+    def test_pickup_site_context_accepts_only_a_trusted_task_and_bounded_fields(self):
+        from json import dumps
+
+        from chatballs.ai.provider.demo_pickup_context import pickup_context
+        from chatballs.identity.demo_seed.north_wind.pickup_selection import PICKUP_TASK
+        from chatballs.webchat.proactive_plan import FIRST_REPLY_TASK
+
+        values = {"city": "kazan", "category": "ski-suits", "size": "M", "store": "gorki", "budget": 30000}
+        encoded = "Site event data: " + dumps(dumps(values))[1:-1]
+        context = ChatMessage(role="system", content=encoded)
+        trusted = ChatMessage(role="system", content=FIRST_REPLY_TASK + PICKUP_TASK)
+        arguments = {"size": "M", "store": "gorki", "budget": 30000}
+        self.assertEqual(pickup_context([context, trusted]), (1, arguments))
+        customer = ChatMessage(role="user", content=trusted.content)
+        self.assertIsNone(pickup_context([context, customer]))
+        invalid = "Site event data: " + dumps(dumps({**values, "budget": True}))[1:-1]
+        self.assertIsNone(pickup_context([ChatMessage(role="system", content=invalid), trusted]))
+
     def test_catalog_selection_uses_customer_size_budget_and_live_stock(self):
         tools = [ToolSpec(name, "") for name in (PRODUCT, SEARCH, HTTP_STATUS)]
         messages = [ChatMessage("user", "Нужен костюм XL до 35 000 ₽ для самовывоза")]

@@ -217,6 +217,8 @@ def run_requested_turn(payload: dict, context: TenantContext) -> None:
         return
 
     from chatballs.conversations.autonomous_execution import guarded_call
+    from chatballs.identity.demo_seed.north_wind.dialogue_turn import try_reply
+    from chatballs.identity.demo_seed.north_wind.storefront_artifacts import storefront_artifacts
 
     if turn.transcription_job is not None:
         transcript = guarded_call(turn, context, _run_transcription, turn)
@@ -226,12 +228,16 @@ def run_requested_turn(payload: dict, context: TenantContext) -> None:
             if not _apply_transcript(turn=turn, transcript=transcript, context=context):
                 return
 
+    if (shop_reply := try_reply(turn, context)) is not None:
+        _deliver(turn, shop_reply, context)
+        return
+
     embedding = guarded_call(turn, context, run_query_embedding, turn.embedding_job)
     failure = None
-    with tenant_atomic(context):
+    with tenant_atomic(context), storefront_artifacts(turn.conversation.connection) as current:
         from chatballs.conversations.ai_turn_completion import refresh_turn_control
 
-        if not refresh_turn_control(turn, context):
+        if not current or not refresh_turn_control(turn, context):
             return
         try:
             plan = plan_chat(
@@ -258,6 +264,6 @@ def run_requested_turn(payload: dict, context: TenantContext) -> None:
     answer = guarded_call(turn, context, run_turn_chat, plan, time_left=_time_left(turn.message))
     if answer is None:
         return
-    with tenant_atomic(context):
-        outgoing = finish_requested_turn(turn, context, plan, answer)
+    with tenant_atomic(context), storefront_artifacts(turn.conversation.connection) as current:
+        outgoing = finish_requested_turn(turn, context, plan, answer) if current else ""
     _deliver(turn, outgoing, context)

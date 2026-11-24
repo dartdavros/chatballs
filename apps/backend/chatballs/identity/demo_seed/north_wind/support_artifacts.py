@@ -5,11 +5,13 @@ from functools import wraps
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 
+from chatballs.conversations.comment_models import ConversationComment
 from chatballs.conversations.domain_event_models import ConversationEvent
 from chatballs.conversations.models import Conversation, Message
+from chatballs.conversations.participant_models import ConversationParticipant
 from chatballs.conversations.rules.models import RuleExecution
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
-from chatballs.identity.demo_seed.north_wind.local_access import local_demo_enabled
+from chatballs.identity.operation_modes import lock_organization
 from chatballs.notifications.models import Notification
 from chatballs.tenancy.database import tenant_atomic
 
@@ -25,7 +27,7 @@ def register_thread_history(dataset):
         external_chat_id__startswith=f"north-wind:{dataset.generation}:",
     ).values("pk")
     with recording(dataset) as recorder:
-        for model in (Message, ConversationEvent, RuleExecution):
+        for model in (Message, ConversationEvent, RuleExecution, ConversationComment, ConversationParticipant):
             content_type = ContentType.objects.get_for_model(model)
             existing = dataset.records.filter(content_type=content_type).values_list("object_id", flat=True)
             records = model._base_manager.filter(conversation_id__in=dialogs, organization_id=dataset.organization_id)
@@ -41,29 +43,31 @@ def register_thread_history(dataset):
 def record_demo_support_operation(operation):
     @wraps(operation)
     def execute(*, context, conversation_id, **arguments):
-        if not local_demo_enabled():
-            return operation(context=context, conversation_id=conversation_id, **arguments)
         with tenant_atomic(context):
             datasets = DemoDataset.objects.filter(
                 organization_id=context.organization_id,
                 status__in=(DemoDatasetStatus.INSTALLED, DemoDatasetStatus.REINSTALLING),
+                generation__isnull=False,
             )
             dataset = datasets.first()
-            if dataset is None or not _is_demo_support_dialog(dataset, conversation_id):
-                dataset = None
-            else:
+            if dataset is not None and _is_demo_support_dialog(dataset, conversation_id):
+                lock_organization(context.organization_id)
                 dataset = datasets.select_for_update().filter(generation=dataset.generation).first()
-            if dataset is not None:
-                from chatballs.identity.demo_seed.registry import runtime_recording
+                if dataset is not None:
+                    from chatballs.identity.demo_seed.registry import runtime_recording
 
-                with runtime_recording(dataset):
-                    return operation(context=context, conversation_id=conversation_id, **arguments)
+                    with runtime_recording(dataset):
+                        return operation(context=context, conversation_id=conversation_id, **arguments)
         return operation(context=context, conversation_id=conversation_id, **arguments)
     return execute
 
 
 def _is_demo_support_dialog(dataset, conversation_id):
-    return any(
-        str(binding["conversationId"]) == str(conversation_id)
-        for binding in dataset.shop_state.get("supportDialogs", {}).values()
-    )
+    if not dataset.records.filter(
+        content_type=ContentType.objects.get_for_model(Conversation), object_id=str(conversation_id),
+    ).exists():
+        return False
+    return Conversation.objects.filter(
+        organization_id=dataset.organization_id, pk=conversation_id,
+        external_chat_id__startswith=f"north-wind:{dataset.generation}:",
+    ).exists()

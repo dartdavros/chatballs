@@ -1,11 +1,37 @@
 {
   "schemaVersion": 1,
+  "pickupSite": {
+    "name": "Ski suit selection",
+    "invitation": "Would you like help choosing a ski suit?"
+  },
+  "loyaltySite": {
+    "name": "Rewards",
+    "invitation": "Andrey, you have 1,500 points. Would you like to know how to use them?"
+  },
+  "storefrontWidget": {
+    "title": "Website chat",
+    "greeting": "Hello! We can help you choose a ski suit, check stock and arrange pickup.",
+    "quick_replies": [
+      "Find a ski suit",
+      "Check an order",
+      "Book a fitting"
+    ]
+  },
+  "supportWidget": {
+    "title": "Support chat",
+    "greeting": "Hello! We can check your order status and help with an exchange.",
+    "quick_replies": [
+      "Order status",
+      "Exchange size",
+      "Damaged item"
+    ]
+  },
   "externalExecutor": {
     "service": "Local executor"
   },
   "entries": [
     {"key":"pickup","customer":"Maria Volkova","responsible":"svetlana","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["pickup","order"]},
-    {"key":"loyalty","customer":"Mikhail Serov","responsible":"svetlana","group":"operators","priority":"LOW","awaiting":"CUSTOMER","labels":["loyalty","order"]},
+    {"key":"loyalty","customer":"Andrey Kovalyov","responsible":"svetlana","group":"operators","priority":"LOW","awaiting":"CUSTOMER","labels":["loyalty","order"]},
     {"key":"fitting","customer":"Olga Mironova","responsible":"anna","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["fitting"]},
     {"key":"exchange","customer":"Andrey Kovalyov","orderNumber":2042,"responsible":"anna","group":"support","priority":"HIGH","awaiting":"OPERATOR","labels":["exchange","defect"]},
     {"key":"proposal","customer":"Vysota Ski School","responsible":"elena","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["wholesale","mail"]},

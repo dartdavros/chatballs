@@ -8,6 +8,10 @@ import { SiteEventMemory, SITE_EVENT_TTL, validEvent } from "./memory";
 type Options = { config: WebConfig | null; token: string | null; accepted: boolean; consentReady: boolean;
   widgetKey: string; hostOrigin: string };
 
+function ruleFor(config: WebConfig | null, name: unknown) {
+  return config?.siteEvents?.find((rule) => rule.name === name) ?? config?.siteEvent;
+}
+
 export function useSiteEvents(options: Options) {
   const { config, token, accepted, consentReady, widgetKey, hostOrigin } = options;
   const instanceId = new URLSearchParams(location.search).get("instanceId") || "";
@@ -36,7 +40,7 @@ export function useSiteEvents(options: Options) {
         || message.data?.instanceId !== instanceId || message.data?.widgetKey !== widgetKey) return;
       const state = current.current;
       if (message.data.type === "chatballs-site-event") {
-        const rule = state.config?.siteEvent;
+        const rule = ruleFor(state.config, message.data.event?.name);
         if (!state.consentReady || !rule || cancelled.current || sending.current || !validEvent(message.data.event, rule, widgetKey)
           || typeof message.data.receivedAt !== "number" || !Number.isFinite(message.data.receivedAt)) return;
         if (memory.receive(message.data.event, message.data.receivedAt, state.accepted)) { setRelated(true); refresh((n) => n + 1); }
@@ -60,7 +64,7 @@ export function useSiteEvents(options: Options) {
   }, [config?.available, consentReady, widgetKey, hostOrigin, instanceId]);
 
   useEffect(() => {
-    const rule = config?.siteEvent;
+    const rule = ruleFor(config, memory.pending?.event.name);
     if (memory.pending && (!rule || !validEvent(memory.pending.event, rule, widgetKey))) memory.clear();
     if (memory.expire()) setStatus("expired");
     const active = memory.pending;
@@ -83,7 +87,7 @@ export function useSiteEvents(options: Options) {
       }).catch(() => { if (!cancelled.current) { sending.current = false; setStatus("failed"); } });
     }
     return () => clearTimeout(timer);
-  }, [revision, config?.siteEvent, accepted, token, memory]);
+  }, [revision, config?.siteEvent, config?.siteEvents, accepted, token, memory]);
 
   return { status, related, updateStatus: (value: SiteEventState | null | undefined) => {
     if (value && !cancelled.current) { setRelated(true); setStatus(value); }

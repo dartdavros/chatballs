@@ -52,7 +52,8 @@ def _contact_name(turn: Turn) -> str:
     return turn.conversation.contact.name or t("conversations.guest")
 
 
-def store_answer(*, turn: Turn, context: TenantContext, text: str, prepared=None, handoff=False) -> str:
+def store_answer(*, turn: Turn, context: TenantContext, text: str, prepared=None, handoff=False,
+                 document=None, recommendations=None, publish_web=False) -> str:
     """Ответ модели: запись в диалог и, если модель попросила, передача оператору.
 
     Возвращает текст для отправки клиенту.
@@ -64,6 +65,12 @@ def store_answer(*, turn: Turn, context: TenantContext, text: str, prepared=None
         reply = reply.replace(HANDOFF_TOKEN, "").strip()
 
     route = reply_route(turn)
+    if publish_web and route["representation"] == "html":
+        route["sent"] = True
+    if document:
+        route["northWindDocument"] = document
+    if recommendations:
+        route["northWindRecommendations"] = recommendations
     fields = prepared.message_fields(representation=route["representation"]) if prepared else {}
     message = Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=reply, **fields)
     bind_reply(turn, message, route)

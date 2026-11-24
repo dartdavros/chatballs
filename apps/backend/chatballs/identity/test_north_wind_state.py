@@ -1,5 +1,6 @@
 from datetime import timedelta
 from unittest.mock import patch
+from urllib.parse import unquote
 from uuid import uuid4
 
 from django.utils import timezone
@@ -16,6 +17,7 @@ from chatballs.identity.demo_seed.north_wind.state import (
     initial_state,
     read_state,
 )
+from chatballs.identity.demo_seed.north_wind.storefront_access import visit_path
 from chatballs.integrations.checking import test_integration as check_integration
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
@@ -23,6 +25,55 @@ from chatballs.testing import TenantAPIClient
 
 
 class NorthWindStateTests(DomainEventTestBase):
+    @patch.dict("os.environ", {"CHATBALLS_LOCAL_NORTH_WIND": "1"})
+    def test_storefront_cart_uses_the_generation_and_customer_of_the_visit(self):
+        context = TenantContext.for_resource(self.organization)
+        state = {**initial_state(), "storefront": {"widgetKey": "widget-test", "language": "ru"}}
+        with tenant_atomic(context):
+            dataset = DemoDataset.objects.create(
+                organization=self.organization, status=DemoDatasetStatus.INSTALLED, generation=uuid4(), shop_state=state,
+            )
+        token = unquote(visit_path(dataset).partition("#")[2])
+        root = "/api/v1/demo-local/storefront/"
+        client = TenantAPIClient(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.assertEqual(client.get(root + "start/").json()["balance"], 1500)
+        pickup = {"customer": "maria", "product_id": "ridge", "size": "L", "bonus": 0}
+        pickup_quote = quote_order(state, **pickup)
+        pickup_order = execute_write(context, dataset.generation, place_order, key="pickup", command={
+            **pickup, "store": "center", "revision": pickup_quote["revision"], "confirmed": True,
+        })
+        self.assertEqual(pickup_order["number"], 2048)
+        request = {"product_id": "alpine", "size": "L", "customer": "maria"}
+        cart = client.post(root + "cart/", request, format="json", HTTP_IDEMPOTENCY_KEY="add").json()
+        self.assertEqual(cart["personalPrice"], 26910)
+        quote = client.post(root + "quote/", {**request, "bonus": 750}, format="json").json()
+        self.assertEqual(quote["customer"], "andrey")
+        command = {**request, "bonus": 750, "store": "gorki", "revision": quote["revision"], "confirmed": True}
+        placed = client.post(root + "checkout/", command, format="json", HTTP_IDEMPOTENCY_KEY="checkout")
+        self.assertEqual(placed.status_code, 200, placed.data)
+        self.assertEqual((placed.json()["number"], placed.json()["total"]), (2042, 26160))
+        self.assertEqual(
+            client.post(root + "checkout/", command, format="json", HTTP_IDEMPOTENCY_KEY="checkout").json(),
+            placed.json(),
+        )
+        storefront = client.get(root + "start/").json()
+        self.assertIsNone(storefront["cart"])
+        self.assertEqual(storefront["balance"], 750)
+        self.assertEqual(storefront["order"], placed.json())
+        support_token = unquote(visit_path(dataset, "andrey-after-purchase").partition("#")[2])
+        support = TenantAPIClient(HTTP_AUTHORIZATION=f"Bearer {support_token}")
+        status = support.post(root + "exchange/order/", {"order_number": 2042}, format="json")
+        self.assertEqual(status.status_code, 200, status.data)
+        self.assertEqual(status.json()["order"]["status"], "reserved")
+        self.assertEqual(
+            find_order(read_state(context, dataset.generation), customer="maria", order_number=2048), pickup_order,
+        )
+        with tenant_atomic(context):
+            dataset.generation = uuid4()
+            dataset.shop_state = state
+            dataset.save(update_fields=["generation", "shop_state"])
+        self.assertEqual(client.get(root + "start/").status_code, 404)
+
     def test_checkout_reservation_and_booking_are_bound_to_the_generation(self):
         context = TenantContext.for_resource(self.organization)
         with tenant_atomic(context):

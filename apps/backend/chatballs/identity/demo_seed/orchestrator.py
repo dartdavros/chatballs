@@ -27,6 +27,7 @@ from chatballs.identity.demo_seed.loaders import (
 from chatballs.identity.demo_seed.north_wind.seed_entries import load_entries
 from chatballs.identity.demo_seed.north_wind.seed_executor import load_executor
 from chatballs.identity.demo_seed.north_wind.seed_tools import load_local_tools
+from chatballs.identity.demo_seed.north_wind.storefront_access import configure_storefront
 from chatballs.identity.demo_seed.refs import DemoRefs
 from chatballs.tenancy.context import TenantContext
 
@@ -57,6 +58,7 @@ def run_demo_seed(
     support_loader.load(context, refs)
     contacts_loader.load(refs)
     operations_loader.load(refs)
+    configure_storefront(refs)
     load_executor(refs)
     load_entries(refs)
     return refs

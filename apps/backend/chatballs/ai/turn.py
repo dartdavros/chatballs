@@ -193,7 +193,7 @@ def plan_chat(
         job = replace(job, messages=messages)
     client, redactor, snapshot = diagnostic_context(agent, conversation, pseudonymizer, client)
     tools = plan_turn_tools(agent=agent, conversation=conversation, client=client,
-                           decisions=snapshot["toolAvailability"])
+                           decisions=snapshot["toolAvailability"], site_event_launch_id=site_event_launch_id)
     from chatballs.integrations.execution.ai_bridge import plan_actions
     tools.extend(plan_actions(agent, conversation, preview=action_preview if test_tenant else False,
                               test_tenant=test_tenant, test_client=client, turn_id=action_turn_id,

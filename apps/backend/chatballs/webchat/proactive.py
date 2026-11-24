@@ -8,6 +8,7 @@ from chatballs.ai.provider.base import ProviderError
 from chatballs.ai.turn import record_turn, run_turn_chat, turn_pseudonymizer
 from chatballs.conversations.ai_turn_result import store_answer
 from chatballs.conversations.ai_turn_state import Turn
+from chatballs.identity.demo_seed.north_wind.storefront_artifacts import storefront_artifacts
 from chatballs.integrations.action_catalog.contracts import NativeOperationRejected
 from chatballs.integrations.action_catalog.registry import native_action
 from chatballs.integrations.adapters.contracts import OperationResult, ResultState
@@ -77,7 +78,9 @@ def execute(context, values):
         with execution_guard(permitted):
             answer = run_turn_chat(plan, time_left=min(settings.CHATBALLS_AI_TURN_DEADLINE_SECONDS,
                 max(0, (step.lease_until - timezone.now()).total_seconds())))
-        with tenant_atomic(tenant):
+        with tenant_atomic(tenant), storefront_artifacts(session.connection) as current_generation:
+            if not current_generation:
+                raise ExecutionDenied("site_event_suppressed")
             text = record_turn(agent=turn.agent, plan=plan, answer=answer)
             if not permitted():
                 raise ExecutionDenied("site_event_suppressed")
@@ -94,6 +97,11 @@ def execute(context, values):
                     raise ExecutionDenied("site_event_suppressed")
             store_answer(turn=turn, context=tenant, text=text, prepared=answer.prepared_reply)
             message = turn.conversation.messages.get(ai_delivery__siteEventLaunchId=claim.pk)
+            from chatballs.identity.demo_seed.north_wind.pickup_recommendations import (
+                save_recommendations,
+            )
+
+            save_recommendations(session, message, plan, answer)
             claim.response = message
             claim.state = "sent"
             claim.save(update_fields=["response", "state"])

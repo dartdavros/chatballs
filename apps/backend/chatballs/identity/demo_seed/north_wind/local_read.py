@@ -19,7 +19,7 @@ from chatballs.identity.demo_seed.north_wind.local_access import (
     local_demo_enabled,
     read_local_binding,
 )
-from chatballs.identity.demo_seed.north_wind.loyalty_cases import loyalty_profile
+from chatballs.identity.demo_seed.north_wind.loyalty_site import loyalty_profile
 from chatballs.identity.demo_seed.north_wind.state import ShopError, execute_write, read_state
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.lookup import load_organization

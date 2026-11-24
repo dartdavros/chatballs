@@ -19,12 +19,10 @@ from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
-from chatballs.identity.demo_seed.north_wind.executor_reset import (
-    enqueue_executor_reset,
-    executor_reset_scope,
-)
+from chatballs.identity.demo_seed.north_wind.executor_reset import enqueue_executor_reset, executor_reset_scope
 from chatballs.identity.demo_seed.north_wind.local_access import local_demo_enabled
 from chatballs.identity.demo_seed.north_wind.state import initial_state
+from chatballs.identity.demo_seed.north_wind.storefront_access import STOREFRONT_CUSTOMERS, visit_path
 from chatballs.identity.demo_seed.orchestrator import run_demo_seed
 from chatballs.identity.demo_seed.registry import recording, remove_records
 from chatballs.identity.models import HumanUser, Organization
@@ -89,6 +87,7 @@ def demo_status(organization: Organization) -> dict[str, object]:
             "reinstall": None,
             "northWind": False,
             "localDemoEnabled": local_demo_enabled(),
+            "storefrontPaths": {},
         }
     installed = dataset.status in (DemoDatasetStatus.INSTALLED, DemoDatasetStatus.REINSTALLING)
     reinstall = None
@@ -99,6 +98,11 @@ def demo_status(organization: Organization) -> dict[str, object]:
                 else "FAILED" if dataset.reinstall_error else "SUCCEEDED"
             ),
             "errorCode": dataset.reinstall_error,
+        }
+    storefront_paths = {}
+    if installed and dataset.shop_state.get("storefront") and local_demo_enabled():
+        storefront_paths = {
+            key: visit_path(dataset, customer) for key, customer in STOREFRONT_CUSTOMERS.items()
         }
     return {
         "status": dataset.status,
@@ -112,6 +116,7 @@ def demo_status(organization: Organization) -> dict[str, object]:
         "reinstall": reinstall,
         "northWind": dataset.shop_state.get("datasetName") == "north-wind" or bool(dataset.shop_state.get("localTools")),
         "localDemoEnabled": local_demo_enabled(),
+        "storefrontPaths": storefront_paths,
     }
 
 

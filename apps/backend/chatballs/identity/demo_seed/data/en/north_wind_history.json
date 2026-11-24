@@ -70,7 +70,7 @@
     "loyalty": [
       ["tool","HTTP · Customer profile, price and points"],
       ["tool","MCP · Alpine Pro specifications"],
-      ["agent","Mikhail, you have 1,500 points. Would you like to know how to use them?"],
+      ["agent","Andrey, you have 1,500 points. Would you like to know how to use them?"],
       ["customer","Yes, how can I use them?"],
       ["agent","Choose your redemption at checkout. One point is worth one ruble. The limit is 20% of your personal price and the balance available. The 10% discount is already applied: Alpine Pro is RUB 26,910 instead of RUB 29,900."],
       ["customer","I’ll take Alpine Pro in size L. I’ll add it to the cart."],
@@ -83,7 +83,7 @@
       ["customer","Everything is right. Place the order."],
       ["tool","HTTP · Check price, stock and redemption"],
       ["agent","The order has been placed. Your suit will be waiting at the selected shop. The card has the details."],
-      ["snapshot",{"template":"order_result","title":"Order 2050","rows":[["Model","Alpine Pro"],["Size","L"],["Price","RUB 26,910"],["Points","750 points"],["Total due","RUB 26,160"],["Pickup","Centre, 12 Sportivnaya Street, Kazan"],["Phone","+7 900 000-00-64"],["Points balance","750 points"]],"badge":"Order placed","detail":"One suit. Pay on collection."}]
+      ["snapshot",{"template":"order_result","title":"Order 2042","rows":[["Model","Alpine Pro"],["Size","L"],["Price","RUB 26,910"],["Points","750 points"],["Total due","RUB 26,160"],["Pickup","Centre, 12 Sportivnaya Street, Kazan"],["Phone","+7 900 000-00-64"],["Points balance","750 points"]],"badge":"Order placed","detail":"One suit. Pay on collection."}]
     ],
     "fitting": [
       ["agent","I can book a fitting. Which models would you like to try and which day works?"],

@@ -10,6 +10,11 @@
     ? "widgetKey=" + encodeURIComponent(widgetKey)
     : "channel=" + encodeURIComponent(legacyChannel);
   var panelUrl = origin + "/chat/?" + entryQuery + "&instanceId=" + encodeURIComponent(instanceId);
+  var demoDialog = script.getAttribute("data-demo-dialog");
+  var demoEntry = script.getAttribute("data-demo-entry");
+  if (widgetKey && origin === location.origin && demoDialog && demoEntry) {
+    panelUrl += "&demoDialog=" + encodeURIComponent(demoDialog) + "#entry=" + encodeURIComponent(demoEntry);
+  }
 
   var open = false, frame = null, shell = null, unread = false, callActive = false, expanded = false;
   var animating = false, pendingAppearance = null;
@@ -28,6 +33,7 @@
   function ensureFrame() {
     if (frame) return;
     shell = document.createElement("div");
+    shell.dataset.chatballsWidgetPanel = widgetKey || legacyChannel;
     shell.style.cssText = "position:fixed;width:" + PANEL_WIDTH.normal + ";height:" + panelHeight() + ";z-index:2147483001;display:none;transition:width .32s cubic-bezier(.4,0,.2,1),height .32s cubic-bezier(.4,0,.2,1);";
     frame = document.createElement("iframe");
     frame.src = panelUrl;
@@ -180,6 +186,7 @@
   }
 
   btn.addEventListener("click", function () { setOpen(!open); });
+  api.open = function () { if (!open) setOpen(true); };
   function mount() {
     document.body.appendChild(btn);
     ensureFrame();

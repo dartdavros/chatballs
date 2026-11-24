@@ -161,6 +161,7 @@ class DemoProvider(LLMProvider):
     ) -> ChatResult:
         from chatballs.ai.provider import (
             demo_catalog_turn,
+            demo_loyalty_turn,
             demo_shop_turn,
             demo_tools,
         )
@@ -170,6 +171,8 @@ class DemoProvider(LLMProvider):
         # подходящие к вопросу; не подошёл ни один — отвечаем по знаниям.
         tool_calls: tuple[ToolCall, ...] = ()
         order_turn = demo_shop_turn.plan_order_turn(messages, tools or [])
+        if order_turn is None:
+            order_turn = demo_loyalty_turn.plan_loyalty_turn(messages, tools or [])
         if order_turn is None:
             order_turn = demo_catalog_turn.plan_catalog_turn(messages, tools or [])
         if order_turn is not None:

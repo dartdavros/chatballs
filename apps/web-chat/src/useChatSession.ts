@@ -30,9 +30,11 @@ import { useSiteEvents } from "./proactivity/useSiteEvents";
 const PARAMS = new URLSearchParams(location.search);
 const WIDGET_KEY = PARAMS.get("widgetKey") || "";
 const LEGACY_CHANNEL = PARAMS.get("channel") || "";
-const ENTRY = WIDGET_KEY ? { widgetKey: WIDGET_KEY } : { channel: LEGACY_CHANNEL };
+const DEMO_DIALOG = PARAMS.get("demoDialog");
+const DEMO_ENTRY = DEMO_DIALOG ? new URLSearchParams(location.hash.slice(1)).get("entry") ?? "" : undefined;
+const ENTRY = WIDGET_KEY ? { widgetKey: WIDGET_KEY, demoEntry: DEMO_ENTRY } : { channel: LEGACY_CHANNEL };
 const HOST_ORIGIN = document.referrer ? new URL(document.referrer).origin : location.origin;
-const TOKEN_KEY = `chatballs-chat-token:${WIDGET_KEY || `channel:${LEGACY_CHANNEL}`}`;
+const TOKEN_KEY = `chatballs-chat-token:${WIDGET_KEY || `channel:${LEGACY_CHANNEL}`}${DEMO_DIALOG ? `:${DEMO_DIALOG}` : ""}`;
 
 export function useChatSession() {
   const [config, setConfig] = useState<WebConfig | null>(null);

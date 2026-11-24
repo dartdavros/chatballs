@@ -25,7 +25,8 @@ from chatballs.notifications.services import notify
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.testing import TenantAPIClient
-from chatballs.webchat.models import WebChatWidget
+from chatballs.webchat.models import WebChatWidget, WebSession
+from chatballs.webchat.sessions import hash_session_token, issue_session
 
 
 class DemoReinstallationTests(DomainEventTestBase):
@@ -197,15 +198,23 @@ class NorthWindReinstallationTests(TestCase):
             self.assertEqual((delivery.control_mode, delivery.expected_responder), ("HUMAN", "OPERATOR"))
             self.assertEqual(delivery.assigned_operator.email, "i.saveliev@severny-veter.test")
             self.assertEqual(delivery.priority, "HIGH")
-            fitting = entries.get(external_chat_id__endswith=":fitting")
-            widget = WebChatWidget.objects.get(integration_id=fitting.connection_id)
+            widget = WebChatWidget.objects.get(public_key=new.shop_state["storefront"]["widgetKey"])
             self.assertEqual(WebChatWidget.objects.filter(organization=setup.organization).count(), 2)
+            self.assertEqual(new.shop_state["pickupSite"]["widgetKey"], widget.public_key)
+            self.assertEqual(new.shop_state["loyaltySite"]["widgetKey"], widget.public_key)
             support_key = new.shop_state["supportDialogs"]["exchange"]["widgetKey"]
             self.assertNotEqual(support_key, widget.public_key)
             self.assertEqual(new.shop_state["supportDialogs"]["formatted-external"]["widgetKey"], support_key)
+            issued = issue_session(context=context, widget=widget)
+            self.assertIsNotNone(issued)
+            session = WebSession.objects.get(widget=widget, token_hash=hash_session_token(issued["token"]))
+            self.assertTrue(new.records.filter(
+                content_type=ContentType.objects.get_for_model(WebSession), object_id=str(session.pk),
+            ).exists())
         with patch.dict("os.environ", {"CHATBALLS_LOCAL_NORTH_WIND": "1"}):
             self._verify_executor_scope(context)
             self._verify_support_photo(client, setup.organization, new, exchange)
+            self._verify_customer_entry(context, new)
 
     def _verify_executor_scope(self, context):
         from chatballs.identity.demo_seed.north_wind.executor_scope import uses_external_execution
@@ -217,6 +226,40 @@ class NorthWindReinstallationTests(TestCase):
             agent = executor.channel.ai_agent
             self.assertTrue(uses_external_execution(agent, conversation=executor))
             self.assertFalse(uses_external_execution(agent, conversation=support))
+
+    def _verify_customer_entry(self, context, dataset):
+        from urllib.parse import parse_qs, urlsplit
+
+        from chatballs.identity.demo_seed.north_wind.prepared_widget import prepared_chat_path
+        from chatballs.webchat.consent import current_version
+
+        fitting = dataset.shop_state["supportDialogs"]["fitting"]
+        ticket = parse_qs(urlsplit(prepared_chat_path(dataset, "fitting")).fragment)["entry"][0]
+        customer = TenantAPIClient()
+        url = "/api/v1/webchat/session/"
+        with tenant_atomic(context):
+            widget = WebChatWidget.objects.get(public_key=fitting["widgetKey"])
+            payload = {"widgetKey": widget.public_key, "demoEntry": ticket,
+                       "hostOrigin": dataset.shop_state["storefront"]["origin"]}
+            self.assertEqual(customer.post(url, payload, format="json").status_code, 400)
+            payload["consentVersion"] = current_version(widget)
+            invalid = customer.post(url, {**payload, "demoEntry": ticket + "tampered"}, format="json")
+            self.assertEqual(invalid.status_code, 404)
+            result = customer.post(url, payload, format="json")
+            self.assertEqual(result.status_code, 201, result.data)
+            session = WebSession.objects.get(token_hash=hash_session_token(result.data["token"]))
+            self.assertEqual(session.identity_id, fitting["identityId"])
+            self.assertTrue(session.consent_accepted_at)
+        headers = {"HTTP_AUTHORIZATION": f"Bearer {result.data['token']}",
+                   "HTTP_ORIGIN": dataset.shop_state["storefront"]["origin"]}
+        for text in ("Хочу записаться на примерку", "Alpine Pro и Ridge Motion"):
+            sent = customer.post("/api/v1/webchat/messages/", {"text": text}, format="json", **headers)
+            self.assertEqual(sent.status_code, 201, sent.data)
+        with tenant_atomic(context):
+            dialogue = Conversation.objects.get(pk=fitting["conversationId"])
+            self.assertEqual(dialogue.control_mode, "AI")
+            self.assertEqual(dialogue.domain_events.filter(event_type="QUEUE_EXITED", actor_kind="SYSTEM").count(), 1)
+            self.assertEqual(dialogue.messages.filter(ai_turn_state="PENDING").count(), 2)
 
     def _verify_support_photo(self, client, organization, dataset, exchange):
         from chatballs.conversations.comment_services import create_comment

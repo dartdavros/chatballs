@@ -13,6 +13,9 @@ from chatballs.identity.demo_seed.north_wind.catalog import (
 )
 from chatballs.identity.demo_seed.north_wind.state import ShopError
 
+LOYALTY_ORDER_NUMBER = 2042
+LOYALTY_CUSTOMERS = {"andrey", "andrey-after-purchase"}
+
 
 def quote_order(state, *, customer, product_id, size, bonus):
     if customer not in state["balances"]:
@@ -52,13 +55,14 @@ def place_order(state, *, customer, product_id, size, bonus, store, revision, co
     if not state["stock"][key]:
         raise ShopError("stock_unavailable")
 
-    number = state["nextOrder"]
+    number = _next_order_number(state, customer)
     order = {
         **quote, "number": number, "store": store, "address": pickup_point(state, store)["address"],
         "status": "reserved", "balanceAfter": state["balances"][customer] - bonus,
         "stockAfter": state["stock"][key] - 1,
     }
-    state["nextOrder"] += 1
+    if number != LOYALTY_ORDER_NUMBER:
+        state["nextOrder"] = number + 1
     state["stock"][key] = order["stockAfter"]
     state["balances"][customer] = order["balanceAfter"]
     state["orders"][str(number)] = order
@@ -66,8 +70,22 @@ def place_order(state, *, customer, product_id, size, bonus, store, revision, co
 
 
 def find_order(state, *, customer, order_number):
-    source = "sampleOrders" if customer in {"andrey-after-purchase", "pavel"} else "orders"
-    order = state[source].get(str(order_number))
-    if order is None or order["customer"] != customer:
-        raise ShopError("order_unavailable")
-    return order
+    number = str(order_number)
+    live = state["orders"].get(number)
+    if live and (live["customer"] == customer or (
+        order_number == LOYALTY_ORDER_NUMBER and live["customer"] == "andrey" and customer in LOYALTY_CUSTOMERS
+    )):
+        return live
+    prepared = state["sampleOrders"].get(number)
+    if prepared and prepared["customer"] == customer:
+        return prepared
+    raise ShopError("order_unavailable")
+
+
+def _next_order_number(state, customer):
+    if customer == "andrey" and str(LOYALTY_ORDER_NUMBER) not in state["orders"]:
+        return LOYALTY_ORDER_NUMBER
+    number = max(state["nextOrder"], LOYALTY_ORDER_NUMBER + 1)
+    while str(number) in state["orders"] or str(number) in state["sampleOrders"]:
+        number += 1
+    return number

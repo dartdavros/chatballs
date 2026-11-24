@@ -4,11 +4,7 @@ import ipaddress
 import re
 from urllib.parse import urlsplit
 
-from chatballs.identity.demo_seed.north_wind.executor_scope import (
-    EXECUTOR_CA,
-    EXECUTOR_ORIGIN,
-    read_executor_key,
-)
+from chatballs.identity.demo_seed.north_wind.executor_scope import EXECUTOR_CA, EXECUTOR_ORIGIN, read_executor_key
 from chatballs.integrations.adapters.transport import GuardedTransport, TransportError
 from chatballs.integrations.outbound import resolve_host
 from chatballs.integrations.tool_network import PRIVATE_NETWORKS, ToolTarget

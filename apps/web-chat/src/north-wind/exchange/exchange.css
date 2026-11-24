@@ -1,0 +1,43 @@
+.exchange-frame {
+  font: 15px/1.5 system-ui, sans-serif;
+  color: #172538;
+  background: #fff;
+  border: 1px solid #d8e2ec;
+  border-radius: 12px;
+  max-width: 1140px;
+  min-height: 310px;
+  margin: 24px auto;
+}
+
+.exchange-frame :is(h2, h3, p, dl) { margin: 0; }
+.exchange-content { padding: 26px 24px; }
+.exchange-content h2 { margin-bottom: 18px; font-size: 25px; }
+.exchange-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, .56fr); gap: 20px; align-items: start; }
+.exchange-panel { border: 1px solid #dde7ef; padding: 17px; border-radius: 8px; min-width: 0; }
+.exchange-panel h3 { margin-bottom: 8px; }
+.exchange-progress { visibility: hidden; }
+.exchange-progress[data-pending="true"] { visibility: visible; }
+.exchange-order { display: flex; align-items: center; gap: 15px; margin-bottom: 16px; }
+.exchange-order img { display: block; width: 82px; height: 85px; object-fit: contain; background: #eaf0f5; border-radius: 5px; }
+.exchange-frame fieldset { margin: 0 0 13px; padding: 0; border: 0; }
+.exchange-frame legend { margin: 0 0 8px; font-weight: 650; }
+.exchange-sizes label + label { margin-left: 10px; }
+.exchange-stores { display: grid; gap: 8px; min-height: 144px; }
+.exchange-stores label { display: flex; gap: 10px; align-items: flex-start; padding: 11px; border: 1px solid #d7e2eb; border-radius: 7px; }
+.exchange-stores label:has(input:checked) { border-color: #2a6d9c; }
+.exchange-frame input { accent-color: #21618e; }
+.exchange-status { border: 1px solid #dce7ef; border-radius: 7px; background: #eff5fa; padding: 14px; }
+.exchange-status.is-warning { border-color: #ebd6b4; background: #fff7e8; }
+.exchange-status.is-success { border-color: #cfe5d9; background: #eef7f1; }
+.exchange-order p, .exchange-status p { color: #526476; }
+.exchange-status p { margin-top: 5px; }
+.exchange-frame dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin-bottom: 15px; }
+.exchange-frame dd { margin: 0; text-align: right; font-weight: 650; }
+.exchange-frame button { background: #226794; border: 0; border-radius: 6px; color: #fff; padding: 10px 15px; font: inherit; font-weight: 650; }
+.exchange-frame button:disabled { opacity: .55; cursor: default; }
+.exchange-frame .exchange-action { margin-top: 13px; }
+
+@media (max-width: 680px) {
+  .exchange-columns { grid-template-columns: minmax(0, 1fr); }
+  .exchange-content { padding-left: 16px; padding-right: 16px; }
+}

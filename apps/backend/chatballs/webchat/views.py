@@ -32,19 +32,27 @@ class WebchatSessionView(_Public):
         with _resolved_web_widget(widget_key, channel_code) as (context, widget):
             if context is None or widget is None:
                 return Response({"detail": t("webchat.widget_unavailable")}, status=404)
+            from chatballs.identity.demo_seed.north_wind.loyalty_site import allow_loyalty_session
+
             if (
                 not widget.integration.channel.allow_anonymous_sessions
                 or not services.origin_allowed(widget, host_origin(request))
+                or not allow_loyalty_session(request, widget)
             ):
                 return Response({"detail": t("webchat.widget_unavailable")}, status=404)
-            result = services.issue_session(
-                context=context, widget=widget, fields=request.data.get("fields"),
-                pre_chat_fields=request.data.get("preChatFields"),
-                consent_version=request.data.get("consentVersion"),
-            )
+            consent = {"pre_chat_fields": request.data.get("preChatFields"),
+                       "consent_version": request.data.get("consentVersion")}
+            if "demoEntry" in request.data:
+                from chatballs.identity.demo_seed.north_wind.prepared_widget import (
+                    accept_prepared_chat,
+                )
+
+                result = accept_prepared_chat(context, widget, request.data["demoEntry"], **consent)
+            else:
+                result = services.issue_session(context=context, widget=widget, fields=request.data.get("fields"), **consent)
             if result is None:
                 return Response({"detail": t("webchat.widget_unavailable")}, status=404)
-            return Response(result, status=201)
+            return Response(result, status=201, headers={"Cache-Control": "no-store"})
 
 
 class WebchatFieldsView(_PublicSession):

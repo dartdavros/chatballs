@@ -1,7 +1,9 @@
 import { BotAvatar } from "./BotIcon";
 import { useState } from "react";
 import { PreparedMessage } from "@chatballs/ui";
-import type { MessagePresentation } from "@chatballs/contracts";
+import type { WebMessage } from "./api";
+import { ChatProposalDocument } from "./north-wind/ChatProposalDocument";
+import { PickupRecommendations } from "./north-wind/PickupRecommendations";
 import { VoiceMessage } from "./VoiceMessage";
 import { AttachmentContent, type BubbleAttachment } from "./ChatAttachment";
 import { formatTime } from "./chatFormat";
@@ -29,12 +31,16 @@ function AuthorRow({ accent, name, operator, avatarUrl }: { accent: string; name
   );
 }
 
-export function Bubble({ author, authorName, authorAvatarUrl, text, accent, time, pendingState, audioUrl, voice, attachment, snapshot, playback }: { author: "client" | "ai" | "operator"; authorName: string; authorAvatarUrl?: string; text: string; accent: string; time?: string; pendingState?: boolean; audioUrl?: string; voice?: { messageId: number; durationSeconds?: number }; attachment?: BubbleAttachment; snapshot?: MessagePresentation; playback?: { messageId: number; control: AnswerPlaybackControl } }) {
+export function Bubble({ author, authorName, authorAvatarUrl, text, accent, time, pendingState, audioUrl, voice, attachment, snapshot, playback }: { author: "client" | "ai" | "operator"; authorName: string; authorAvatarUrl?: string; text: string; accent: string; time?: string; pendingState?: boolean; audioUrl?: string; voice?: { messageId: number; durationSeconds?: number }; attachment?: BubbleAttachment; snapshot?: Partial<WebMessage>; playback?: { messageId: number; control: AnswerPlaybackControl } }) {
   const at = formatTime(time);
   const content = audioUrl && voice
     ? <VoiceMessage accent={accent} durationSeconds={voice.durationSeconds} light={author === "client"} messageId={voice.messageId} url={audioUrl} />
     : attachment
       ? <AttachmentContent attachment={attachment} text={text} light={author === "client"} />
+      : author === "ai" && snapshot?.northWindRecommendations
+        ? <PickupRecommendations selection={snapshot.northWindRecommendations} />
+      : author === "ai" && snapshot?.northWindDocument
+        ? <ChatProposalDocument document={snapshot.northWindDocument} text={text} />
       : author === "ai" && snapshot && (snapshot.formatVersion !== undefined || snapshot.presentation !== undefined)
         ? <PreparedMessage content={{ ...snapshot, text }} title={t("chat.formatted_message")} /> : text;
   if (author === "client") {

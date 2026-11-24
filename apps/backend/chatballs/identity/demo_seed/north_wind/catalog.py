@@ -62,7 +62,7 @@ def product_for(state, product_id):
 
 def pickup_point(state, store):
     info = STORES[store]
-    if state.get("historyLanguage") == "en":
+    if state.get("storefront", {}).get("language") == "en":
         name, address = _ENGLISH_PICKUP_POINTS[store]
         return {**info, "name": name, "address": address}
     return info

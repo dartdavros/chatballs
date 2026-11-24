@@ -1,11 +1,14 @@
 from datetime import timedelta
 from unittest.mock import patch
+from urllib.parse import unquote
 from uuid import uuid4
 
 from django.test import SimpleTestCase
 from django.utils import timezone
 
 from chatballs.conversations.domain_event_test_base import DomainEventTestBase
+from chatballs.events.handlers import dispatch
+from chatballs.events.models import OutboxEvent
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
 from chatballs.identity.demo_seed.north_wind.after_sales import (
     exchange_options,
@@ -20,6 +23,7 @@ from chatballs.identity.demo_seed.north_wind.loyalty_cases import select_loyalty
 from chatballs.identity.demo_seed.north_wind.orders import place_order, quote_order
 from chatballs.identity.demo_seed.north_wind.proposal_document import proposal_path
 from chatballs.identity.demo_seed.north_wind.state import ShopError, initial_state
+from chatballs.identity.demo_seed.north_wind.storefront_access import visit_path
 from chatballs.identity.demo_seed.north_wind.wholesale import (
     create_proposal,
     party_options,
@@ -111,6 +115,42 @@ class NorthWindSalesTests(SimpleTestCase):
 
 class NorthWindProposalDocumentTests(DomainEventTestBase):
     @patch.dict("os.environ", {"CHATBALLS_LOCAL_NORTH_WIND": "1"})
+    def test_school_visit_creates_one_proposal_and_delivers_through_local_mail(self):
+        state = {**initial_state(), "storefront": {"widgetKey": "test", "language": "en"}}
+        with tenant_atomic(self.context):
+            dataset = DemoDataset.objects.create(
+                organization=self.organization, status=DemoDatasetStatus.INSTALLED,
+                generation=uuid4(), shop_state=state,
+            )
+        path = "/api/v1/demo-local/storefront/proposal/"
+        def visitor(customer):
+            return TenantAPIClient(HTTP_AUTHORIZATION="Bearer " + unquote(visit_path(dataset, customer).split("#")[1]))
+
+        request = {"quantities": {"M": 6, "L": 10, "XL": 4}, "city": "kazan", "budget": 35000}
+        self.assertEqual(visitor("andrey").post(path + "options/", request, format="json").status_code, 403)
+        client = visitor("school")
+        options = client.post(path + "options/", request, format="json").json()["options"]
+        self.assertEqual([option["available"] for option in options], [True, True, False])
+        quote = client.post(path + "quote/", {**request, "product_id": "alpine"}, format="json",
+                            HTTP_IDEMPOTENCY_KEY="party-quote").json()
+        command = {
+            "quote_id": quote["id"], "company": "Vysota", "contact": "Irene",
+            "email": "school@severny-veter.test", "address": "Kazan", "confirmed": True,
+        }
+        response = client.post(path + "submit/", command, format="json", HTTP_IDEMPOTENCY_KEY="create-proposal")
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(response.json()["mail"]["status"], "queued")
+        self.assertEqual(client.post(path + "submit/", command, format="json",
+                                     HTTP_IDEMPOTENCY_KEY="create-proposal").json(), response.json())
+        with tenant_atomic(self.context):
+            event = OutboxEvent.objects.get(event_type="demo.proposal_mail")
+        dispatch(event)
+        result = client.post(path + "status/", {"number": "KP-205", "quote_id": quote["id"]}, format="json").json()
+        self.assertEqual(result["mail"]["status"], "sent")
+        self.assertEqual(result["lead"]["proposal"], "KP-205")
+        self.assertEqual(client.get(result["proposal"]["downloadPath"]).status_code, 200)
+
+    @patch.dict("os.environ", {"CHATBALLS_LOCAL_NORTH_WIND": "1"})
     def test_document_is_accessible_after_mail_failure_and_expires_on_reinstall(self):
         state = initial_state()
         quote = prepare_party_quote(state, product_id="alpine", quantities={"L": 4}, city="kazan")
@@ -136,3 +176,36 @@ class NorthWindProposalDocumentTests(DomainEventTestBase):
         with tenant_atomic(self.context):
             DemoDataset.objects.filter(pk=dataset.pk).update(generation=uuid4(), shop_state=initial_state())
         self.assertEqual(client.get(path).status_code, 404)
+
+
+class NorthWindExchangeStorefrontTests(DomainEventTestBase):
+    @patch.dict("os.environ", {"CHATBALLS_LOCAL_NORTH_WIND": "1"})
+    def test_order_scope_and_replayed_exchange_preserve_stock_across_visits(self):
+        state = {**initial_state(), "storefront": {"widgetKey": "test", "language": "en"}}
+        with tenant_atomic(self.context):
+            dataset = DemoDataset.objects.create(
+                organization=self.organization, status=DemoDatasetStatus.INSTALLED,
+                generation=uuid4(), shop_state=state,
+            )
+        path = "/api/v1/demo-local/storefront/exchange/"
+        token = unquote(visit_path(dataset, "andrey-after-purchase").split("#")[1])
+        client = TenantAPIClient(HTTP_AUTHORIZATION=f"Bearer {token}")
+        denied = client.post(path + "order/", {"order_number": 2043, "customer": "pavel"}, format="json")
+        self.assertEqual(denied.json(), {"code": "order_unavailable"})
+        ready = client.post(path + "order/", {"order_number": 2044}, format="json").json()
+        self.assertEqual(ready["shipment"]["pickup"]["address"], "12 Sportivnaya Street, Kazan")
+        delayed = client.post(path + "order/", {"order_number": 2045}, format="json").json()
+        self.assertEqual(delayed["shipment"], {"number": 2045, "status": "delayed"})
+        request = {"order_number": 2042, "target_size": "XL"}
+        availability = client.post(path + "options/", request, format="json").json()
+        self.assertEqual([point["available"] for point in availability["pickupPoints"]], [0, 2])
+        request.update(store="gorki", confirmed=True)
+        result = client.post(path + "submit/", request, format="json", HTTP_IDEMPOTENCY_KEY="exchange")
+        self.assertEqual(result.status_code, 200, result.data)
+        self.assertEqual(client.post(path + "submit/", request, format="json",
+                                     HTTP_IDEMPOTENCY_KEY="exchange").json(), result.json())
+        order = client.post(path + "order/", {"order_number": 2042}, format="json").json()
+        self.assertEqual(order["exchange"], result.json())
+        with tenant_atomic(self.context):
+            dataset.refresh_from_db()
+            self.assertEqual(dataset.shop_state["stock"]["alpine:XL:gorki"], 1)

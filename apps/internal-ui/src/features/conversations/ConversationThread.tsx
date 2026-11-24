@@ -72,6 +72,7 @@ export function ConversationThread({ controlMode, dialog, detail, feed, isOwner 
               <span className="is-status" style={{ color: status.color }}>{status.label}{dialog.waitLabel ? ` · ${dialog.waitLabel}` : ""}</span>
               <i />
               <span><em style={{ background: channel.color }} />{channel.label}</span>
+              {detail?.hasAgent && <><i /><span className="is-agent" style={{ color: dialog.agentColor }}><Icon name="robot" size={13} />{dialog.agentName}</span></>}
             </p>
           </div>
         </div>

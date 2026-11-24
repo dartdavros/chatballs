@@ -52,7 +52,7 @@ class DemoProposalDocumentView(View):
                 raise Http404()
         except (signing.BadSignature, ShopError, KeyError) as error:
             raise Http404() from error
-        language = state.get("historyLanguage", "ru")
+        language = state.get("historyLanguage") or state.get("storefront", {}).get("language", "ru")
         response = HttpResponse(render_proposal(proposal, language))
         response["Cache-Control"] = "private, no-store"
         response["Referrer-Policy"] = "no-referrer"

@@ -15,7 +15,7 @@ from chatballs.tenancy.database import tenant_atomic
 from chatballs.webchat.consent import require_current_consent
 from chatballs.webchat.models import WebSession
 from chatballs.webchat.proactive_models import SiteEventLaunch
-from chatballs.webchat.site_event_config import EVENT_KEY, configured_scenario
+from chatballs.webchat.site_event_config import EVENT_KEY, active_rule, configured_scenario
 from chatballs.webchat.site_event_schema import reject, validate_data, validate_envelope
 
 
@@ -35,11 +35,11 @@ def receive(tenant, session, envelope, *, origin):
         if not available_session(session, origin):
             raise ExecutionDenied("permission")
         require_current_consent(session)
-        rule = session.connection.config.get("siteEvent")
-        if not rule or not rule["active"] or envelope["name"] != rule["name"]:
+        rule = active_rule(session.connection, "name", envelope["name"])
+        if not rule:
             reject()
         validate_data(rule["schema"], envelope["data"])
-        scenario = configured_scenario(session.connection)
+        scenario = configured_scenario(session.connection, rule)
         existing = SiteEventLaunch.objects.filter(session=session, rule_id=rule["id"]).first()
         if existing:
             return existing, False

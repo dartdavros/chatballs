@@ -28,12 +28,13 @@ export type WebConfig = {
   fields?: FieldSchema[];
   preChat?: PreChatConfig;
   siteEvent?: import("@chatballs/contracts").PublicSiteEventRule | null;
+  siteEvents?: import("@chatballs/contracts").PublicSiteEventRule[];
 };
 
 // kind: "" — текст, "contact_request" — виджет рисует форму телефона,
 // "contact" — клиент поделился номером, "VOICE" — голосовое (см. hasAudio).
 export type WebAttachment = { name: string; contentType: string; size: number; available: boolean };
-export type WebMessage = MessagePresentation & { id: number; author: "client" | "ai" | "operator" | "system"; authorName?: string; hasAuthorAvatar?: boolean; systemEvent?: "specialist_joined" | ""; kind?: string; text: string; createdAt: string; durationSeconds?: number; hasAudio?: boolean; attachment?: WebAttachment };
+export type WebMessage = MessagePresentation & { id: number; author: "client" | "ai" | "operator" | "system"; authorName?: string; hasAuthorAvatar?: boolean; systemEvent?: "specialist_joined" | ""; kind?: string; text: string; createdAt: string; durationSeconds?: number; hasAudio?: boolean; attachment?: WebAttachment; northWindRecommendations?: import("./north-wind/PickupRecommendations").PickupRecommendationSet; northWindDocument?: import("./north-wind/ChatProposalDocument").ChatProposal };
 
 // Приглашение/состояние онлайн-звонка (SPEC-CHATBALLS-0013).
 export type CallKind = "AUDIO" | "VIDEO";
@@ -62,7 +63,7 @@ export type CallStateEnvelope = { call: CallInfo; iceServers: RTCIceServer[] };
 // вопрос, и без этого признака клиент не понимал бы, ждать ему или нет.
 export type Poll = { playback?: { playbackAvailable: boolean; ttsRevision: string; consentCurrent?: boolean }; autonomous?: boolean; state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[]; ratingRequests?: import("./ratings/api").RatingRequest[]; call?: CallInfo | null; reset?: boolean; thinking?: boolean; siteEvent?: import("@chatballs/contracts").SiteEventState | null };
 
-export type WidgetEntry = { widgetKey?: string; channel?: string };
+export type WidgetEntry = { widgetKey?: string; channel?: string; demoEntry?: string };
 
 function entryQuery(entry: WidgetEntry): string {
   if (entry.widgetKey) return `widgetKey=${encodeURIComponent(entry.widgetKey)}`;

@@ -14,6 +14,7 @@ from chatballs.webchat.consent import has_current_consent
 from chatballs.webchat.models import WebChatWidgetStatus, WebSession
 from chatballs.webchat.proactive_models import SiteEventLaunch
 from chatballs.webchat.sessions import origin_allowed
+from chatballs.webchat.site_event_config import active_rule
 
 
 def available_session(session, origin):
@@ -60,11 +61,11 @@ def current(tenant, claim, *, allow_sent=False):
         pk=claim.session_id, organization=organization).first()
     if session is None:
         raise ExecutionDenied("site_event_suppressed")
-    rule = session.connection.config.get("siteEvent")
+    rule = active_rule(session.connection, "id", claim.rule_id)
     agent = getattr(session.connection.channel, "ai_agent", None)
     if (claim.state not in ({"pending", "running", "sent"} if allow_sent else {"pending", "running"})
             or not available_session(session, claim.origin) or not has_current_consent(session)
-            or not rule or not rule["active"] or rule["id"] != claim.rule_id or digest_rule(rule) != claim.rule_digest
+            or not rule or digest_rule(rule) != claim.rule_digest
             or claim.mode_version != organization.operation_mode_version
             or getattr(agent, "pk", None) != claim.agent_id_snapshot
             or configuration_version(agent) != claim.agent_version

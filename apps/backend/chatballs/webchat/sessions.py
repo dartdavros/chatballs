@@ -73,6 +73,20 @@ def issue_session(
     integration = widget.integration
     if integration is None or integration.channel_id is None:
         return None
+    if integration.config.get("northWindExecutorWidget"):
+        return None
+    from chatballs.identity.demo_seed.north_wind.storefront_artifacts import storefront_artifacts
+
+    with storefront_artifacts(integration) as current:
+        if not current:
+            return None
+        return _create_session(
+            context=context, widget=widget, integration=integration, fields=fields,
+            pre_chat_fields=pre_chat_fields, consent_version=consent_version,
+        )
+
+
+def _create_session(*, context, widget, integration, fields, pre_chat_fields, consent_version):
     if consent_version is not None:
         from chatballs.webchat.consent import validate_acceptance
 

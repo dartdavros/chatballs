@@ -4,13 +4,7 @@ import json
 
 from chatballs.identity.demo_models import DemoDataset
 from chatballs.identity.demo_seed.north_wind.delivery import change_delivery
-from chatballs.identity.demo_seed.north_wind.delivery_adapter import (
-    ADAPTER,
-    EVENT,
-    HEADER,
-    ORDER_NUMBER,
-    sign,
-)
+from chatballs.identity.demo_seed.north_wind.delivery_adapter import ADAPTER, EVENT, HEADER, ORDER_NUMBER, sign
 from chatballs.identity.demo_seed.north_wind.state import ShopError, execute_write
 from chatballs.identity.demo_seed.registry import recording
 from chatballs.integrations.automation_events.ingress import receive

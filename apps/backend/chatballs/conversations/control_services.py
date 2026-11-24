@@ -101,16 +101,23 @@ def release_to_ai(*, context: TenantContext, conversation_id: int) -> Conversati
     _require_open(conversation)
     if not autonomous_allowed(conversation.channel, organization=organization, connection=conversation.connection):
         raise ClaimError(t("channels.no_active_agent"))
+    return return_locked_to_ai(conversation)
+
+
+def return_locked_to_ai(conversation: Conversation) -> Conversation:
+    from chatballs.identity.demo_seed.north_wind.executor_scope import uses_external_execution
+
     conversation.control_mode = ControlMode.AI
     conversation.assigned_operator = None
     conversation.expected_responder = ExpectedResponder.AI
     leave_queue(conversation)
     conversation.save(update_fields=["control_mode", "assigned_operator", "expected_responder", "waiting_since"])
+    agent = getattr(conversation.channel, "ai_agent", None)
     Message.objects.create(
         conversation=conversation,
         author_type=MessageAuthor.SYSTEM,
         system_event=SystemEvent.RETURNED_TO_AI,
-        system_params={"externalExecution": getattr(getattr(conversation.channel, "ai_agent", None), "execution_mode", "builtin") == "external"},
+        system_params={"externalExecution": bool(agent and uses_external_execution(agent, conversation=conversation))},
         text="",
     )
     return conversation

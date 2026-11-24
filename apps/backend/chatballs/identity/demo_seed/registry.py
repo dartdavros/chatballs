@@ -33,6 +33,7 @@ from chatballs.conversations.quality.models import QualityCriteriaVersion, Quali
 from chatballs.identity.demo_models import DemoDataset, DemoRecord
 from chatballs.identity.demo_seed.conflicts import assert_demo_references
 from chatballs.identity.demo_seed.north_wind.executor_artifacts import release_executor_upload
+from chatballs.identity.demo_seed.north_wind.site_artifacts import register_site_artifacts
 from chatballs.identity.demo_seed.waiting_notices import register_waiting_notices
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
@@ -260,6 +261,7 @@ def remove_records(dataset: DemoDataset) -> int:
     from chatballs.identity.demo_seed.north_wind.support_artifacts import register_thread_history
 
     register_delivery_runs(dataset)
+    register_site_artifacts(dataset)
     register_executor_artifacts(dataset)
     register_waiting_notices(dataset)
     register_thread_history(dataset)

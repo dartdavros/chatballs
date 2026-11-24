@@ -78,7 +78,7 @@ def _deliver(state, *, number):
     recipient = draft["recipient"]
     result = settle_mail(state, proposal_number=number, status=_MAIL_BRANCHES.get(recipient, "sent"))
     if result["status"] == "sent":
-        language = state.get("historyLanguage", "ru")
+        language = state.get("storefront", {}).get("language", "ru")
         state["channelDeliveries"].append({
             "channel": "EMAIL", "kind": "proposal", "recipient": recipient, "state": "sent", "proposal": number,
             "subject": t("north_wind.proposal_title", language=language, number=number),
@@ -95,7 +95,7 @@ def _record_crm_reference(tenant, dataset, proposal):
     url = reverse("organization-demo-crm-record", kwargs={
         "organization_public_id": tenant.organization.public_id, "generation": dataset.generation, "reference": crm_id,
     })
-    language = dataset.shop_state.get("historyLanguage", "ru")
+    language = dataset.shop_state.get("storefront", {}).get("language", "ru")
     ConversationComment.objects.create(
         organization_id=tenant.organization_id, conversation_id=binding["conversationId"], author_id=binding["managerId"],
         audience="INTERNAL", text=t("north_wind.proposal_crm_note", language=language, number=crm_id, url=url),

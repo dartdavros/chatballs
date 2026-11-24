@@ -3,6 +3,7 @@
 import re
 
 from chatballs.ai.provider.demo import HANDOFF_TOKEN, _language_of
+from chatballs.ai.provider.demo_pickup_context import pickup_context
 from chatballs.ai.provider.demo_shop_turn import HTTP_STATUS, _call, _turn_results
 from chatballs.i18n import t
 from chatballs.identity.demo_seed.north_wind.catalog import PRODUCTS, available_choices
@@ -20,7 +21,14 @@ def plan_catalog_turn(messages, tools):
     question_index = next((index for index in reversed(range(len(messages)))
                            if messages[index].role == "user"), None)
     if question_index is None:
-        return None
+        pickup = pickup_context(messages)
+        if pickup is None:
+            return None
+        question_index, criteria = pickup
+        language = "ru" if any("русский" in message.content.lower() for message in messages[question_index + 1:]
+                                  if message.role == "system") else "en"
+        return _answer(messages[question_index + 1:], SEARCH,
+                       {key: criteria[key] for key in ("size", "budget")}, language)
     question = messages[question_index].content
     product = next(
         (key for key, item in PRODUCTS.items() if item["name"].casefold() in question.casefold()),

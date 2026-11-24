@@ -21,6 +21,10 @@ class WebchatSiteEventView(_PublicSession):
             if session is None or not session_available(session, request):
                 return Response({"detail": t("webchat.session_not_found")}, status=401)
             envelope = {key: value for key, value in request.data.items() if key != "hostOrigin"}
+            from chatballs.identity.demo_seed.north_wind.loyalty_site import allow_loyalty_event
+
+            if not allow_loyalty_event(request, session.widget, envelope.get("name")):
+                return Response({"detail": t("site_events.invalid")}, status=400)
             try:
                 claim, created = receive(tenant, session, envelope, origin=host_origin(request))
             except ValidationError:

@@ -4,13 +4,7 @@ from hashlib import sha256
 
 from chatballs.conversations.inbound_media import _store_attachment
 from chatballs.conversations.ingest import ingest_inbound
-from chatballs.conversations.models import (
-    ConnectionIdentity,
-    Conversation,
-    Message,
-    MessageAuthor,
-    MessageKind,
-)
+from chatballs.conversations.models import ConnectionIdentity, Conversation, Message, MessageAuthor, MessageKind
 from chatballs.conversations.transports.base import InboundFile, InboundMessage
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
 from chatballs.identity.demo_seed import manifest

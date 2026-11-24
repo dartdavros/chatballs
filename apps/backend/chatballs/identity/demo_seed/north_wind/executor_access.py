@@ -8,11 +8,7 @@ from rest_framework.views import APIView
 from chatballs.ai.external_agents.auth import key_hash
 from chatballs.ai.external_agents.config_models import ExternalAgentConnection
 from chatballs.identity.demo_models import DemoDataset
-from chatballs.identity.demo_seed.north_wind.executor_scope import (
-    active_executor,
-    inbound_key,
-    read_executor_key,
-)
+from chatballs.identity.demo_seed.north_wind.executor_scope import active_executor, inbound_key, read_executor_key
 from chatballs.identity.demo_seed.north_wind.local_access import issue_local_read_token
 from chatballs.tenancy.database import tenant_atomic
 

@@ -1,11 +1,37 @@
 {
   "schemaVersion": 1,
+  "pickupSite": {
+    "name": "Подбор костюма",
+    "invitation": "Помочь выбрать горнолыжный костюм?"
+  },
+  "loyaltySite": {
+    "name": "Бонусы",
+    "invitation": "Андрей, напомню, что у вас есть 1 500 бонусов. Рассказать, как их можно использовать?"
+  },
+  "storefrontWidget": {
+    "title": "Чат на сайте",
+    "greeting": "Здравствуйте! Поможем выбрать горнолыжный костюм, проверить наличие и оформить самовывоз.",
+    "quick_replies": [
+      "Подобрать костюм",
+      "Узнать статус заказа",
+      "Записаться на примерку"
+    ]
+  },
+  "supportWidget": {
+    "title": "Чат поддержки",
+    "greeting": "Здравствуйте! Поможем узнать статус заказа и оформить обмен.",
+    "quick_replies": [
+      "Статус заказа",
+      "Обмен размера",
+      "Повреждённый товар"
+    ]
+  },
   "externalExecutor": {
     "service": "Локальный исполнитель"
   },
   "entries": [
     {"key":"pickup","customer":"Мария Волкова","responsible":"svetlana","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["pickup","order"]},
-    {"key":"loyalty","customer":"Михаил Серов","responsible":"svetlana","group":"operators","priority":"LOW","awaiting":"CUSTOMER","labels":["loyalty","order"]},
+    {"key":"loyalty","customer":"Андрей Ковалёв","responsible":"svetlana","group":"operators","priority":"LOW","awaiting":"CUSTOMER","labels":["loyalty","order"]},
     {"key":"fitting","customer":"Ольга Миронова","responsible":"anna","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["fitting"]},
     {"key":"exchange","customer":"Андрей Ковалёв","orderNumber":2042,"responsible":"anna","group":"support","priority":"HIGH","awaiting":"OPERATOR","labels":["exchange","defect"]},
     {"key":"proposal","customer":"Горнолыжная школа «Высота»","responsible":"elena","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["wholesale","mail"]},

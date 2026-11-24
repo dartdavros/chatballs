@@ -12,7 +12,7 @@ from chatballs.webchat.models import WebChatWidget
 from chatballs.webchat.pre_chat import pre_chat_payload
 from chatballs.webchat.recording_configuration import public_recording
 from chatballs.webchat.sessions import origin_allowed
-from chatballs.webchat.site_event_config import public_rule
+from chatballs.webchat.site_event_config import public_rule, public_rules
 
 
 def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str) -> dict:
@@ -76,6 +76,7 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         "fields": cfg.get("fields") or [],
         "preChat": pre_chat_payload(integration.config),
         "siteEvent": public_rule(integration),
+        **({"siteEvents": public_rules(integration)} if integration.config.get("northWindSiteEvents") else {}),
         "fallback": fallback,
     }
 

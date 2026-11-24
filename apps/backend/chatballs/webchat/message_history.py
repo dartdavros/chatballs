@@ -43,6 +43,9 @@ def _thread_is_gone(session: WebSession, since: int) -> bool:
 
 
 def messages_payload(session: WebSession, since: int) -> dict:
+    from chatballs.identity.demo_seed.north_wind.pickup_recommendations import (
+        recommendation_payload,
+    )
     from chatballs.webchat.proactive_status import status as site_status
     site_event = site_status(session)
     conversation = (
@@ -102,6 +105,9 @@ def messages_payload(session: WebSession, since: int) -> dict:
                 "systemEvent": "specialist_joined" if m.system_event == SystemEvent.SPECIALIST_JOINED else "",
                 "text": customer_message_text(m),
                 **presentation_payload(m, public=True),
+                **recommendation_payload(session, m),
+                **({"northWindDocument": m.ai_delivery["northWindDocument"]}
+                   if m.author_type == "AI" and m.ai_delivery.get("northWindDocument") else {}),
                 "createdAt": m.created_at.isoformat(),
                 "durationSeconds": m.duration_seconds,
                 "hasAudio": bool(m.audio),

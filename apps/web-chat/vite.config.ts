@@ -12,12 +12,12 @@ export default defineConfig(({ mode }) => {
     base: "/chat/",
     build: {
       rollupOptions: {
-        // Два entry: панель чата (iframe) и клиентская страница звонка
-        // (nginx: /calls/<token> → /chat/call.html).
+        // Панель чата и отдельные клиентские страницы.
         input: {
           main: "index.html",
           call: "call.html",
           rating: "rating.html",
+          northWind: "north-wind.html",
         },
       },
     },

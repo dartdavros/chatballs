@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Северный ветер · Обмен заказа</title>
+  <style>
+    :root { color-scheme: light; font: 15px/1.5 system-ui, sans-serif; color: #172538; background: #f1f4f7; }
+    * { box-sizing: border-box; }
+    body { max-width: 1180px; padding: 28px 20px 56px; margin: auto; }
+    h1, h2, h3, p, dl { margin: 0; }
+    header p, .details, .status p, .frame-note { color: #526476; }
+    nav { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0 30px; }
+    nav a { color: #195a87; }
+    .frame { border: 1px solid #d8e2ec; border-radius: 12px; margin-bottom: 24px; background: #fff; overflow: hidden; }
+    .frame > header { padding: 16px 24px; border-bottom: 1px solid #e1e8ee; font-weight: 750; color: #123653; }
+    .frame-note { padding: 16px 24px; border-top: 1px solid #e1e8ee; background: #fafbfd; }
+    .content { padding: 26px 24px; }
+    .content h2 { margin-bottom: 18px; font-size: 25px; }
+    .columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, 0.56fr); gap: 20px; align-items: start; }
+    .panel { border: 1px solid #dde7ef; padding: 17px; border-radius: 8px; min-width: 0; }
+    .panel h3 { margin-bottom: 8px; }
+    .order { display: flex; align-items: center; gap: 15px; margin-bottom: 16px; }
+    .order img { display: block; width: 82px; height: 85px; object-fit: contain; background: #eaf0f5; border-radius: 5px; }
+    fieldset { margin: 0 0 13px; padding: 0; border: 0; }
+    legend { margin: 0 0 8px; font-weight: 650; }
+    .stores { display: grid; gap: 8px; }
+    .stores label { display: flex; gap: 10px; align-items: flex-start; padding: 11px; border: 1px solid #d7e2eb; border-radius: 7px; }
+    .stores label:has(input:checked) { border-color: #2a6d9c; }
+    input { accent-color: #21618e; }
+    .status { border: 1px solid #dce7ef; border-radius: 7px; background: #eff5fa; padding: 14px; }
+    .status.warning { border-color: #ebd6b4; background: #fff7e8; }
+    .status.success { border-color: #cfe5d9; background: #eef7f1; }
+    .status p { margin-top: 5px; }
+    dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin-bottom: 15px; }
+    dd { margin: 0; text-align: right; font-weight: 650; }
+    button { background: #226794; border: 0; border-radius: 6px; color: #fff; padding: 10px 15px; font: inherit; font-weight: 650; }
+    button[aria-disabled="true"] { opacity: .55; }
+    .action { margin-top: 13px; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (max-width: 680px) {
+      body { padding: 16px 12px 32px; }
+      .columns { grid-template-columns: minmax(0, 1fr); }
+      .content, .frame > header, .frame-note { padding-left: 16px; padding-right: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Северный ветер · Обмен заказа</h1>
+    <p>Утверждённое дополнение к витрине ski-store. Действия на этой странице показывают состояния макета.</p>
+  </header>
+  <nav aria-label="Состояния обмена">
+    <a href="#lookup">Проверка заказа</a>
+    <a href="#select">Размер и магазин</a>
+    <a href="#confirm">Подтверждение</a>
+    <a href="#result">Результат</a>
+    <a href="#alternatives">Нет размера или обмен недоступен</a>
+    <a href="#defect">Фото и передача сотруднику</a>
+  </nav>
+  <section class="frame" id="lookup">
+    <header>СЕВЕРНЫЙ ВЕТЕР</header>
+    <div class="content">
+      <h2>Заказ № 2042</h2>
+      <div class="columns">
+        <div class="panel">
+          <h3>Ваш заказ</h3>
+          <div class="order"><img src="../../../apps/web-chat/public/north-wind/images/alpine.png" alt="Alpine Pro">
+            <div><strong>Alpine Pro</strong><p class="details">Горнолыжный костюм · размер L</p></div></div>
+          <div class="status success"><strong>Заказ получен</strong><p>Для обмена выберите другой размер.</p></div>
+          <button class="action" type="button">Обменять размер</button>
+        </div>
+        <div class="panel">
+          <h3>Проверка доступа</h3>
+          <div class="status warning"><strong>Не удалось подтвердить принадлежность заказа</strong>
+            <p>Войдите в профиль покупателя или обратитесь в чат.</p></div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-note">При отсутствии подтверждения состав заказа, адрес и статус скрыты. Для готового к выдаче заказа показываются адрес и время работы точки. Для задержки показывается срок, только если служба доставки его подтвердила.</p>
+  </section>
+  <section class="frame" id="select">
+    <header>СЕВЕРНЫЙ ВЕТЕР</header>
+    <div class="content">
+      <h2>Обмен размера</h2>
+      <div class="columns">
+        <div class="panel">
+          <h3>Alpine Pro · заказ № 2042</h3>
+          <fieldset><legend>Новый размер</legend>
+            <label><input type="radio" name="size" value="M"> M</label>
+            <label><input type="radio" name="size" value="XL" checked> XL</label>
+          </fieldset>
+          <fieldset class="stores"><legend>Магазин обмена</legend>
+            <label><input type="radio" name="store" disabled><span>Центр<br><small>Размера XL сейчас нет</small></span></label>
+            <label><input type="radio" name="store" checked><span>Горки<br><small>Казань, проспект Победы, 28</small></span></label>
+          </fieldset>
+        </div>
+        <div class="panel">
+          <h3>Условия обмена</h3>
+          <p>Обмен размера доступен в течение 14 дней после получения. Возьмите с собой исходный комплект.</p>
+          <button class="action" type="button">Проверить заявку</button>
+        </div>
+      </div>
+    </div>
+    <p class="frame-note">Проверка условий и остатков относится к выбранному заказу. Остатки обеих точек обновляются при смене размера.</p>
+  </section>
+  <section class="frame" id="confirm">
+    <header>СЕВЕРНЫЙ ВЕТЕР</header>
+    <div class="content">
+      <h2>Подтверждение обмена</h2>
+      <div class="columns">
+        <div class="panel"><h3>Проверьте заявку</h3>
+          <dl><dt>Заказ</dt><dd>№ 2042</dd><dt>Модель</dt><dd>Alpine Pro</dd><dt>Размер</dt><dd>L → XL</dd><dt>Магазин</dt><dd>Горки</dd></dl>
+          <button type="button">Подтвердить заявку</button>
+        </div>
+        <div class="panel"><h3>Ход операции</h3>
+          <div class="status"><strong>Проверяем актуальный остаток</strong><p>Состав заявки остаётся виден во время проверки.</p></div>
+          <button class="action" type="button" aria-disabled="true">Подтверждаем…</button>
+        </div>
+      </div>
+    </div>
+    <p class="frame-note">При изменившихся условиях снова показывается выбор размера и магазина. Возврат оплаты проходит отдельным штатным действием сотрудника с подтверждением.</p>
+  </section>
+  <section class="frame" id="result">
+    <header>СЕВЕРНЫЙ ВЕТЕР</header>
+    <div class="content">
+      <h2>Заявка на обмен</h2>
+      <div class="status success"><strong>Заявка № 1 создана</strong><p>Статус · Заявка принята</p></div>
+      <p class="action">Alpine Pro · L → XL · Горки · Казань, проспект Победы, 28</p>
+    </div>
+    <p class="frame-note">Номер и статус берутся из mock-магазина. Повтор команды возвращает исходный номер заявки.</p>
+  </section>
+  <section class="frame" id="alternatives">
+    <header>СЕВЕРНЫЙ ВЕТЕР</header>
+    <div class="content">
+      <h2>Проверьте условия обмена</h2>
+      <div class="columns">
+        <div class="status warning"><strong>Размера XL нет в наличии</strong><p>Выберите другой магазин или обратитесь к сотруднику за альтернативой.</p></div>
+        <div class="status warning"><strong>Стандартный обмен недоступен</strong><p>Срок обмена истёк. Сотрудник проверит, чем можно помочь.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="frame" id="defect">
+    <header>СЕВЕРНЫЙ ВЕТЕР</header>
+    <div class="content">
+      <h2>Помощь с повреждённым товаром</h2>
+      <div class="status"><strong>Отправьте фото в чате</strong><p>Сотрудник получит фото и контекст заказа в этом же диалоге.</p></div>
+      <button class="action" type="button">Открыть чат</button>
+    </div>
+    <p class="frame-note">Фото, передача и ответ проходят в штатном виджете и ленте Chatballs. В мессенджере и почте поддерживаются текстовые статусы.</p>
+  </section>
+</body>
+</html>

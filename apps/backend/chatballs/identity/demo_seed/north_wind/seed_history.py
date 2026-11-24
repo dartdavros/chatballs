@@ -25,12 +25,12 @@ from chatballs.identity.demo_seed.north_wind.wholesale import quote_party
 from chatballs.tenancy.context import TenantContext
 
 
-def append_history(refs, conversation, rows, at, templates):
+def append_history(refs, conversation, rows, at, templates, *, cadence):
     contact_message = conversation.messages.filter(author_type=MessageAuthor.CONTACT).first()
     timestamp = at
     dates = history_dates(refs.language, at)
     for index, (speaker, text) in enumerate(rows, start=2):
-        timestamp = at + timedelta(seconds=index * 10)
+        timestamp = at + cadence * index
         if speaker == "checkpoint":
             continue
         if speaker == "snapshot":

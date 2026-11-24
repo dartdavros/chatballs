@@ -2,6 +2,7 @@
 
 from chatballs.identity.operation_modes import lock_organization
 from chatballs.webchat.proactive_models import SiteEventLaunch
+from chatballs.webchat.site_event_config import active_rules
 
 
 def status(session):
@@ -31,8 +32,7 @@ def cancel(session):
     organization = lock_organization(session.organization_id)
     integration = Integration.objects.select_for_update(of=("self",)).select_related("channel__ai_agent").get(
         pk=session.connection_id, organization_id=session.organization_id)
-    rule = integration.config.get("siteEvent")
-    if rule:
+    for rule in active_rules(integration):
         agent = getattr(integration.channel, "ai_agent", None)
         # Also fence an ingress request that has not acquired the organization
         # lock yet. No payload, receipt, Run or conversation is manufactured.

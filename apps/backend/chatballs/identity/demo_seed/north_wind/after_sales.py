@@ -48,12 +48,12 @@ def request_exchange(state, *, customer, order_number, target_size, confirmed, r
         raise ShopError({"staff_review": "staff_review", "out_of_stock": "stock_unavailable"}.get(
             options["outcome"], "exchange_unavailable",
         ))
-    order_key = f"{customer}:{order_number}"
+    order = find_order(state, customer=customer, order_number=order_number)
+    order_key = f"{order['customer']}:{order_number}"
     if order_key in state["exchanges"]:
         raise ShopError("exchange_already_requested")
     if order_key in state.get("refunds", {}):
         raise ShopError("exchange_unavailable")
-    order = find_order(state, customer=customer, order_number=order_number)
     point = store or order["store"]
     if point not in STORES:
         raise ShopError("unknown_pickup_point")
@@ -73,7 +73,7 @@ def refund_payment(state, *, customer, order_number, confirmed):
     if confirmed is not True:
         raise ShopError("confirmation_required")
     order = find_order(state, customer=customer, order_number=order_number)
-    key = f"{customer}:{order_number}"
+    key = f"{order['customer']}:{order_number}"
     refunds = state.setdefault("refunds", {})
     if order["status"] != "collected" or key in state["exchanges"] or key in refunds:
         raise ShopError("refund_unavailable")
@@ -81,6 +81,6 @@ def refund_payment(state, *, customer, order_number, confirmed):
         "number": len(refunds) + 1, "orderNumber": order_number, "amount": order["total"],
         "bonusesRestored": order["bonusSpent"], "status": "refunded",
     }
-    state["balances"][customer] += payment["bonusesRestored"]
+    state["balances"][order["customer"]] += payment["bonusesRestored"]
     refunds[key] = payment
     return payment

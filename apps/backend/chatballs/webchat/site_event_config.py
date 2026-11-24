@@ -33,10 +33,24 @@ def normalize_rule(config, previous):
         "scenario": scenario, "active": raw.get("active", False)}
 
 
-def configured_scenario(integration):
+def active_rules(integration):
+    from chatballs.identity.demo_seed.north_wind.local_access import local_demo_enabled
+
+    config = integration.config
+    rules = [config.get("siteEvent")]
+    if config.get("northWindStorefront") and local_demo_enabled():
+        rules.extend(config.get("northWindSiteEvents", ()))
+    return [rule for rule in rules if rule and rule.get("active")]
+
+
+def active_rule(integration, field, value):
+    return next((rule for rule in active_rules(integration) if rule[field] == value), None)
+
+
+def configured_scenario(integration, rule=None):
     from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 
-    rule = integration.config.get("siteEvent")
+    rule = rule or integration.config.get("siteEvent")
     if not rule:
         return None
     scenario = ScenarioDefinition.objects.filter(organization_id=integration.organization_id,
@@ -54,3 +68,7 @@ def public_rule(integration):
     if not rule or not rule.get("active"):
         return None
     return {key: rule[key] for key in ("name", "schema", "invitation")}
+
+
+def public_rules(integration):
+    return [{key: rule[key] for key in ("name", "schema", "invitation")} for rule in active_rules(integration)]

@@ -13,19 +13,19 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from chatballs.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeAttachment
+from chatballs.conversations.domain_event_models import ConversationEvent
 from chatballs.conversations.models import (
     Contact,
     Conversation,
     Message,
 )
+from chatballs.conversations.support_filters import ReportFilters
+from chatballs.conversations.support_report import calculate_support_report
 from chatballs.events.handlers import dispatch
 from chatballs.events.models import OutboxEvent
-from chatballs.identity.demo_history_assertions import (
-    verify_north_wind_histories,
-    verify_weekly_reporting,
-)
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus, DemoRecord
 from chatballs.identity.demo_seed import service
+from chatballs.identity.demo_seed.north_wind.appointments import MOSCOW
 from chatballs.identity.group_models import EmployeeGroup
 from chatballs.identity.instance_settings import default_language
 from chatballs.identity.models import HumanUser, Organization, OrganizationMembership
@@ -151,8 +151,8 @@ class DemoDatasetTests(TestCase):
         self.assertFalse(conversations.filter(priority="NONE").exists())
         self.assertEqual(conversations.filter(labels__isnull=False).distinct().count(), 10)
         self.assertFalse(conversations.filter(created_at__lt=timezone.now() - timedelta(hours=1)).exists())
-        verify_north_wind_histories(self, conversations)
-        verify_weekly_reporting(self, conversations)
+        self._verify_north_wind_histories(conversations)
+        self._verify_weekly_reporting(conversations)
         self.assertEqual(WebChatWidget.objects.filter(organization=organization).count(), 2)
         elena = HumanUser.objects.get(email="e.kuznetsova@severny-veter.test")
         self.assertTrue(elena.avatar, "фото сотрудника из медиа демо")
@@ -160,6 +160,70 @@ class DemoDatasetTests(TestCase):
         self.assertEqual(maria_contact_fields(organization), ("Заказ 4471 — горнолыжный костюм. Постоянный клиент с августа, предпочитает Telegram.", "", ""))
         maria = Contact.objects.get(organization=organization, name="Мария Соколова")
         self.assertTrue(maria.avatar_url.startswith("/api/v1/demo-media/avatars/"))
+
+    def _verify_weekly_reporting(self, conversations):
+        today = timezone.now().astimezone(MOSCOW).replace(hour=0, minute=0, second=0, microsecond=0)
+        events = ConversationEvent.objects.filter(conversation__in=conversations)
+        self.assertFalse(events.filter(event_type="CLOSED").exists())
+        member = OrganizationMembership.objects.get(organization=self.organization, user=self.owner)
+        context = TenantContext.for_membership(member)
+        for age in range(7):
+            start = today - timedelta(days=age)
+            filters = ReportFilters(start, start + timedelta(days=1), str(MOSCOW))
+            report = calculate_support_report(context=context, filters=filters)
+            counts = report["totals"]["observedCounts"]
+            self.assertGreater(counts["accepted"], 0)
+            if age:
+                self.assertGreater(counts["completed"], 0)
+                self.assertEqual(report["details"], [])
+            else:
+                self.assertEqual(counts["completed"], 0)
+
+    def _verify_north_wind_histories(self, conversations):
+        outcomes = {
+            "pickup": "Заказ № 2048", "loyalty": "Остаток бонусов: 750",
+            "fitting": "Запись № 2043", "exchange": "Замену получил",
+            "proposal": "Коммерческое предложение № KP-205", "team": "Замена подошла",
+            "delivery": "Пока подожду", "formatted": "Заберу после работы",
+            "formatted-external": "Новая дата пока не подтверждена", "exchange-refund": "вижу возврат",
+        }
+        self.assertEqual(conversations.values("contact_id").distinct().order_by().count(), len(outcomes))
+        loyalty = conversations.get(external_chat_id__endswith=":loyalty")
+        exchange = conversations.get(external_chat_id__endswith=":exchange")
+        self.assertEqual(loyalty.contact.name, exchange.contact.name)
+        self.assertTrue(loyalty.messages.filter(text__contains="Заказ № 2042").exists())
+        for key, outcome in outcomes.items():
+            with self.subTest(scenario=key):
+                conversation = conversations.get(external_chat_id__endswith=f":{key}")
+                self.assertTrue(conversation.messages.filter(text__contains=outcome).exists())
+                self.assertGreaterEqual(conversation.messages.filter(author_type__in=("CONTACT", "OPERATOR", "AI")).count(), 4)
+                self.assertTrue(conversation.messages.filter(format_version=1).exists())
+                self.assertTrue(conversation.messages.filter(system_event="tool_called", system_params__tool__startswith="MCP").exists())
+                self.assertFalse(conversation.messages.filter(text__contains="north-wind.html").exists())
+        formatted = conversations.get(external_chat_id__endswith=":formatted")
+        self.assertEqual(formatted.messages.filter(format_version=1).count(), 2)
+        self.assertEqual(formatted.messages.filter(system_event="tool_called").count(), 4)
+        proposal = conversations.get(external_chat_id__endswith=":proposal")
+        self.assertTrue(proposal.messages.filter(attachment_name="KP-205.html").exists())
+        self.assertTrue(proposal.comments.filter(text__contains="CRM-305").exists())
+        for key, count in (("pickup", 4), ("loyalty", 2), ("fitting", 4), ("proposal", 5)):
+            dialogue = conversations.get(external_chat_id__endswith=f":{key}")
+            cards = dialogue.messages.filter(format_version=1)
+            self.assertEqual(cards.count(), count)
+            self.assertTrue(all(card.template_snapshot.get("skillId") for card in cards))
+        self._verify_reusable_card()
+
+    def _verify_reusable_card(self):
+        from chatballs.ai.skill_templates.engine import render_template
+        from chatballs.ai.skills_models import Skill
+
+        skill = Skill.objects.get(organization=self.organization, name="Подбор и покупка")
+        template = next(item for item in skill.templates if item["name"] == "Карточка товара")
+        example = {"title": "Другая модель", "rows": [{"label": "Цена", "value": "35 000 ₽"}]}
+        preview = render_template(template, example, language="ru")
+        self.assertIn("Другая модель", preview["contentHtml"])
+        self.assertIn("Цена: 35 000 ₽", preview["text"])
+        self.assertTrue(skill.assignments.filter(agent__channel__organization=self.organization).exists())
 
     def test_remove_restores_the_exact_state_before_install(self) -> None:
         before = _counts()
