@@ -17,6 +17,7 @@ from chatballs.ai.external_agents.config_models import ExternalAgentConnection
 from chatballs.ai.external_agents.config_policy import invalid
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.demo_seed.north_wind.executor_scope import MARKER, is_local_executor
 from chatballs.integrations.models import Integration, ServiceConnectionSettings
 from chatballs.integrations.service_connections.binding import dump_credentials
 from chatballs.integrations.service_connections.services import _clean_name
@@ -58,9 +59,10 @@ def set_feature(context, body):
 
                 # Retain configuration and allowlists; old checks and acknowledgements
                 # cannot authorize a newly enabled execution generation.
-                ExternalAgentConnection.objects.filter(organization=organization).update(checked_at=None)
-                ExternalAgentBinding.objects.filter(organization=organization).update(policy_accepted=False)
-                Integration.objects.filter(external_execution__organization=organization).update(
+                connections = ExternalAgentConnection.objects.filter(organization=organization).exclude(integration__config__has_key=MARKER)
+                connections.update(checked_at=None)
+                ExternalAgentBinding.objects.filter(connection__in=connections).update(policy_accepted=False)
+                Integration.objects.filter(external_execution__in=connections).update(
                     status="UNCHECKED", last_error_code="", last_error="", last_checked_at=None)
             audit(context, organization, "external.feature_changed")
     return settings(context)
@@ -110,8 +112,12 @@ def update_connection(context, connection_id, body):
     access_values(body, new=False)
     with tenant_atomic(context):
         organization = owner(context)
-        require_enabled(organization)
         row = connection_for(context, connection_id, lock=True)
+        if is_local_executor(row):
+            if set(body) != {"enabled"}:
+                invalid()
+        else:
+            require_enabled(organization)
         service = row.integration.service_settings
         if "name" in body:
             row.integration.name = _clean_name(context, body["name"], exclude_id=row.integration_id)

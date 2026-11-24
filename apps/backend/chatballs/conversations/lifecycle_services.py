@@ -13,12 +13,14 @@ from chatballs.conversations.models import (
 )
 from chatballs.conversations.queue import leave_queue
 from chatballs.conversations.realtime import notify_conversation_changed
+from chatballs.identity.demo_seed.north_wind.support_artifacts import record_demo_support_operation
 from chatballs.notifications.models import (
     Notification,
 )
 from chatballs.tenancy.context import TenantContext
 
 
+@record_demo_support_operation
 @transaction.atomic
 @domain_operation("CLOSED", guard=require_independent_operation)
 def close_conversation(*, context: TenantContext, conversation_id: int) -> Conversation:

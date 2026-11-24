@@ -15,6 +15,7 @@ from django.db import models
 class DemoDatasetStatus(models.TextChoices):
     INSTALLING = "INSTALLING", "Устанавливается"
     INSTALLED = "INSTALLED", "Установлены"
+    REINSTALLING = "REINSTALLING", "Переустанавливаются"
     REMOVING = "REMOVING", "Удаляются"
     FAILED = "FAILED", "Ошибка"
 
@@ -35,6 +36,11 @@ class DemoDataset(models.Model):
     error = models.TextField(blank=True, default="")
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
+    generation = models.UUIDField(null=True, editable=False)
+    reinstall_request_id = models.UUIDField(null=True, editable=False)
+    reinstall_finished_at = models.DateTimeField(null=True, editable=False)
+    reinstall_error = models.CharField(max_length=32, blank=True, default="")
+    shop_state = models.JSONField(default=dict, editable=False)
 
     class Meta:
         db_table = "identity_demodataset"
@@ -53,6 +59,8 @@ class DemoRecord(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="+")
     object_id = models.CharField(max_length=64)
     sequence = models.PositiveBigIntegerField()
+    # NULL identifies older registry entries created exclusively by the seed.
+    protect_from_inactivity = models.BooleanField(null=True, default=False)
 
     class Meta:
         db_table = "identity_demorecord"

@@ -85,13 +85,14 @@ def turn_pseudonymizer(conversation: Conversation | None) -> Pseudonymizer:
 
 
 def plan_query_embedding(
-    *, agent: AIAgent, query: str, pseudonymizer: Pseudonymizer, assistance: bool = False
+    *, agent: AIAgent, query: str, pseudonymizer: Pseudonymizer, assistance: bool = False,
+    conversation: Conversation | None = None,
 ) -> EmbeddingJob | None:
     """Шаг в транзакции: чем считать вектор вопроса. None — считать нечем.
 
     Вопрос уходит в модель эмбеддингов под маской той же карты хода.
     """
-    require_builtin(agent, assistance=assistance)
+    require_builtin(agent, assistance=assistance, conversation=conversation)
     if not query.strip():
         return None
     try:
@@ -152,7 +153,7 @@ def plan_chat(
     она собирается из контакта диалога. Данные клиента для привязанных
     параметров инструментов (`client`) по умолчанию тоже берутся из диалога.
     """
-    require_builtin(agent, assistance=assistance)
+    require_builtin(agent, assistance=assistance, conversation=conversation)
     if pseudonymizer is None:
         pseudonymizer = turn_pseudonymizer(conversation)
     embedding = embedding or QueryEmbedding()

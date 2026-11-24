@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "name": "Product selection and purchase",
+      "description": "Cards for products, purchase terms and confirmed orders.",
+      "instruction": "Use verified data. Distinguish preliminary terms from confirmed operations.",
+      "agents": ["consultant"],
+      "templates": {
+        "product": {"name":"Product card","purpose":"Show the specifications, price and stock for a product."},
+        "order_review": {"name":"Order review","purpose":"Show purchase terms before creating the order."},
+        "order_result": {"name":"Confirmed order","purpose":"Show a confirmed order, payment and pickup details."}
+      }
+    },
+    {
+      "name": "Fitting appointments",
+      "description": "Service, free slots, review and confirmed booking.",
+      "instruction": "Use verified data. Distinguish preliminary terms from confirmed operations.",
+      "agents": ["consultant"],
+      "templates": {
+        "service": {"name":"Service card","purpose":"Show service contents, duration and price."},
+        "slots": {"name":"Available slots","purpose":"List available times by branch and time zone."},
+        "booking_review": {"name":"Booking review","purpose":"Show booking terms before confirmation."},
+        "booking_result": {"name":"Confirmed appointment","purpose":"Show the reference and details of a confirmed appointment."}
+      }
+    },
+    {
+      "name": "Commercial proposals",
+      "description": "Wholesale quote and result with independent email status.",
+      "instruction": "Use verified data. Distinguish preliminary terms from confirmed operations.",
+      "agents": ["consultant"],
+      "templates": {
+        "proposal_review": {"name":"Proposal review","purpose":"Show the quote, delivery and contacts before confirmation."},
+        "proposal_result": {"name":"Proposal result","purpose":"Show the document, total, manager and actual email status."}
+      }
+    },
+    {
+      "name": "Order support",
+      "description": "Exchange, refund and delivery check results.",
+      "instruction": "Use verified data. Distinguish preliminary terms from confirmed operations.",
+      "agents": ["support"],
+      "templates": {
+        "exchange_result": {"name":"Order support result","purpose":"Show current exchange status or a confirmed refund."},
+        "delivery_result": {"name":"Delivery check","purpose":"Show shipment status, confirmed deadline and next step."}
+      }
+    }
+  ],
+  "dialogues": {
+    "pickup": [
+      ["agent","Hello! I can help you choose a size L ski suit in Kazan. What weather are you shopping for and what is your budget?"],
+      ["customer","For cold days on the slopes. Up to RUB 35,000."],
+      ["tool","MCP · Catalogue search"],
+      ["agent","Here are three suits in your size. I’d pick Glacier Warm for cold weather: it has the thickest insulation."],
+      ["snapshot",{"template":"product","title":"Glacier Warm","rows":[["Price","RUB 32,900"],["Material","100% polyester"],["Insulation","160 g/m²"],["Membrane","20,000 mm"],["Availability","Size L"]],"photo":"glacier"}],
+      ["snapshot",{"template":"product","title":"Alpine Pro","rows":[["Price","RUB 29,900"],["Material","92% polyester, 8% elastane"],["Insulation","120 g/m²"],["Membrane","15,000 mm"],["Availability","Size L"]],"photo":"alpine"}],
+      ["snapshot",{"template":"product","title":"Ridge Motion","rows":[["Price","RUB 27,900"],["Material","90% polyester, 10% elastane"],["Insulation","100 g/m²"],["Membrane","15,000 mm"],["Availability","Size L"]],"photo":"ridge"}],
+      ["customer","What is the Glacier Warm outer fabric?"],
+      ["tool","MCP · Glacier Warm specifications"],
+      ["agent","Polyester shell, 20,000 mm membrane and 160 g/m² insulation."],
+      ["customer","Is this size in stock in Kazan?"],
+      ["tool","MCP · Stock by shop"],
+      ["agent","Centre has three and Gorki has two. Where would you like to collect it?"],
+      ["customer","At Gorki. My phone is +7 900 000-00-42."],
+      ["agent","Please check: Glacier Warm, size L, RUB 32,900. Pickup at Gorki in Kazan. Is that right?"],
+      ["customer","Yes, place the order."],
+      ["tool","HTTP · Create order and reserve stock"],
+      ["agent","Order 2048 is ready. Your suit is set aside at Gorki. Pay when you collect it."],
+      ["snapshot",{"template":"order_result","title":"Order 2048","rows":[["Model","Glacier Warm"],["Size","L"],["Price","RUB 32,900"],["Total due","RUB 32,900"],["Pickup","Gorki, 28 Pobedy Avenue, Kazan"],["Phone","+7 900 000-00-42"]],"badge":"Order placed","detail":"One suit. Pay on collection."}]
+    ],
+    "loyalty": [
+      ["tool","HTTP · Customer profile, price and points"],
+      ["tool","MCP · Alpine Pro specifications"],
+      ["agent","Mikhail, you have 1,500 points. Would you like to know how to use them?"],
+      ["customer","Yes, how can I use them?"],
+      ["agent","Choose your redemption at checkout. One point is worth one ruble. The limit is 20% of your personal price and the balance available. The 10% discount is already applied: Alpine Pro is RUB 26,910 instead of RUB 29,900."],
+      ["customer","I’ll take Alpine Pro in size L. I’ll add it to the cart."],
+      ["agent","The suit is in your cart at the personal price of RUB 26,910. Choose a pickup shop."],
+      ["agent","At checkout, choose separately how many points to redeem."],
+      ["customer","I’ll collect at Centre and redeem 750 points."],
+      ["tool","HTTP · Calculate redemption without changing balance"],
+      ["agent","Check the size, shop and total. If all the terms are right, place the order."],
+      ["snapshot",{"template":"order_review","title":"Review the order","rows":[["Model","Alpine Pro"],["Size","L"],["Price","RUB 26,910"],["Points","750 points"],["Total due","RUB 26,160"],["Pickup","Centre, 12 Sportivnaya Street, Kazan"],["Phone","+7 900 000-00-64"],["Balance before confirmation","1,500 points"]],"detail":"One suit. Pay on collection."}],
+      ["customer","Everything is right. Place the order."],
+      ["tool","HTTP · Check price, stock and redemption"],
+      ["agent","The order has been placed. Your suit will be waiting at the selected shop. The card has the details."],
+      ["snapshot",{"template":"order_result","title":"Order 2050","rows":[["Model","Alpine Pro"],["Size","L"],["Price","RUB 26,910"],["Points","750 points"],["Total due","RUB 26,160"],["Pickup","Centre, 12 Sportivnaya Street, Kazan"],["Phone","+7 900 000-00-64"],["Points balance","750 points"]],"badge":"Order placed","detail":"One suit. Pay on collection."}]
+    ],
+    "fitting": [
+      ["agent","I can book a fitting. Which models would you like to try and which day works?"],
+      ["customer","Alpine Pro and Ridge Motion. Tomorrow morning at Gorki."],
+      ["tool","MCP · Specifications of models for the fitting"],
+      ["tool","HTTP · Quote the fitting"],
+      ["agent","Here are the terms. The card shows what’s included, price and duration."],
+      ["snapshot",{"template":"service","title":"Two-model fitting with an adviser","rows":[["Models","Alpine Pro and Ridge Motion"],["Duration","45 minutes"],["Price","Free"],["Quote valid for","20 minutes"]]}],
+      ["tool","HTTP · Calendar at both shops"],
+      ["agent","I’ve checked the calendar. Which slot suits you?"],
+      ["snapshot",{"template":"slots","title":"Available times on {fitting_date}","rows":[["Gorki","10:00, 11:00"],["Centre","10:30, 12:00"]],"detail":"Moscow time."}],
+      ["customer","10:00 at Gorki."],
+      ["agent","Please give me your name and phone number."],
+      ["customer","Olga Mironova. Phone +7 900 000-00-17."],
+      ["agent","Please check the models, shop, date and time. Is that right?"],
+      ["snapshot",{"template":"booking_review","title":"Review the booking","rows":[["Models","Alpine Pro and Ridge Motion"],["Date","{fitting_date}"],["Time","10:00 Moscow time · 45 minutes"],["Shop","Gorki, 28 Pobedy Avenue, Kazan"],["Customer","Olga Mironova"],["Phone","+7 900 000-00-17"],["Price","Free"]]}],
+      ["customer","Yes, please book the fitting."],
+      ["tool","HTTP · Final slot check"],
+      ["agent","You’re booked. The card has your booking number, time and shop address. See you soon!"],
+      ["snapshot",{"template":"booking_result","title":"Booking 2043","rows":[["Models","Alpine Pro and Ridge Motion"],["Date","{fitting_date}"],["Time","10:00 Moscow time · 45 minutes"],["Shop","Gorki, 28 Pobedy Avenue, Kazan"],["Customer","Olga Mironova"],["Phone","+7 900 000-00-17"],["Price","Free"]],"badge":"Booking confirmed"}]
+    ],
+    "exchange": [
+      ["customer","Where is order 2042?"],
+      ["tool","MCP · Verify order ownership"],
+      ["tool","HTTP · Pickup status"],
+      ["agent","Your order is ready at Centre. You can collect it until 21:00 today. Would you like the address?"],
+      ["customer","Yes, please. Can I exchange it if the size doesn’t fit?"],
+      ["tool","HTTP · Exchange policy and XL stock"],
+      ["agent","Centre is at 12 Sportivnaya Street, Kazan. You have 14 days from collection to exchange sizes. Centre has no XL, but Gorki has two."],
+      ["customer","I’ve now collected the order. Please exchange L for XL at Gorki."],
+      ["tool","MCP · Confirm collection"],
+      ["agent","Your exchange period is still open. Do you confirm an Alpine Pro exchange from L to XL at Gorki?"],
+      ["customer","Yes, I confirm."],
+      ["tool","HTTP · Create exchange request"],
+      ["snapshot",{"template":"exchange_result","title":"Exchange request 1","rows":[["Order","2042"],["Model","Alpine Pro"],["Size","L → XL"],["Store","Gorki, 28 Pobedy Avenue, Kazan"],["Status","Accepted, XL reserved"]]}],
+      ["customer","I noticed the zipper was damaged at home. Here is a photo."],
+      ["photo",""],
+      ["agent","I’ll pass the photo, order details and request 1 to a specialist who can help."],
+      ["handoff",""],
+      ["claimed",""],
+      ["anna","I have the photo, order 2042 and request 1. Gorki agreed to replace it. You can come by 22:00 today with no extra charge."],
+      ["customer","I collected the replacement and XL fits."]
+    ],
+    "proposal": [
+      ["agent","I can help equip your instructors. How many suits do you need, in which sizes, and what is your budget per suit?"],
+      ["customer","Twenty suits, up to RUB 35,000 each. Six M, ten L and four XL. Delivery to Kazan."],
+      ["tool","MCP · Find models for the instructors"],
+      ["tool","HTTP · Wholesale catalogue and stock"],
+      ["agent","I found three models within your budget. The cards show fabric, insulation, membrane, price and stock for the batch."],
+      ["snapshot",{"template":"product","title":"Alpine Pro","rows":[["Price","RUB 29,900"],["Material","92% polyester, 8% elastane"],["Insulation","120 g/m²"],["Membrane","15 000 mm"],["Stock M / L / XL","12 / 14 / 10"]],"photo":"alpine","badge":"Stock covers all 20"}],
+      ["snapshot",{"template":"product","title":"Ridge Motion","rows":[["Price","RUB 27,900"],["Material","90% polyester, 10% elastane"],["Insulation","100 g/m²"],["Membrane","15 000 mm"],["Stock M / L / XL","12 / 14 / 10"]],"photo":"ridge","badge":"Stock covers all 20"}],
+      ["snapshot",{"template":"product","title":"Peak Expert","rows":[["Price","RUB 34,900"],["Material","94% nylon, 6% elastane"],["Insulation","120 g/m²"],["Membrane","20 000 mm"],["Stock M / L / XL","12 / 14 / 0"]],"photo":"peak","badge":"Insufficient XL stock"}],
+      ["customer","Alpine Pro will do. Please email me the proposal."],
+      ["tool","HTTP · Check the batch and delivery"],
+      ["agent","Alpine Pro is in stock in all required sizes. Please share the company name, your name, delivery address and work email."],
+      ["customer","Vysota Ski School, Valeria Belyaeva. 12 Sportivnaya Street, Kazan. Email school@severny-veter.test."],
+      ["agent","The quote is ready. Please check the model, quantities, delivery and email. Shall I send it?"],
+      ["snapshot",{"template":"proposal_review","title":"Quote before sending","rows":[["Model","Alpine Pro"],["Sizes and quantity","M × 6, L × 10, XL × 4"],["List price","RUB 29,900 × 20"],["5% discount","RUB 29,900"],["Price per suit","RUB 28,405"],["Discounted batch","RUB 568,100"],["City","Kazan"],["Delivery","RUB 3,500"],["Delivery time","3 days"],["Total","RUB 571,600"],["Company and contact","Vysota Ski School · Valeria Belyaeva"],["Delivery address","12 Sportivnaya Street, Kazan"],["Email","school@severny-veter.test"]],"detail":"The quote is valid for 20 minutes and the proposal for 7 days."}],
+      ["customer","Yes, the address is correct. Send it."],
+      ["tool","HTTP · Create proposal and CRM lead"],
+      ["agent","The proposal is ready and the lead has been saved. The manager can see the items, quote and your contact details."],
+      ["tool","HTTP · Check email delivery"],
+      ["agent","The email was sent to the confirmed address. The document is available with the card."],
+      ["snapshot",{"template":"proposal_result","title":"Commercial proposal KP-205","rows":[["Model","Alpine Pro"],["Sizes and quantity","M × 6, L × 10, XL × 4"],["List price","RUB 29,900 × 20"],["5% discount","RUB 29,900"],["Price per suit","RUB 28,405"],["Discounted batch","RUB 568,100"],["City","Kazan"],["Delivery","RUB 3,500"],["Delivery time","3 days"],["Total","RUB 571,600"],["Valid until","{valid_until}"],["Company and contact","Vysota Ski School · Valeria Belyaeva"],["CRM lead","CRM-305"],["Manager","Elena Kuznetsova"],["Email","school@severny-veter.test"],["Email status","Email sent"]],"badge":"Proposal prepared","document":{"number":"KP-205","model":"alpine","city":"kazan","company":"Vysota Ski School","contact":"Valeria Belyaeva","email":"school@severny-veter.test","address":"12 Sportivnaya Street, Kazan"}}],
+      ["note","Lead CRM-305 is assigned to Elena Kuznetsova. KP-205, 20 Alpine Pro suits, RUB 571,600. Sending is confirmed; receipt has not been confirmed."]
+    ],
+    "team": [
+      ["tool","MCP · Ridge Motion specifications"],
+      ["anna","I have the photo. I’m bringing in Svetlana to review the damage and Igor at Gorki to check replacement stock."],
+      ["joined","svetlana"],
+      ["joined","igor"],
+      ["igor","Gorki has a suit in your size. I’ll hold it until 11:00 tomorrow."],
+      ["anna","Replacement confirmed. The Gorki shop is at 28 Pobedy Avenue, Kazan. Bring the damaged suit. There’s no extra charge."],
+      ["snapshot",{"template":"exchange_result","title":"Replacement ready for pickup","rows":[["Model","Ridge Motion"],["Size","M"],["Shop","28 Pobedy Avenue, Gorki, Kazan"],["Held until","Tomorrow at 11:00"],["Extra charge","RUB 0"]],"detail":"Bring the suit with the damaged zip."}],
+      ["customer","The replacement fits and I picked it up before my trip. Thank you!"]
+    ],
+    "delivery": [
+      ["customer","Order 2043 is late. Will it arrive before the weekend?"],
+      ["tool","MCP · Verify order contents"],
+      ["tool","HTTP · Current shipment status"],
+      ["agent","The shipment is delayed. The carrier has not confirmed a date."],
+      ["system","Carrier event: Shipment delayed. The scenario checked the promised date, raised the priority, moved the conversation to Delivery and flagged it for follow-up."],
+      ["system","The repeated event was recognised and did not create another run."],
+      ["system","Scheduled check: the status had not changed and the promised date had passed."],
+      ["note","Elena started a manual check from the conversation actions and approved sending the request to the carrier."],
+      ["tool","HTTP · Request a delivery update"],
+      ["system","The carrier accepted the request. Waiting for a reply."],
+      ["snapshot",{"template":"delivery_result","title":"Delivery check for order 2043","rows":[["Current status","Delayed"],["Confirmed date","Not confirmed"],["Next step","Keep the follow-up flag and offer pickup"]]}],
+      ["elena","There’s no confirmed date yet. I can offer pickup at Gorki if you need the suit for the weekend."],
+      ["customer","I’ll wait for now. Please let me know when you have a confirmed date."]
+    ],
+    "formatted": [
+      ["customer","Could you check order 2044? I think I picked a Summit Light in size L."],
+      ["tool","MCP · Verified order contents"],
+      ["tool","HTTP · Check order status"],
+      ["card-order","2044"],
+      ["customer","That’s the one. Can I pick it up at Center after work?"],
+      ["tool","MCP · Verify the pickup point"],
+      ["tool","HTTP · Order status"],
+      ["status-order",{"order":"2044","status":"Ready for pickup at Center","eta":"Today until 21:00"}],
+      ["customer","I’ll pick it up after work. Thank you!"]
+    ],
+    "formatted-external": [
+      ["customer","Order 2045 hasn’t arrived. Can you check which suit was shipped and whether there’s a new date?"],
+      ["system","The local executor accepted the request."],
+      ["tool","MCP · Contents of order 2045"],
+      ["card-order","2045"],
+      ["customer","That’s the right suit. Has a new date been confirmed?"],
+      ["tool","MCP · Match the shipment to the order"],
+      ["tool","HTTP · Check shipment status"],
+      ["system","The local executor completed the check."],
+      ["status-order",{"order":"2045","status":"Delayed. A new date has not been confirmed."}],
+      ["customer","Understood, I’ll wait for confirmation from the carrier."]
+    ],
+    "exchange-refund": [
+      ["customer","I returned the Freeride Flow from order 2047 at Center. When will I get my money back?"],
+      ["tool","MCP · Verify order and payment"],
+      ["agent","A separate refund of RUB 23,310 is available. Please confirm."],
+      ["customer","I confirm the RUB 23,310 refund."],
+      ["tool","HTTP · Refund confirmed payment"],
+      ["snapshot",{"template":"exchange_result","title":"Refund 1","rows":[["Order","2047"],["Amount","RUB 23,310"],["Status","Payment refunded"]]}],
+      ["customer","Thanks, I can see the refund in my banking app."]
+    ]
+  }
+}

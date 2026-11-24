@@ -65,13 +65,15 @@ def fetch(
     ``ToolResponseRejected``; сетевые ошибки и истёкший срок (``OSError``,
     ``http.client.HTTPException``) уходят вызывающему как есть.
     """
+    from chatballs.identity.demo_seed.north_wind.local_transport import local_demo_target
     from chatballs.identity.instance_settings import tools_private_network_allowed
 
     allow_private = tools_private_network_allowed()
     deadline = time.monotonic() + timeout
     headers = dict(headers or {})
     for _ in range(MAX_REDIRECTS + 1):
-        target = check_tool_url(url, allow_private=allow_private)
+        local_target = local_demo_target(url, headers)
+        target = local_target or check_tool_url(url, allow_private=allow_private)
         connection = _connection(target, _remaining(deadline))
         try:
             connection.request(
@@ -81,6 +83,8 @@ def fetch(
             location = response.headers.get("Location") if response.status in _REDIRECT_STATUSES else None
             if not location:
                 return _accept(response, connection, deadline, url)
+            if local_target is not None:
+                raise ToolResponseRejected("demo_redirect")
             status = response.status
         finally:
             connection.close()

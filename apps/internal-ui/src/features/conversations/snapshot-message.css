@@ -6,3 +6,13 @@
 .sales-message-content.has-snapshot { width: 340px; min-width: 0; }
 .sales-message-content.has-snapshot > div { padding: 8px; }
 .sales-message-content.has-snapshot > small { display: flex; flex-wrap: wrap; justify-content: flex-end; }
+
+.conversation-snapshot-photo {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.conversation-snapshot-photo .file-message.is-image { margin: 0; }
+.conversation-snapshot-photo .file-message-image { width: 100%; max-width: none; background: var(--n-9); }
+.conversation-snapshot-photo .file-message-image img { object-fit: contain; }
+.conversation-snapshot-photo .prepared-message-frame { border-radius: 12px; }

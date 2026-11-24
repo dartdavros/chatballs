@@ -26,6 +26,16 @@ def failure_outcome(error, *, sending):
 
 def deliver_message(integration, outgoing):
     config = integration.config
+    if config.get("demoSeed"):
+        from chatballs.identity.demo_seed.north_wind.mock_channels import deliver
+
+        plain = outgoing.get_body(preferencelist=("plain",))
+        accepted = deliver(
+            integration, kind="email", target=str(outgoing.get("To", "")),
+            text=plain.get_content() if plain is not None else "",
+            subject=str(outgoing.get("Subject", "")), key=str(outgoing.get("Message-ID", "")),
+        )
+        return MailOutcome("SMTP_ACCEPTED") if accepted else MailOutcome("FAILED", "CONNECTION_UNAVAILABLE")
     if not integration.is_active or not config.get("smtp_host") or not integration.secret:
         return MailOutcome("FAILED", "CONNECTION_UNAVAILABLE")
     client, sending = None, False

@@ -13,6 +13,7 @@ from chatballs.conversations.template_send_guard import (
     UnfilledTemplateVariables,
     require_filled_text,
 )
+from chatballs.identity.demo_seed.north_wind.support_artifacts import record_demo_support_operation
 
 
 def reply_conversation(context, conversation_id):
@@ -21,6 +22,7 @@ def reply_conversation(context, conversation_id):
     return conversation
 
 
+@record_demo_support_operation
 def send_text_reply(*, context, conversation_id, text, operation_id=None,
                     suggestion_id=None, suggestion_key=None, request=None):
     try:

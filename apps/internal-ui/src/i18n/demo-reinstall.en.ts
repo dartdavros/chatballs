@@ -1,0 +1,15 @@
+export const demoReinstallEn = {
+  "settings.demo_north_wind": "North Wind",
+  "settings.demo_north_wind_contents": "Conversations, employees, agents and workflows for a ski clothing store.",
+  "settings.demo_reinstall": "Reinstall",
+  "settings.demo_reinstall_title": "Reinstall demo data?",
+  "settings.demo_reinstall_description": "Changes to demo conversations and data created during the demo will be deleted. The North Wind store and its scenarios will return to their starting state. Your working data will be kept.",
+  "settings.demo_reinstall_running": "Reinstalling demo data",
+  "settings.demo_reinstall_preparing": "Preparing the store data and conversations.",
+  "settings.demo_reinstall_succeeded": "Demo data reinstalled",
+  "settings.demo_reinstall_repeat": "You can run the store scenarios again from the start.",
+  "settings.demo_reinstall_failed": "Could not reinstall demo data",
+  "settings.demo_reinstall_retry": "The store data could not be loaded. The current demo is available. Try again.",
+  "settings.demo_reinstall_conflict": "A working record links to the demo. Remove the link before trying again.",
+  "settings.demo_reinstall_conflict_conversation": "A working conversation links to the demo. Open the conversation and remove the link before trying again.",
+};

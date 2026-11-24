@@ -11,6 +11,7 @@ from chatballs.conversations.participant_notifications import queue_specialist_n
 from chatballs.conversations.realtime import notify_conversation_changed
 from chatballs.conversations.selectors import conversation_for_context
 from chatballs.i18n import t
+from chatballs.identity.demo_seed.north_wind.support_artifacts import record_demo_support_operation
 from chatballs.identity.models import Organization, OrganizationMembership
 
 
@@ -54,6 +55,7 @@ def _notify(conversation):
     ))
 
 
+@record_demo_support_operation
 @transaction.atomic
 def add_participant(*, context, conversation_id, membership_id, reason):
     reason = _reason(reason)
@@ -76,6 +78,7 @@ def add_participant(*, context, conversation_id, membership_id, reason):
     return participant, True
 
 
+@record_demo_support_operation
 @transaction.atomic
 def remove_participant(*, context, conversation_id, participant_id, reason):
     reason = _reason(reason)

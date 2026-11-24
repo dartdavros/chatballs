@@ -156,8 +156,13 @@ def run_native(tenant, token):
         run_io(tenant, token)
         return True
     try:
+        from chatballs.identity.demo_seed.north_wind.delivery_artifacts import (
+            record_native_delivery,
+        )
+
         with tenant_atomic(tenant), transaction.atomic():
-            _execute(tenant, token)
+            with record_native_delivery(tenant, token.run_id, key):
+                _execute(tenant, token)
     except Exception as error:
         # A local failure rolled back the domain change and its receipt.
         # Values/exceptions may contain internal text: only a safe code persists.

@@ -10,9 +10,10 @@ from chatballs.ai.external_agents.request_models import ExternalAgentRequest
 from chatballs.ai.external_agents.send_guards import cancel_handoff
 from chatballs.ai.external_agents.state import lock_conversation
 from chatballs.ai.provider.base import ProviderRejected
+from chatballs.identity.demo_seed.north_wind.executor_transport import send_external
 from chatballs.integrations.adapters.auth import BearerAuth, OutboundRequest
 from chatballs.integrations.adapters.contracts import Limits
-from chatballs.integrations.adapters.transport import GuardedTransport, TransportError
+from chatballs.integrations.adapters.transport import TransportError
 from chatballs.integrations.outbound import OutboundUrlRejected
 from chatballs.integrations.service_connections.binding import load_credentials
 from chatballs.tenancy.database import tenant_atomic
@@ -42,7 +43,7 @@ def cancel_due(context, conversation_id):
     for connection_id, versions, plan in plans:
         try:
             with execution_guard(partial(cancel_allowed, context, connection_id, versions)):
-                GuardedTransport().send(plan, limits=Limits(timeout_seconds=10, max_response_bytes=262144,
+                send_external(plan, limits=Limits(timeout_seconds=10, max_response_bytes=262144,
                                                            max_file_bytes=262144))
         except (ProviderRejected, TransportError, OutboundUrlRejected, OSError, http.client.HTTPException):
             pass

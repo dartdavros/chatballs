@@ -1,26 +1,29 @@
-"""Демо-набор «Ателье Норд»: полное покрытие моделей, точное удаление, API."""
+"""Демо-набор «Северный ветер»: покрытие моделей, точное удаление, API."""
 
 from __future__ import annotations
 
 import json
 import re
 import tempfile
+from datetime import timedelta
 
 from django.apps import apps
 from django.db import models
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from chatballs.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeAttachment
 from chatballs.conversations.models import (
     Contact,
-    ContactFieldValue,
     Conversation,
-    LifecycleState,
     Message,
-    MessageKind,
 )
 from chatballs.events.handlers import dispatch
 from chatballs.events.models import OutboxEvent
+from chatballs.identity.demo_history_assertions import (
+    verify_north_wind_histories,
+    verify_weekly_reporting,
+)
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus, DemoRecord
 from chatballs.identity.demo_seed import service
 from chatballs.identity.group_models import EmployeeGroup
@@ -30,6 +33,7 @@ from chatballs.identity.setup import SetupInput, complete_setup
 from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.testing import TenantAPIClient as APIClient
+from chatballs.webchat.models import WebChatWidget
 
 _MEDIA_ROOT = tempfile.mkdtemp(prefix="hub-demo-media-")
 
@@ -55,6 +59,17 @@ COVERAGE_EXEMPT = {
     ("updates", "updatestate"),
 }
 COVERAGE_EXEMPT_APPS = {"platform", "events"}
+# Always available in prepared histories. Live sessions, optional local integrations,
+# commands and technical state have their own feature tests.
+PREPARED_MODELS = {
+    "identity.HumanUser", "identity.OrganizationMembership", "identity.EmployeeGroup",
+    "channels.Channel", "integrations.Integration", "webchat.WebChatWidget",
+    "ai.AIAgent", "ai.Knowledge", "ai.Skill", "ai.AgentSkill", "ai.LlmInvocation",
+    "conversations.Contact", "conversations.ConnectionIdentity", "conversations.ContactMerge",
+    "conversations.ConversationLabel", "conversations.ReplyTemplate", "conversations.Conversation",
+    "conversations.Message", "conversations.ConversationEvent", "conversations.ConversationComment",
+    "conversations.ConversationParticipant", "notifications.Notification",
+}
 
 
 def _covered_models() -> list[type[models.Model]]:
@@ -95,13 +110,13 @@ class DemoDatasetTests(TestCase):
             )
             return service.install(context=self.context, dataset=dataset)
 
-    def test_install_covers_every_model_of_the_system(self) -> None:
+    def test_install_covers_prepared_demo_models(self) -> None:
         before = _counts()
         dataset = self._install()
 
         self.assertEqual(dataset.status, DemoDatasetStatus.INSTALLED, dataset.error)
         after = _counts()
-        missing = sorted(label for label, count in after.items() if count <= before[label])
+        missing = sorted(label for label in PREPARED_MODELS if after[label] <= before[label])
         self.assertEqual(missing, [], f"demo dataset leaves models empty: {missing}")
         self.assertGreater(dataset.records_count, 200)
 
@@ -113,9 +128,9 @@ class DemoDatasetTests(TestCase):
         memberships = OrganizationMembership.objects.filter(organization=organization)
         self.assertEqual(memberships.count(), 7)
         self.assertEqual(memberships.filter(blocked_at__isnull=False).count(), 1)
-        anna = HumanUser.objects.get(email="a.kim@atelie-nord.ru")
+        anna = HumanUser.objects.get(email="a.kim@severny-veter.test")
         self.assertTrue(anna.check_password("Chatballs-Demo-2026"))
-        self.assertTrue(HumanUser.objects.get(email="k.volkov@atelie-nord.ru").totp_enabled)
+        self.assertTrue(HumanUser.objects.get(email="k.volkov@severny-veter.test").totp_enabled)
 
         # Агенты: активный с AI, черновик без AI, выключенный канал.
         agents = AIAgent.objects.filter(channel__organization=organization)
@@ -127,34 +142,24 @@ class DemoDatasetTests(TestCase):
         self.assertGreaterEqual(KnowledgeAttachment.objects.filter(organization=organization).count(), 3)
         self.assertEqual(Knowledge.objects.filter(organization=organization, is_enabled=False).count(), 1)
 
-        # Диалоги во всех состояниях (кадры A–H).
+        # Все диалоги набора относятся к готовым историям «Северного ветра».
         conversations = Conversation.objects.filter(organization=organization)
-        self.assertEqual(conversations.filter(lifecycle=LifecycleState.SPAM).count(), 1)
-        self.assertGreaterEqual(conversations.filter(lifecycle=LifecycleState.CLOSED).count(), 3)
-        self.assertEqual(conversations.filter(archived_at__isnull=False).count(), 5)
-        self.assertEqual(conversations.filter(control_mode="PAUSED", lifecycle="OPEN").count(), 1)
-        # Основной список — ровно семь диалогов кадров (архив и спам скрыты).
-        self.assertEqual(conversations.filter(archived_at__isnull=True).exclude(lifecycle=LifecycleState.SPAM).count(), 7)
-        self.assertTrue(conversations.filter(assigned_operator=anna).exists())
-        elena = HumanUser.objects.get(email="e.kuznetsova@atelie-nord.ru")
+        self.assertEqual(conversations.count(), 10)
+        self.assertFalse(conversations.exclude(external_chat_id__startswith="north-wind:").exists())
+        self.assertEqual(conversations.filter(control_mode="HUMAN", lifecycle="OPEN").count(), 10)
+        self.assertEqual(conversations.filter(assigned_operator__isnull=False, group__isnull=False).count(), 10)
+        self.assertFalse(conversations.filter(priority="NONE").exists())
+        self.assertEqual(conversations.filter(labels__isnull=False).distinct().count(), 10)
+        self.assertFalse(conversations.filter(created_at__lt=timezone.now() - timedelta(hours=1)).exists())
+        verify_north_wind_histories(self, conversations)
+        verify_weekly_reporting(self, conversations)
+        self.assertEqual(WebChatWidget.objects.filter(organization=organization).count(), 2)
+        elena = HumanUser.objects.get(email="e.kuznetsova@severny-veter.test")
         self.assertTrue(elena.avatar, "фото сотрудника из медиа демо")
-        self.assertEqual(conversations.filter(assigned_operator=elena, lifecycle="OPEN").count(), 2)
-        self.assertTrue(conversations.filter(previous_conversation__isnull=False).exists())
-        self.assertTrue(conversations.filter(labels__name="срочно").exists())
         self.assertEqual(EmployeeGroup.objects.get(organization=organization, name="Поддержка").color, "#2aa876")
-        self.assertEqual(maria_contact_fields(organization), ("Заказ 4471 — комплект штор. Постоянный клиент с августа, предпочитает Telegram.", "", ""))
-        # История контакта: у Марии три диалога (кадр F).
+        self.assertEqual(maria_contact_fields(organization), ("Заказ 4471 — горнолыжный костюм. Постоянный клиент с августа, предпочитает Telegram.", "", ""))
         maria = Contact.objects.get(organization=organization, name="Мария Соколова")
-        self.assertEqual(conversations.filter(contact=maria).count(), 3)
         self.assertTrue(maria.avatar_url.startswith("/api/v1/demo-media/avatars/"))
-        # Веб-гость получил настоящую сессию виджета.
-        self.assertTrue(conversations.filter(contact__name__startswith="Гость ·").exists())
-        # Гость, который представился (кадр B): имя и фото у анонимной сессии.
-        self.assertTrue(conversations.filter(contact__name="Дмитрий Орлов", connection__provider="WEB").exists())
-        # Сообщения: контакт-шаринг и системные события есть; голосовые — при наличии файлов.
-        messages = Message.objects.filter(conversation__organization=organization)
-        self.assertTrue(messages.filter(kind=MessageKind.CONTACT).exists())
-        self.assertTrue(messages.filter(author_type="SYSTEM").exists())
 
     def test_remove_restores_the_exact_state_before_install(self) -> None:
         before = _counts()
@@ -205,7 +210,7 @@ class DemoDatasetApiTests(TestCase):
         self.assertGreater(installed["recordsCount"], 200)
         # Витринные учётки: админ и сотрудники из разных групп, с паролем.
         accounts = installed["accounts"]
-        self.assertEqual([a["email"] for a in accounts], ["e.kuznetsova@atelie-nord.ru", "s.petrova@atelie-nord.ru", "i.saveliev@atelie-nord.ru"])
+        self.assertEqual([a["email"] for a in accounts], ["e.kuznetsova@severny-veter.test", "s.petrova@severny-veter.test", "i.saveliev@severny-veter.test"])
         self.assertEqual(accounts[1]["groups"], ["Операторы"])
         self.assertEqual(accounts[2]["groups"], ["Поддержка"])
         self.assertTrue(all(a["password"] == "Chatballs-Demo-2026" for a in accounts))
@@ -216,13 +221,13 @@ class DemoDatasetApiTests(TestCase):
         self.assertEqual(removing.json()["status"], "REMOVING")
         self._dispatch_pending()
         self.assertEqual(self.client.get("/api/v1/company/demo/").json()["status"], "ABSENT")
-        self.assertFalse(HumanUser.objects.filter(email="a.kim@atelie-nord.ru").exists())
+        self.assertFalse(HumanUser.objects.filter(email="a.kim@severny-veter.test").exists())
 
     def test_employee_cannot_manage_demo(self) -> None:
         self.client.post("/api/v1/company/demo/")
         self._dispatch_pending()
         employee = APIClient()
-        employee.login(username="s.petrova@atelie-nord.ru", password="Chatballs-Demo-2026")
+        employee.login(username="s.petrova@severny-veter.test", password="Chatballs-Demo-2026")
         self.assertEqual(employee.post("/api/v1/company/demo/").status_code, 403)
         self.assertEqual(employee.delete("/api/v1/company/demo/").status_code, 403)
 
@@ -237,7 +242,7 @@ class SetupWizardDemoTests(TestCase):
                 {
                     "organizationName": "Ателье Норд",
                     "fullName": "Елена Кузнецова",
-                    "email": "e.kuznetsova@atelie-nord.ru",
+                    "email": "e.kuznetsova@severny-veter.test",
                     "password": "Nord-Atelier-2026!",
                     "installDemo": True,
                 }
@@ -280,10 +285,9 @@ class EnglishDemoDatasetTests(TestCase):
         self.assertTrue(
             AIAgent.objects.filter(organization=organization, name="Consultant").exists()
         )
-        self.assertEqual(
-            ContactFieldValue.objects.get(organization=organization, key="name").value,
-            "Dmitry Orlov",
-        )
+        conversations = Conversation.objects.filter(organization=organization)
+        self.assertEqual(conversations.count(), 10)
+        self.assertFalse(conversations.exclude(external_chat_id__startswith="north-wind:").exists())
         # Ни одной кириллической буквы во всём, что увидит человек на экране.
         texts = [
             *Message.objects.filter(organization=organization).values_list("text", flat=True),

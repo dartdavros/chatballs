@@ -33,6 +33,7 @@ import { runsRu } from "./runs.ru";
 import { agentTestRu } from "./agent-test.ru";
 import { toolCallsRu } from "./tool-calls.ru";
 import { emailContinuationRu } from "./email-continuation.ru";
+import { demoReinstallRu } from "./demo-reinstall.ru";
 import { diagnosticsRu } from "./diagnostics.ru";
 import { workStatusRu } from "./work-status.ru";
 import { internalCommentsRu } from "./internal-comments.ru";
@@ -61,6 +62,7 @@ export const ru = {
   ...ratingsRu,
   ...supervisionRu,
   ...emailContinuationRu,
+  ...demoReinstallRu,
   ...transferMessages,
   ...replyTemplatesRu,
   ...workStatusRu,

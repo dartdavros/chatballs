@@ -68,13 +68,10 @@ export function ConversationThread({ controlMode, dialog, detail, feed, isOwner 
           </span>
           <div>
             <strong>{dialog.name}</strong>
-            {/* Статус · канал · агент (· группа) — одной строкой (кадры A–E). */}
             <p>
               <span className="is-status" style={{ color: status.color }}>{status.label}{dialog.waitLabel ? ` · ${dialog.waitLabel}` : ""}</span>
               <i />
               <span><em style={{ background: channel.color }} />{channel.label}</span>
-              {detail?.hasAgent && <><i /><span className="is-agent" style={{ color: dialog.agentColor }}><Icon name="robot" size={13} />{dialog.agentName}</span></>}
-              {dialog.groupName && <><i /><span>{dialog.groupName}</span></>}
             </p>
           </div>
         </div>

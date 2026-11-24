@@ -1,0 +1,78 @@
+# Local workshop services. Use with compose.yaml and compose.dev.yaml.
+# The mock services and their TLS gateway live on the isolated demo network.
+services:
+  backend-app:
+    environment:
+      CHATBALLS_ALLOWED_HOSTS: "localhost,127.0.0.1,.localhost,backend-app"
+      CHATBALLS_LOCAL_NORTH_WIND: "1"
+    networks: [default, demo-local]
+    volumes:
+      - north-wind-trust:/run/north-wind-trust:ro
+
+  worker:
+    environment:
+      CHATBALLS_LOCAL_NORTH_WIND: "1"
+    networks: [default, demo-local]
+    volumes:
+      - north-wind-trust:/run/north-wind-trust:ro
+
+  worker-events:
+    depends_on:
+      north-wind-external-tls:
+        condition: service_healthy
+      north-wind-external-agent:
+        condition: service_started
+    environment:
+      CHATBALLS_LOCAL_NORTH_WIND: "1"
+      CHATBALLS_HELP_BASE_DOMAIN: "${CHATBALLS_HELP_BASE_DOMAIN:-localhost}"
+      CHATBALLS_HELP_PUBLIC_SCHEME: "${CHATBALLS_HELP_PUBLIC_SCHEME:-http}"
+    networks: [default, demo-local]
+    volumes:
+      - north-wind-trust:/run/north-wind-trust:ro
+
+  north-wind-mcp:
+    build:
+      context: ../chatballs-mcp-demo
+      target: runtime
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: "8000"
+      MCP_ALLOWED_HOSTS: "north-wind-mcp:8000"
+      MCP_ALLOWED_ORIGINS: "http://north-wind-mcp:8000"
+      NORTH_WIND_SHOP_URL: "http://backend-app:8000/api/v1/demo-local/shop"
+    networks: [demo-local]
+
+  north-wind-external-agent:
+    build:
+      context: ../chatballs-external-agent-demo
+      target: runtime
+    environment:
+      NORTH_WIND_LOCAL_EXECUTOR: "1"
+      NORTH_WIND_SHOP_URL: "https://north-wind-external-tls:8443/api/v1/demo-local/shop"
+      EXECUTOR_STATE_DB: "/var/lib/chatballs-executor/requests.sqlite3"
+    networks: [demo-local]
+    volumes:
+      - north-wind-trust:/run/north-wind-trust:ro
+      - north-wind-executor-state:/var/lib/chatballs-executor
+
+  north-wind-external-tls:
+    image: caddy:2-alpine
+    networks: [demo-local]
+    volumes:
+      - ./deploy/demo-local/Executor.Caddyfile:/etc/caddy/Caddyfile:ro
+      - north-wind-tls:/data
+      - north-wind-trust:/north-wind-trust
+    healthcheck:
+      test: [CMD-SHELL, 'test -s /data/caddy/pki/authorities/local/root.crt && cp /data/caddy/pki/authorities/local/root.crt /north-wind-trust/root.crt.tmp && chmod 644 /north-wind-trust/root.crt.tmp && mv /north-wind-trust/root.crt.tmp /north-wind-trust/root.crt']
+      interval: 3s
+      timeout: 2s
+      retries: 15
+
+networks:
+  demo-local:
+    internal: true
+
+volumes:
+  north-wind-tls:
+  north-wind-trust:
+  north-wind-executor-state:

@@ -15,6 +15,7 @@ from chatballs.conversations.support_feedback import report_feedback
 from chatballs.conversations.support_metrics import Metrics
 from chatballs.conversations.support_status_report import team_status_report
 from chatballs.conversations.support_timeline import conversation_observations
+from chatballs.identity.demo_seed.north_wind.weekly_report import weekly_report_observations
 from chatballs.tenancy.database import tenant_atomic
 
 
@@ -71,6 +72,12 @@ def calculate_support_report(*, context, filters):
                 metric = employees.get(observation.employee)
                 if metric:
                     metric.add(observation, conversation.pk, filters, employee=observation.employee)
+        # Earlier demo shifts have their own events and do not create live inbox items.
+        for case, observation in weekly_report_observations(context, conversations, filters, upper):
+            total.add(observation, case, filters)
+            metric = employees.get(observation.employee)
+            if metric:
+                metric.add(observation, case, filters, employee=observation.employee)
         complete = available is not None and filters.start >= available and not incomplete
         # Counters need no pre-period state, unlike intervals on legacy dialogs.
         counters_complete = available is not None and filters.start >= available

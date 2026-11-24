@@ -1,6 +1,9 @@
 from django.urls import include, path
 from rest_framework.schemas import get_schema_view
 
+from chatballs.identity.demo_seed.north_wind.executor_access import DemoExecutorAccessView
+from chatballs.identity.demo_seed.north_wind.local_read import DemoLocalReadView
+from chatballs.identity.demo_seed.north_wind.proposal_document import DemoProposalDocumentView
 from chatballs.identity.demo_views import DemoMediaView
 from chatballs.integrations.automation_events.api import ScenarioTriggerView
 from chatballs.integrations.automation_events.views import ServiceEventView
@@ -10,6 +13,9 @@ from chatballs.integrations.service_connections.oauth_views import (
 from chatballs.webchat.loader_views import WidgetLoaderView
 
 urlpatterns = [
+    path("api/v1/demo-local/executor/<slug:stage>/", DemoExecutorAccessView.as_view(), name="demo-local-executor"),
+    path("api/v1/demo-local/proposals/<str:token>/", DemoProposalDocumentView.as_view(), name="demo-proposal-document"),
+    path("api/v1/demo-local/shop/<slug:operation>/", DemoLocalReadView.as_view(), name="demo-local-shop"),
     path("api/v1/external-agent/", include("chatballs.ai.external_agents.urls")),
     path("api/v1/organizations/<uuid:organization_public_id>/settings/external-execution/",
          include("chatballs.ai.external_agents.config_urls")),

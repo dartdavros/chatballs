@@ -57,6 +57,11 @@ def test_integration(*, context: TenantContext, integration: Integration) -> Int
     elif is_external_server(integration.provider):
         ok, detail, error_code = check_external_server(integration)
         meta = {}
+    elif integration.config.get("demoSeed"):
+        from chatballs.identity.demo_seed.north_wind.mock_channels import is_available
+
+        ok = is_available(context, integration)
+        detail, meta = t("demo.reinstall_local_unavailable") if not ok else "", {}
     elif integration.provider == IntegrationProvider.EMAIL:
         ok, detail, meta = checks.check_email(
             secret=integration.secret,

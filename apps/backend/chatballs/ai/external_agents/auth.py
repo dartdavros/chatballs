@@ -17,6 +17,10 @@ from chatballs.ai.external_agents.readiness import consent_current
 from chatballs.ai.external_agents.session_models import ExternalAgentSession
 from chatballs.ai.models import AIAgent
 from chatballs.conversations.models import Conversation
+from chatballs.identity.demo_seed.north_wind.executor_scope import (
+    allows_conversation,
+    execution_enabled,
+)
 from chatballs.identity.operation_modes import autonomous_allowed, lock_organization
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
@@ -48,7 +52,7 @@ def authenticated(authorization):
         connection = ExternalAgentConnection.objects.select_for_update().filter(pk=route.resource_id).first()
         if connection is None or not connection.inbound_key_hash or not hmac.compare_digest(connection.inbound_key_hash, hashed):
             raise AuthenticationFailed(code="invalid_credentials")
-        if not organization.external_execution_enabled or not connection.enabled or not connection.integration.is_active:
+        if not execution_enabled(organization, connection) or not connection.enabled or not connection.integration.is_active:
             raise PermissionDenied(code="permission_denied")
         yield context, connection
 
@@ -65,6 +69,8 @@ def _current(context, connection, agent_id, conversation_id, *, require_control=
     binding = ExternalAgentBinding.objects.filter(agent=agent, connection=connection, enabled=True).first()
     if agent is None or conversation is None or binding is None or conversation.channel_id != agent.channel_id:
         raise Http404
+    if not allows_conversation(organization, connection, agent, conversation):
+        raise PermissionDenied(code="control_changed")
     conversation.channel.ai_agent = agent
     if conversation.is_test:
         from chatballs.ai.external_agents.test_scope import active_scope

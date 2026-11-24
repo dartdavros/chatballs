@@ -2,6 +2,7 @@ import { Dropdown } from "antd";
 import { t, tn, fmt } from "../../i18n";
 import { Icon } from "../../shared/icons";
 import { Pagination } from "../../shared/Pagination";
+import { ToneBadge } from "../../shared/ui-controls";
 import type { Skill } from "./model";
 import { SkillGlyph } from "./SkillGlyph";
 import type { useSkillsList } from "./useSkillsList";
@@ -106,9 +107,11 @@ function SkillRow({
       <div className="skill-chips">
         {skill.agents.length ? (
           skill.agents.map((agent) => (
-            <button className="link skill-chip is-agent" key={agent.id} onClick={() => openAgent(agent.id)}>
-              <Icon name="robot" size={12} />
-              {agent.name}
+            <button className="link" type="button" key={agent.id} onClick={() => openAgent(agent.id)}>
+              <ToneBadge className="skill-chip is-agent" bg="color-mix(in srgb, var(--ai) 9%, var(--surface-card))" color="var(--ai)">
+                <Icon name="robot" size={12} />
+                <span>{agent.name}</span>
+              </ToneBadge>
             </button>
           ))
         ) : (
@@ -122,14 +125,15 @@ function SkillRow({
       </small>
       <Dropdown
         trigger={["click"]}
+        placement="bottomRight"
         overlayClassName="app-dropdown"
         menu={{
           items: [
-            { key: "edit", label: t("common.edit"), onClick: open },
-            { key: "delete", label: t("common.delete"), danger: true, onClick: remove },
+            { key: "edit", label: <button type="button" onClick={open}><Icon name="edit" size={15} />{t("common.edit")}</button> },
+            { key: "delete", label: <button type="button" className="danger" onClick={remove}><Icon name="trash" size={15} />{t("common.delete")}</button> },
           ],
         }}>
-        <button className="row-menu-button" aria-label={t("common.actions")}>
+        <button className="row-menu-button" type="button" aria-label={t("common.actions")}>
           <Icon name="more" size={16} />
         </button>
       </Dropdown>

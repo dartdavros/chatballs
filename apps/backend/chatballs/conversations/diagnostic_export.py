@@ -26,7 +26,9 @@ def conversation_diagnostic(conversation):
     ).values_list("value", flat=True))
     redactor = DiagnosticRedactor(pseudonymizer, secrets)
     agent = getattr(conversation.channel, "ai_agent", None)
-    external = agent is not None and agent.execution_mode == "external"
+    from chatballs.identity.demo_seed.north_wind.executor_scope import uses_external_execution
+
+    external = agent is not None and uses_external_execution(agent, conversation=conversation)
     current = None
     if external:
         from chatballs.ai.external_agents.readiness import ready

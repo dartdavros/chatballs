@@ -16,9 +16,9 @@
       "name": "Consultant",
       "group": "operators",
       "aiStatus": "ACTIVE",
-      "persona": "You are a consultant at Nord Atelier. The atelier makes curtains, voile and home textiles to measure and delivers across the country.",
+      "persona": "You are a ski clothing consultant. Help with ski clothing, sizes, availability, pickup and fittings.",
       "tone": "Friendly, brief, no officialese. Use the client's name if they have given it.",
-      "instructions": "Answer only from the atelier's knowledge. Quote lead times, prices and order status only from the knowledge base; if there is no answer, say you will check with colleagues and hand the dialog to a member of staff. Do not promise discounts. If the client asks for a human, hand the dialog over straight away.",
+      "instructions": "Use the verified shop information. Hand the conversation to a specialist when needed.",
       "knowledge": [
         "pricing",
         "fabrics",
@@ -38,7 +38,7 @@
       "name": "Site support",
       "group": "support",
       "aiStatus": "ACTIVE",
-      "persona": "You are the support assistant for the Nord Atelier website: accounts, orders, payment, delivery, returns.",
+      "persona": "You work in customer support. Help with ski clothing orders, shipping and exchanges.",
       "tone": "Calm and to the point.",
       "instructions": "Check the knowledge about accounts and returns first. For questions about a specific order with no order number, ask for the number. Complaints about quality go to a member of staff with a note.",
       "knowledge": [
@@ -62,7 +62,7 @@
       "name": "Customer account",
       "group": "support",
       "aiStatus": "ACTIVE",
-      "persona": "You are the assistant for the Nord Atelier customer account: orders, payment, statuses, delivery, returns.",
+      "persona": "You work in customer support. Help with ski clothing orders, shipping and exchanges.",
       "tone": "Calm and to the point.",
       "instructions": "Rely on the knowledge about accounts and orders. Ask for the order number if it has not been given. Complaints about payment go to a member of staff.",
       "knowledge": [
@@ -86,7 +86,7 @@
       "name": "Front desk",
       "group": null,
       "aiStatus": "DRAFT",
-      "persona": "",
+      "persona": "You work in customer support. Help with ski clothing orders, shipping and exchanges.",
       "tone": "",
       "instructions": "",
       "knowledge": [],
@@ -100,7 +100,7 @@
       "group": "vip",
       "isActive": false,
       "aiStatus": "DISABLED",
-      "persona": "Atelier consultant.",
+      "persona": "You work in customer support. Help with ski clothing orders, shipping and exchanges.",
       "tone": "",
       "instructions": "This channel was closed in the spring of 2026.",
       "knowledge": [
@@ -114,19 +114,19 @@
     {
       "key": "tg",
       "provider": "TELEGRAM",
-      "name": "Telegram · @NordAtelierBot",
+      "name": "Telegram · Sales",
       "agent": "consultant",
       "status": "OK",
       "secret": "0000000000:DEMO-token-not-real",
       "config": {
-        "username": "NordAtelierBot"
+        "username": "NorthWindBot"
       },
       "createdDaysAgo": 40
     },
     {
       "key": "max",
       "provider": "MAX",
-      "name": "MAX · Nord Atelier",
+      "name": "MAX · Sales",
       "agent": "consultant",
       "status": "OK",
       "secret": "demo-max-token",
@@ -136,33 +136,33 @@
     {
       "key": "email",
       "provider": "EMAIL",
-      "name": "Mail · info@nord-atelier.com",
+      "name": "Support email",
       "agent": "support",
       "status": "OK",
       "secret": "demo-imap-password",
       "config": {
-        "email": "info@nord-atelier.com",
-        "imapHost": "imap.nord-atelier.com",
-        "smtpHost": "smtp.nord-atelier.com"
+        "email": "info@severny-veter.test",
+        "imapHost": "imap.severny-veter.test",
+        "smtpHost": "smtp.severny-veter.test"
       },
       "createdDaysAgo": 29
     },
     {
       "key": "web",
       "provider": "WEB",
-      "name": "Web Chat · nord-atelier.com",
+      "name": "Website chat",
       "agent": "consultant",
       "status": "OK",
       "config": {
-        "title": "Nord Atelier",
-        "greeting": "Hello! We can help with fabrics, lead times and orders.",
+        "title": "Website chat",
+        "greeting": "Hello! We can help you choose a suit and check stock.",
         "quick_replies": [
           "Lead times",
           "Order status",
           "Returns"
         ],
         "allowed_origins": [
-          "https://nord-atelier.com"
+          "https://severny-veter.test"
         ]
       },
       "createdDaysAgo": 28
@@ -170,43 +170,22 @@
     {
       "key": "web_help",
       "provider": "WEB",
-      "name": "Web Chat · Help section",
+      "name": "Support chat",
       "agent": "support",
       "status": "OK",
       "config": {
-        "title": "Nord Atelier",
-        "greeting": "Hello! We can help with fabrics, lead times and orders.",
+        "title": "Support chat",
+        "greeting": "Hello! We can help you choose a suit and check stock.",
         "quick_replies": [
           "Lead times",
           "Order status",
           "Returns"
         ],
         "allowed_origins": [
-          "https://nord-atelier.com"
+          "https://severny-veter.test"
         ]
       },
       "createdDaysAgo": 28
-    },
-    {
-      "key": "web_account",
-      "provider": "WEB",
-      "name": "Web Chat · customer account",
-      "agent": "portal",
-      "status": "OK",
-      "config": {
-        "title": "Support · Nord Atelier",
-        "greeting": "Hello! We can see your order — how can we help?",
-        "quick_replies": [
-          "Order status",
-          "Change the address",
-          "Returns"
-        ],
-        "allowed_origins": [
-          "https://nord-atelier.com",
-          "https://account.nord-atelier.com"
-        ]
-      },
-      "createdDaysAgo": 27
     },
     {
       "key": "tg_delivery",
@@ -217,7 +196,7 @@
       "lastError": "401 Unauthorized: bot token was revoked in @BotFather",
       "secret": "1111111111:DEMO-revoked",
       "config": {
-        "username": "NordAtelierDeliveryBot"
+        "username": "NorthWindDeliveryBot"
       },
       "createdDaysAgo": 3
     }
@@ -225,15 +204,15 @@
   "knowledgeCategories": [
     {
       "key": "sewing",
-      "name": "Making and fabrics",
+      "name": "Catalogue and fitting",
       "children": [
         {
           "key": "measure",
-          "name": "Measuring and quotes"
+          "name": "Sizing and quotes"
         },
         {
           "key": "fabrics",
-          "name": "Fabrics"
+          "name": "Ski clothing"
         }
       ]
     },
@@ -260,9 +239,9 @@
     {
       "key": "pricing",
       "category": "measure",
-      "title": "Quoting for made-to-measure curtains",
-      "description": "The pricing formula, fullness ratios, minimum order",
-      "content": "Price = fabric (metres × price per metre) + making (by the finished width) + hardware.\n\nFullness ratio: 1.5 for heavy curtains, 2.0–2.5 for voile. Fabric width including fullness = track width × ratio.\n\nMaking: £18 per linear metre of finished width for curtains, £14 for voile. The bottom hem is included. Eyelets — £3.50 each, heading tape — £4.80 per metre.\n\nMinimum order — £120. The consultant quotes from the window width and drop; a measuring visit within London is free on orders over £600.",
+      "title": "Team order pricing",
+      "description": "Wholesale price and delivery",
+      "content": "Orders of 20 suits or more qualify for a 5% discount. Pricing depends on the model, size quantities and city. A quote is valid for 20 minutes and a proposal for seven days.",
       "attachments": [
         "price-estimate.md"
       ],
@@ -271,13 +250,13 @@
     {
       "key": "fabrics",
       "category": "fabrics",
-      "title": "Fabric catalogue 2026",
-      "description": "Curtain and voile fabrics in stock, prices per metre",
-      "content": "Curtain fabrics: Nord blackout (100% blackout, £59/m, 14 colours), linen blend (£35/m, 9 colours), Verona velvet (£87/m, 6 colours), canvas (£27/m, 12 colours).\n\nVoile: sheer voile (£15/m), Greek net (£20/m), linen voile (£29/m).\n\nEvery fabric is 280–300 cm wide. We post samples free of charge — up to 5 of them.",
+      "title": "Ski suit catalogue",
+      "description": "Six models in M, L and XL",
+      "content": "Alpine Pro — RUB 29,900, Summit Light — RUB 23,900, Ridge Motion — RUB 27,900, Glacier Warm — RUB 32,900, Freeride Flow — RUB 25,900, Peak Expert — RUB 34,900. Check stock separately for Centre and Gorki.",
       "attachments": [
         {
-          "file": "fabric-catalogue-2026.pdf",
-          "text": "fabric-catalogue-2026.txt",
+          "file": "north-wind-catalogue-en.pdf",
+          "text": "north-wind-catalogue-en.txt",
           "contentType": "application/pdf"
         }
       ],
@@ -286,18 +265,18 @@
     {
       "key": "measure",
       "category": "measure",
-      "title": "How to measure your windows yourself",
-      "description": "Client instructions: track, drop, allowances",
-      "content": "1. Measure the length of the track from end to end (not the window!).\n2. Measure the drop from the track hook (or the top of the pole) to the length you want: to the sill (minus 1 cm), to the floor (minus 1–2 cm) or puddled on the floor (+3–5 cm).\n3. For eyelet curtains add 3 cm at the top.\n4. Photograph the whole window — a consultant will check the figures.",
+      "title": "How to choose your size",
+      "description": "Chest, waist and hip measurements",
+      "content": "Measure your chest, waist and hips over thin clothing. Compare them with the size chart for your model. In Kazan you can try on two models with a consultant free of charge.",
       "attachments": [],
       "createdDaysAgo": 36
     },
     {
       "key": "delivery",
       "category": "delivery",
-      "title": "Making times and delivery",
-      "description": "Making 5–7 working days, delivery by DPD and courier",
-      "content": "Making takes 5–7 working days once the quote is agreed and paid. Express making (3 working days) costs +30% of the making price and only if the fabric is in stock.\n\nDelivery: within London by courier £15 (free over £400), slots 10:00–13:00, 13:00–17:00, 17:00–20:00; the courier calls an hour ahead. Across the country — DPD to a pickup point or to your door, 3–5 working days from dispatch, and the tracking number arrives by e-mail on the day of dispatch. Manchester, Birmingham and Leeds are usually 3 days.\n\nMoving a delivery slot is free of charge, no later than 18:00 the day before.",
+      "title": "Delivery and pickup",
+      "description": "Centre and Gorki in Kazan",
+      "content": "Pickup in Kazan is free. Centre, 12 Sportivnaya Street, closes at 21:00. Gorki, 28 Pobedy Avenue, closes at 22:00. Check the current status before collecting your order.",
       "attachments": [
         "delivery-and-payment.txt"
       ],
@@ -307,35 +286,35 @@
       "key": "returns",
       "category": "returns",
       "title": "Returns and exchanges",
-      "description": "14 days, and the terms for made-to-measure items",
-      "content": "Ready-made items (cushions, throws from the catalogue) — returnable within 14 days with no reason given, provided they have not been used.\n\nItems made to your own measurements cannot be returned (bespoke goods are exempt from the cancellation right under the Consumer Contracts Regulations), except where they are faulty or do not match the agreed order: wrong colour or size, defects in the making. In that case we remake them free of charge or exchange them for another colour in stock, in 5–7 working days; if the client prefers, we refund the money within 10 days.\n\nA claim needs the order number and photographs of the item. The claim is raised by a member of staff, not by the AI.",
+      "description": "Size exchange and damage assessment",
+      "content": "A size exchange is available within 14 days of collection if the requested size is in stock. For damage, send the order number and a photo so a specialist can review the case. Payment refunds are processed separately.",
       "attachments": [],
       "createdDaysAgo": 33
     },
     {
       "key": "care",
       "category": "fabrics",
-      "title": "Caring for your curtains",
-      "description": "Washing, ironing and cleaning by fabric type",
-      "content": "Blackout: delicate wash at 30°, no spin, iron on the reverse at the lowest temperature. Linen: wash at 40°, shrinkage of up to 3% is allowed for in the measurements. Velvet: dry clean only. Voile: wash at 30° in a mesh bag, dry it on the track.",
+      "title": "Caring for ski clothing",
+      "description": "Washing and drying membrane garments",
+      "content": "Follow the care label. Close the zips and empty the pockets before washing. Use a detergent suitable for membrane garments and dry away from sources of heat.",
       "attachments": [],
       "createdDaysAgo": 20
     },
     {
       "key": "account",
       "category": "site",
-      "title": "The customer account on the website",
-      "description": "Registration, password recovery, order statuses",
-      "content": "You sign in with your e-mail. The password reset message comes from no-reply@nord-atelier.com within 5 minutes; if it has not arrived, check your spam folder and that the address is right. You can ask for another one after 10 minutes.\n\nOrder statuses in the account: “Awaiting payment” → “In production” → “Ready” → “Handed to the courier” → “Delivered”. The delivery address can be changed up to the “Handed to the courier” status — through a support agent.",
+      "title": "Your online account",
+      "description": "Signing in, restoring access and tracking orders",
+      "content": "Check the email address and spam folder before requesting a reset. Your account shows the latest confirmed status. A specialist can check delays.",
       "attachments": [],
       "createdDaysAgo": 28
     },
     {
       "key": "old_prices",
       "category": "measure",
-      "title": "2024 price list (out of date)",
-      "description": "Old prices — switched off, kept for the record",
-      "content": "Making £15/m, voile £11/m. Do not use.",
+      "title": "Previous season’s catalogue",
+      "description": "Price archive",
+      "content": "Archive for the previous season. Current prices and stock are shown in the shop catalogue.",
       "attachments": [],
       "isEnabled": false,
       "createdDaysAgo": 400

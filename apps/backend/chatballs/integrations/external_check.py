@@ -48,16 +48,21 @@ def _address_state(error: ToolAddressRejected) -> str:
 
 def check_external_server(integration: Integration) -> tuple[bool, str, str]:
     """Вернуть (успех, фраза об ошибке, код состояния)."""
+    from chatballs.identity.demo_seed.north_wind.local_transport import local_demo_target
+
     url = str(integration.config.get("url", ""))
+    headers = request_headers(integration)
     state = ""
     if integration.provider == IntegrationProvider.MCP:
         try:
-            mcp_client.ping(url, headers=request_headers(integration), timeout=check_timeout())
+            mcp_client.ping(url, headers=headers, timeout=check_timeout())
         except mcp_client.McpError as error:
             state = error_state(error.code)
     else:
         try:
-            check_tool_url(template_probe_url(url))
+            target_url = template_probe_url(url)
+            if local_demo_target(target_url, headers) is None:
+                check_tool_url(target_url)
         except ToolAddressRejected as error:
             state = _address_state(error)
         except ValueError:

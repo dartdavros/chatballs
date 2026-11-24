@@ -27,14 +27,12 @@ class DemoRefs:
     integrations: dict[str, object] = field(default_factory=dict)
     channels: dict[str, object] = field(default_factory=dict)
     agents: dict[str, object] = field(default_factory=dict)
+    order_skill: object | None = None
     widgets: dict[str, object] = field(default_factory=dict)
     knowledge_categories: dict[str, object] = field(default_factory=dict)
     knowledge: dict[str, object] = field(default_factory=dict)
     agent_article_links: dict[str, list[str]] = field(default_factory=dict)
-    labels: dict[str, object] = field(default_factory=dict)
     portal_articles: dict[str, object] = field(default_factory=dict)
     contacts: dict[str, object] = field(default_factory=dict)
-    identities: dict[str, object] = field(default_factory=dict)
-    conversations: dict[str, object] = field(default_factory=dict)
-    calls: dict[str, object] = field(default_factory=dict)
+    labels: dict[str, object] = field(default_factory=dict)
     portal: object | None = None

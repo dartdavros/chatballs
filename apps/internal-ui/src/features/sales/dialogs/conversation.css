@@ -93,11 +93,6 @@
   font-weight: 600;
 }
 
-.sales-conversation-person p > span.is-agent {
-  gap: 4px;
-  font-weight: 500;
-}
-
 .sales-conversation-person p > i {
   width: 3px;
   height: 3px;

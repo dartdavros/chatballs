@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "contacts": [
+    {
+      "key": "maria",
+      "name": "Мария Соколова",
+      "phone": "+7 917 254-18-40",
+      "avatar": "maria-sokolova.jpg",
+      "description": "Заказ 4471 — горнолыжный костюм. Постоянный клиент с августа, предпочитает Telegram.",
+      "createdDaysAgo": 34
+    },
+    {
+      "key": "maria-duplicate",
+      "name": "Мария С.",
+      "phone": "+7 917 254-18-40",
+      "description": "Дубль: обратилась с сайта, пока не узнали по телефону.",
+      "createdDaysAgo": 12
+    },
+    {
+      "key": "irina",
+      "name": "Ирина Левина",
+      "phone": "",
+      "avatar": "irina-levina.jpg",
+      "description": "Закупщик текстиля для гостиницы. Просила писать на почту, не звонить.",
+      "company": "Гостиница «Волга»",
+      "createdDaysAgo": 60
+    },
+    {
+      "key": "artem",
+      "name": "Артём Гусев",
+      "phone": "",
+      "createdDaysAgo": 3
+    },
+    {
+      "key": "olga",
+      "name": "Ольга Мельник",
+      "phone": "+7 903 655-77-31",
+      "avatar": "olga-melnik.jpg",
+      "createdDaysAgo": 12
+    },
+    {
+      "key": "sergey",
+      "name": "Сергей Крылов",
+      "phone": "+7 903 445-90-12",
+      "avatar": "sergey-krylov.jpg",
+      "city": "Казань",
+      "createdDaysAgo": 9
+    },
+    {
+      "key": "viktor",
+      "name": "Виктор Панов",
+      "phone": "+7 812 640-22-10",
+      "company": "ООО «Горнолыжная школа «Вершина»»",
+      "city": "Казань",
+      "description": "Оптовый заказчик: гостиница на 46 номеров. Ведёт Кирилл Волков.",
+      "createdDaysAgo": 90
+    },
+    {
+      "key": "polina",
+      "name": "Полина Ракитина",
+      "phone": "",
+      "createdDaysAgo": 1
+    },
+    {
+      "key": "spammer",
+      "name": "",
+      "phone": "",
+      "createdDaysAgo": 0
+    }
+  ],
+  "connectionIdentities": [
+    {
+      "key": "maria_tg",
+      "contact": "maria",
+      "connection": "tg",
+      "externalUserId": "482913001",
+      "displayName": "Мария Соколова",
+      "username": "maria_s"
+    },
+    {
+      "key": "irina_email",
+      "contact": "irina",
+      "connection": "email",
+      "externalUserId": "irina@domtextil.ru",
+      "displayName": "Ирина Левина"
+    },
+    {
+      "key": "artem_max",
+      "contact": "artem",
+      "connection": "max",
+      "externalUserId": "58102277",
+      "displayName": "Артём Гусев"
+    },
+    {
+      "key": "olga_tg",
+      "contact": "olga",
+      "connection": "tg",
+      "externalUserId": "482913004",
+      "displayName": "Ольга Мельник",
+      "username": "olga_s"
+    },
+    {
+      "key": "sergey_tg",
+      "contact": "sergey",
+      "connection": "tg",
+      "externalUserId": "482913007",
+      "displayName": "Сергей Крылов",
+      "username": "sergey_s"
+    },
+    {
+      "key": "sergey_web",
+      "contact": "sergey",
+      "connection": "web_help",
+      "externalUserId": "web-sess-4402a",
+      "displayName": "Сергей Крылов"
+    },
+    {
+      "key": "viktor_tg",
+      "contact": "viktor",
+      "connection": "tg",
+      "externalUserId": "482913006",
+      "displayName": "Виктор Панов",
+      "username": "v_panov"
+    },
+    {
+      "key": "polina_email",
+      "contact": "polina",
+      "connection": "email",
+      "externalUserId": "polina.rakitina@mail.ru",
+      "displayName": "Полина Ракитина"
+    },
+    {
+      "key": "spam_tg",
+      "contact": "spammer",
+      "connection": "tg",
+      "externalUserId": "900000001",
+      "displayName": "Кредит Онлайн",
+      "username": "credit_fast_24"
+    }
+  ],
+  "labels": [
+    {
+      "key": "delivery",
+      "name": "доставка",
+      "color": "#1677ff"
+    },
+    {
+      "key": "return",
+      "name": "возврат",
+      "color": "#eb2f96"
+    },
+    {
+      "key": "account",
+      "name": "кабинет",
+      "color": "#13c2c2"
+    },
+    {
+      "key": "address",
+      "name": "адрес",
+      "color": "#fa8c16"
+    },
+    {
+      "key": "mail",
+      "name": "почта",
+      "color": "#722ed1"
+    },
+    {
+      "key": "order4390",
+      "name": "заказ 4390",
+      "color": "#52c41a"
+    },
+    {
+      "key": "urgent",
+      "name": "срочно",
+      "color": "#f5222d"
+    },
+    {
+      "key": "vip",
+      "name": "vip",
+      "color": "#b8860b"
+    },
+    {
+      "key": "wholesale",
+      "name": "оптовый",
+      "color": "#0f9d58"
+    },
+    {
+      "key": "pickup",
+      "name": "самовывоз",
+      "color": "#1677ff"
+    },
+    {
+      "key": "order",
+      "name": "заказ",
+      "color": "#52c41a"
+    },
+    {
+      "key": "loyalty",
+      "name": "бонусы",
+      "color": "#722ed1"
+    },
+    {
+      "key": "fitting",
+      "name": "примерка",
+      "color": "#13c2c2"
+    },
+    {
+      "key": "exchange",
+      "name": "обмен",
+      "color": "#eb2f96"
+    },
+    {
+      "key": "defect",
+      "name": "дефект",
+      "color": "#f5222d"
+    }
+  ],
+  "replyTemplates": [
+    {
+      "title": "Приветствие консультанта",
+      "text": "Здравствуйте! Меня зовут {{operator_name}}, я консультант «Северного ветра». Подскажите нужный размер и бюджет."
+    },
+    {
+      "title": "Самовывоз",
+      "text": "В Казани доступны «Центр» и «Горки». Уточню остаток и время выдачи."
+    },
+    {
+      "title": "Доставка СДЭК",
+      "text": "Отправляем СДЭК до пункта выдачи или до двери, 3–5 рабочих дней. Трек-номер придёт на почту в день отправки до 19:00."
+    },
+    {
+      "title": "Перенос доставки",
+      "text": "Перенесли доставку на {дата}, интервал {интервал}. Курьер позвонит за час. Подтвердите, пожалуйста, что интервал подходит."
+    },
+    {
+      "title": "Возврат — запрос фото",
+      "text": "Сожалею, что так вышло. Пришлите, пожалуйста, номер заказа и фото изделия при дневном свете — оформлю заявку на переделку или обмен."
+    },
+    {
+      "title": "Каталог костюмов",
+      "text": "Подскажите, какой размер и утепление нужны. Подберу модели из каталога."
+    },
+    {
+      "title": "Закрытие диалога",
+      "text": "Рада была помочь! Если появятся вопросы — пишите, отвечу в рабочее время с 10:00 до 20:00."
+    }
+  ],
+  "contactMerges": [
+    {
+      "target": "maria",
+      "source": "maria-duplicate",
+      "reason": "Один и тот же человек: совпал телефон, подтвердили в диалоге",
+      "actor": "elena"
+    }
+  ]
+}

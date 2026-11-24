@@ -1,8 +1,11 @@
 import logging
 from datetime import timedelta
 
+from django.db.models import CharField, Exists, OuterRef
+from django.db.models.functions import Cast
 from django.utils import timezone
 
+from chatballs.conversations.demo_protection import inactivity_protection_records
 from chatballs.conversations.lifecycle_services import _close_stale_locked
 from chatballs.conversations.models import Conversation, LifecycleState
 from chatballs.tenancy.database import tenant_atomic
@@ -18,6 +21,11 @@ def close_stale_conversations(context, days: int = AUTOCLOSE_DAYS) -> int:
         conversations = Conversation.objects.select_for_update().filter(
             organization=context.organization, lifecycle=LifecycleState.OPEN,
             last_activity_at__lte=cutoff,
+        ).filter(
+            ~Exists(inactivity_protection_records(
+                organization_id=context.organization_id,
+                object_id=Cast(OuterRef("pk"), output_field=CharField()),
+            )),
         )
         for conversation in conversations:
             _close_stale_locked(context=context, conversation=conversation)

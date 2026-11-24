@@ -124,7 +124,9 @@ def _begin(*, message_id: int, user_id: str, is_new: bool, context: TenantContex
     conversation = message.conversation
     channel = conversation.channel
     agent = getattr(channel, "ai_agent", None)
-    if (agent is None or agent.execution_mode != "builtin" or not autonomous_allowed(channel, organization=organization,
+    from chatballs.identity.demo_seed.north_wind.executor_scope import uses_external_execution
+
+    if (agent is None or uses_external_execution(agent, conversation=conversation) or not autonomous_allowed(channel, organization=organization,
                                connection=conversation.connection, conversation=conversation)
             or message.ai_delivery.get("modeVersion", 1) != organization.operation_mode_version
             or message.ai_delivery.get("controlVersion", 0) != conversation.ai_control_version
@@ -163,7 +165,7 @@ def _begin(*, message_id: int, user_id: str, is_new: bool, context: TenantContex
         ai_turn_result.store_voice_without_transcript(turn=turn, context=context)
         return None
     turn.embedding_job = plan_query_embedding(
-        agent=agent, query=turn.query, pseudonymizer=turn.pseudonymizer
+        agent=agent, query=turn.query, pseudonymizer=turn.pseudonymizer, conversation=conversation,
     )
     return turn
 
@@ -194,7 +196,7 @@ def _apply_transcript(*, turn: Turn, transcript: str, context: TenantContext) ->
     store_transcription(turn.message, transcript)
     turn.query = transcript
     turn.embedding_job = plan_query_embedding(
-        agent=turn.agent, query=transcript, pseudonymizer=turn.pseudonymizer
+        agent=turn.agent, query=transcript, pseudonymizer=turn.pseudonymizer, conversation=turn.conversation,
     )
     return True
 

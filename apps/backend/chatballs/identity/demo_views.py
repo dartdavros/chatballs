@@ -3,6 +3,7 @@
 
 from django.core.exceptions import ValidationError
 from django.http import FileResponse
+from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from rest_framework.views import APIView
 from chatballs.api.permissions import HasCapability
 from chatballs.identity.demo_media import open_avatar
 from chatballs.identity.demo_seed import service
+from chatballs.identity.demo_seed.reinstallation import request_reinstall
 
 
 def _error(error: ValidationError, status: int) -> Response:
@@ -46,6 +48,32 @@ class DemoDataView(APIView):
     def delete(self, request: Request) -> Response:
         try:
             service.request_remove(context=request.tenant_context, actor=request.user)
+        except service.DemoBusy as error:
+            return _error(error, 409)
+        except ValidationError as error:
+            return _error(error, 400)
+        return Response(service.demo_status(request.tenant_context.organization), status=202)
+
+
+class DemoReinstallInput(serializers.Serializer):
+    requestId = serializers.UUIDField()
+    generation = serializers.UUIDField(allow_null=True)
+    previousRequestId = serializers.UUIDField(allow_null=True)
+
+
+class DemoReinstallView(APIView):
+    permission_classes = [HasCapability]
+    required_capabilities = {"POST": "company.manage"}
+
+    def post(self, request: Request) -> Response:
+        command = DemoReinstallInput(data=request.data)
+        command.is_valid(raise_exception=True)
+        data = command.validated_data
+        try:
+            request_reinstall(
+                context=request.tenant_context, actor=request.user, request_id=data["requestId"],
+                generation=data["generation"], previous_request_id=data["previousRequestId"],
+            )
         except service.DemoBusy as error:
             return _error(error, 409)
         except ValidationError as error:

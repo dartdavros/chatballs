@@ -273,6 +273,7 @@ CHATBALLS_PUBLIC_BASE_URL = os.environ.get("CHATBALLS_PUBLIC_BASE_URL", "http://
 CHATBALLS_SERVICE_ADAPTERS = [
     "chatballs.integrations.adapters.bitrix24",
     "chatballs.ai.external_agents.adapter",
+    "chatballs.identity.demo_seed.north_wind.delivery_adapter",
 ]
 CHATBALLS_SERVICE_EXTENSIONS: list[str] = []
 # Приложения OAuth, зарегистрированные администратором установки у сервисов:

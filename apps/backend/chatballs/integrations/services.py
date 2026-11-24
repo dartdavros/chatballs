@@ -228,6 +228,9 @@ def update_integration(
         integration.config = _normalized_config(
             integration.provider, data.config, previous_config=previous_config
         )
+        for key in ("demoSeed", "demoGeneration"):
+            if key in previous_config:
+                integration.config[key] = previous_config[key]
     elif data.external is not None:
         apply_external_settings(integration, data.external)
     integration.name = data.name.strip() or integration.name

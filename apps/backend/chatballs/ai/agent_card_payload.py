@@ -86,6 +86,7 @@ def agent_card_payload(
     from chatballs.ai.external_agents.agent_projection import execution_projection
 
     agent: AIAgent = channel.ai_agent
+    external = execution_projection(agent, channel.organization)
     connections = _connections_payload(channel)
     open_count = getattr(channel, "open_conversations_count", None)
     if open_count is None:
@@ -102,8 +103,8 @@ def agent_card_payload(
         "groupColor": channel.group.color if channel.group_id else "",
         "aiStatus": agent.status,
         "executionMode": agent.execution_mode,
-        "externalExecutionEnabled": channel.organization.external_execution_enabled,
-        "externalExecution": execution_projection(agent, channel.organization),
+        "externalExecutionEnabled": channel.organization.external_execution_enabled or external["available"],
+        "externalExecution": external,
         "assistanceEnabled": agent.assistance_enabled,
         # Модели агента: пустая строка означает «как в интеграции», и тогда
         # карточка показывает модель интеграции подсказкой в поле.

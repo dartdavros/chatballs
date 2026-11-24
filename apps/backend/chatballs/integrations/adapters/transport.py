@@ -34,7 +34,7 @@ from chatballs.integrations.tool_client import (
     pinned_connection,
     remaining_time,
 )
-from chatballs.integrations.tool_network import check_tool_url
+from chatballs.integrations.tool_network import ToolTarget, check_tool_url
 
 MAX_REDIRECTS = 3
 _CHUNK_BYTES = 64 * 1024
@@ -67,36 +67,44 @@ class GuardedTransport:
         from chatballs.identity.instance_settings import tools_private_network_allowed
 
         allow_private = tools_private_network_allowed()
-        deadline = time.monotonic() + limits.timeout_seconds
         with _client_context(request.client_certificate) as context:
-            for _ in range(MAX_REDIRECTS + 1):
-                target = check_tool_url(request.url, allow_private=allow_private)
-                connection = _connected(target, deadline, context)
-                try:
-                    # С этого места запрос мог дойти: сбой дальше — не «не отправлено».
-                    with transport_handoff():
-                        connection.pinned_sock.settimeout(remaining_time(deadline))
-                        connection.request(
-                            request.method,
-                            target.request_target,
-                            body=request.body,
-                            headers={"User-Agent": user_agent(), **request.headers},
-                        )
-                    response = connection.getresponse()
-                    location = response.headers.get("Location") if response.status in REDIRECT_STATUSES else None
-                    if not location:
-                        return _accept(response, connection, deadline, request.url, limits, store_file)
-                    status = response.status
-                except TransportError as error:
-                    error.request_sent = True
-                    raise
-                finally:
-                    connection.close()
-                try:
-                    request = _redirected(request, status, urljoin(request.url, location))
-                except TransportError as error:
-                    error.request_sent = True
-                    raise
+            return self._send(request, limits, store_file, context,
+                              lambda url: check_tool_url(url, allow_private=allow_private))
+
+    def send_pinned(self, request: OutboundRequest, *, limits: Limits, target: ToolTarget, ca_file: str) -> TransportResponse:
+        """Use an already authenticated TLS route with its isolated trust store."""
+        if target.scheme != "https" or request.client_certificate:
+            raise TransportError("address_forbidden")
+        context = ssl.create_default_context(cafile=ca_file)
+        return self._send(request, limits, None, context, lambda _url: target, redirects=0)
+
+    def _send(self, request, limits, store_file, context, resolve, *, redirects=MAX_REDIRECTS):
+        deadline = time.monotonic() + limits.timeout_seconds
+        for attempt in range(redirects + 1):
+            target = resolve(request.url)
+            connection = _connected(target, deadline, context)
+            try:
+                # С этого места запрос мог дойти: сбой дальше — не «не отправлено».
+                with transport_handoff():
+                    connection.pinned_sock.settimeout(remaining_time(deadline))
+                    connection.request(
+                        request.method,
+                        target.request_target,
+                        body=request.body,
+                        headers={"User-Agent": user_agent(), **request.headers},
+                    )
+                response = connection.getresponse()
+                location = response.headers.get("Location") if response.status in REDIRECT_STATUSES else None
+                if not location:
+                    return _accept(response, connection, deadline, request.url, limits, store_file)
+                if attempt == redirects:
+                    break
+                request = _redirected(request, response.status, urljoin(request.url, location))
+            except TransportError as error:
+                error.request_sent = True
+                raise
+            finally:
+                connection.close()
         raise TransportError("too_many_redirects", request_sent=True)
 
 

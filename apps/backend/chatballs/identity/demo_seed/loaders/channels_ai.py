@@ -114,12 +114,15 @@ def _ensure_connection(context: TenantContext, refs: DemoRefs, item: dict, curre
                 provider=item["provider"],
                 name=item["name"],
                 secret=item.get("secret", ""),
-                # Токены демо-подключений ненастоящие: воркер их не опрашивает.
-                config={**item.get("config", {}), "demoSeed": True},
+                config=item.get("config", {}),
             ),
         )
+        config = {**integration.config, "demoSeed": True}
+        if refs.recorder:
+            config["demoGeneration"] = str(refs.recorder.dataset.generation)
         Integration.objects.filter(pk=integration.pk).update(
             channel=channel,
+            config=config,
             status=item.get("status", IntegrationStatus.OK),
             last_error=item.get("lastError", ""),
             last_checked_at=current - timedelta(minutes=7),

@@ -32,6 +32,7 @@ import { runsEn } from "./runs.en";
 import { agentTestEn } from "./agent-test.en";
 import { toolCallsEn } from "./tool-calls.en";
 import { emailContinuationEn } from "./email-continuation.en";
+import { demoReinstallEn } from "./demo-reinstall.en";
 import { diagnosticsEn } from "./diagnostics.en";
 import { workStatusEn } from "./work-status.en";
 import { internalCommentsEn } from "./internal-comments.en";
@@ -60,6 +61,7 @@ export const en: Record<MessageKey, Message> = {
   ...ratingsEn,
   ...supervisionEn,
   ...emailContinuationEn,
+  ...demoReinstallEn,
   ...transferMessages,
   ...replyTemplatesEn,
   ...workStatusEn,

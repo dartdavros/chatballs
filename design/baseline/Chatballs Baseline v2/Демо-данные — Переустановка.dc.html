@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="design_doc_mode" content="canvas">
+  <title>Демо-данные · Переустановка</title>
+  <link rel="stylesheet" href="./_ds/styles.css">
+  <link rel="stylesheet" href="./demo-reinstall-review.css">
+  <script src="./demo-reinstall-review.js" defer></script>
+</head>
+<body>
+  <x-dc>
+    <header class="review">
+      <h1>Переустановка демо-данных</h1>
+      <p>Дополнение к кадру N7 · на согласование</p>
+      <div class="review-controls">
+        <label>Состояние
+          <select id="review-state">
+            <option value="ready">Установлены</option>
+            <option value="confirm">Подтверждение</option>
+            <option value="busy">В процессе</option>
+            <option value="success">Завершено</option>
+            <option value="error">Ошибка</option>
+            <option value="conflict">Связь с рабочими данными</option>
+          </select>
+        </label>
+        <label>Тема
+          <select id="review-theme">
+            <option value="light">Светлая</option>
+            <option value="dark">Тёмная</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <div class="settings-frame">
+      <nav class="settings-menu" aria-label="Разделы настроек">
+        <h2>Настройки</h2>
+        <ul>
+          <li>Организация</li>
+          <li>Группы</li>
+          <li>AI-провайдер</li>
+          <li>Интеграции</li>
+          <li>Голосовые и звонки</li>
+          <li>Хранилище файлов</li>
+          <li aria-current="page">Демо-данные</li>
+        </ul>
+      </nav>
+      <main class="settings-content">
+        <h2>Демо-данные</h2>
+        <p class="section-lead">Посмотреть систему в работе на вымышленной организации.</p>
+        <section class="demo-card" aria-label="Данные магазина «Северный ветер»">
+          <div class="demo-head">
+            <div class="demo-title">
+              <strong>«Северный ветер»</strong>
+              <span class="installed">Установлены</span>
+              <small id="record-info">3 412 записей · 23 ноя</small>
+            </div>
+            <div class="demo-actions">
+              <button class="button" id="reinstall">Переустановить</button>
+              <button class="button danger" id="remove">Удалить демо-данные</button>
+            </div>
+          </div>
+          <p class="section-note">Диалоги, сотрудники, агенты и сценарии магазина горнолыжной одежды.</p>
+          <div class="operation" aria-live="polite">
+            <div class="notice" id="operation-notice" hidden>
+              <img id="operation-loader" class="loader" src="./demo-reinstall-loader.svg" width="22" height="22" alt="" hidden>
+              <div>
+                <strong id="operation-title"></strong>
+                <p id="operation-detail"></p>
+              </div>
+            </div>
+          </div>
+          <div class="demo-logins">
+            <small>Войдите под демо-сотрудником в приватном окне, чтобы увидеть систему его глазами.</small>
+            <div class="demo-account">
+              <div class="demo-person">
+                <img src="./assets/av-2.png" alt="" width="28" height="28">
+                <div><strong>Анна Ким</strong><small>Администратор</small></div>
+              </div>
+              <code>admin@severny-veter.test</code>
+              <code>Chatballs-Demo-2026</code>
+            </div>
+            <div class="demo-account">
+              <div class="demo-person">
+                <img src="./assets/av-1.png" alt="" width="28" height="28">
+                <div><strong>Дмитрий Орлов</strong><small>Сотрудник · Операторы</small></div>
+              </div>
+              <code>operator@severny-veter.test</code>
+              <code>Chatballs-Demo-2026</code>
+            </div>
+            <div class="demo-account">
+              <div class="demo-person">
+                <img src="./assets/av-3.png" alt="" width="28" height="28">
+                <div><strong>Сергей Крылов</strong><small>Сотрудник · Поддержка</small></div>
+              </div>
+              <code>support@severny-veter.test</code>
+              <code>Chatballs-Demo-2026</code>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="confirm-reinstall" aria-labelledby="confirm-title" aria-describedby="confirm-description">
+      <div class="dialog-head">
+        <h2 id="confirm-title">Переустановить демо-данные?</h2>
+        <button type="button" class="close" aria-label="Закрыть" data-cancel>×</button>
+      </div>
+      <p id="confirm-description">Изменения в демо-диалогах и данные, созданные во время показа, будут удалены. Магазин «Северный ветер» и сценарии вернутся в исходное состояние. Рабочие данные сохранятся.</p>
+      <div class="dialog-actions">
+        <button type="button" class="button" data-cancel autofocus>Отмена</button>
+        <button type="button" class="button danger" id="confirm-action">Переустановить</button>
+      </div>
+    </dialog>
+  </x-dc>
+</body>
+</html>

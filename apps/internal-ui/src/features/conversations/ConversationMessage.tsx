@@ -54,7 +54,7 @@ function MessageContent({ message, dialog, viewerId }: { message: ApiMessage; di
       ? `${message.authorName || t("common.operator")}${viewerId != null && message.authorUserId === viewerId ? t("common.you_suffix") : ""}`
       : undefined;
   if (message.transport?.provider === "EMAIL") return <EmailConversationMessage message={message} actor={actor} />;
-  if (message.author === "AI" && !["voice", "file"].includes(message.kind ?? "")
+  if (message.author === "AI" && message.kind !== "voice"
     && (message.formatVersion !== undefined || message.presentation !== undefined)) {
     return <SnapshotMessage message={message} bubble={{ side, actor, actorColor: dialog.agentColor, time: fmt.time(message.createdAt), confirmed, footer }} />;
   }

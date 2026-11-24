@@ -16,6 +16,7 @@ from chatballs.ai.external_agents.config_policy import (
 )
 from chatballs.ai.external_agents.readiness import ready
 from chatballs.ai.models import AIAgent
+from chatballs.identity.demo_seed.north_wind.executor_scope import is_local_executor
 from chatballs.tenancy.database import tenant_atomic
 
 
@@ -34,6 +35,8 @@ def save_binding(context, connection_id, agent_id, body):
         organization = owner(context)
         require_enabled(organization)
         connection = connection_for(context, connection_id, lock=True)
+        if is_local_executor(connection):
+            invalid()
         agent = agent_for(context, agent_id)
         if not connection.checked_at or not connection.capabilities or not connection.enabled:
             invalid()
@@ -79,9 +82,10 @@ def select_execution(context, agent_id, mode):
         organization = owner(context)
         agent = agent_for(context, agent_id)
         if mode == "external":
-            require_enabled(organization)
             agent.execution_mode = mode
             if not ready(agent, organization):
+                if not organization.external_execution_enabled:
+                    require_enabled(organization)
                 invalid()
         if agent.execution_mode != mode or mode == "external":
             agent.execution_mode = mode

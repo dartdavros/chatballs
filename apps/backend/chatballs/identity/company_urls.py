@@ -5,6 +5,7 @@ from chatballs.identity import (
     demo_views,
     group_views,
 )
+from chatballs.identity.demo_seed.north_wind.views import DemoShopCRMView, DemoShopView
 from chatballs.integrations import feature_views
 
 urlpatterns = [
@@ -28,6 +29,9 @@ urlpatterns = [
         name="onboarding",
     ),
     path("demo/", demo_views.DemoDataView.as_view(), name="organization-demo-data"),
+    path("demo/reinstall/", demo_views.DemoReinstallView.as_view(), name="organization-demo-reinstall"),
+    path("demo/shop/<uuid:generation>/<slug:operation>/", DemoShopView.as_view(), name="organization-demo-shop"),
+    path("demo/shop/<uuid:generation>/crm/<str:reference>/", DemoShopCRMView.as_view(), name="organization-demo-crm-record"),
     path("administration/communication/", feature_views.CommunicationSettingsView.as_view(), name="communication-settings"),
     path(
         "administration/audit/",

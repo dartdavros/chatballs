@@ -1,0 +1,24 @@
+{
+	admin off
+	auto_https disable_redirects
+	skip_install_trust
+}
+
+https://north-wind-external-tls:8443 {
+	tls internal
+
+	handle_path /executor/* {
+		reverse_proxy north-wind-external-agent:8000
+	}
+
+	@callbacks path /api/v1/external-agent/connections/* /api/v1/demo-local/executor/* /api/v1/demo-local/shop/*
+	handle @callbacks {
+		reverse_proxy backend-app:8000 {
+			header_up Host backend-app:8000
+		}
+	}
+
+	handle {
+		respond 404
+	}
+}

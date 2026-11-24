@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "_comment": "Демо «Ателье Норд» (дизайн-базлайн v2, каст кадров A1/A2 и A–H). Ставится в организацию установщика: организация и её владелец здесь не создаются. Пароль всех демо-сотрудников один — см. demoPassword.",
+  "_comment": "Демо ««Северный ветер»» (дизайн-базлайн v2, каст кадров A1/A2 и A–H). Ставится в организацию установщика: организация и её владелец здесь не создаются. Пароль всех демо-сотрудников один — см. demoPassword.",
   "demoPassword": "Chatballs-Demo-2026",
   "showcaseAccounts": [
     "elena",
@@ -27,7 +27,7 @@
   "accounts": [
     {
       "key": "elena",
-      "email": "e.kuznetsova@atelie-nord.ru",
+      "email": "e.kuznetsova@severny-veter.test",
       "fullName": "Елена Кузнецова",
       "role": "ADMIN",
       "positionTitle": "Администратор",
@@ -43,7 +43,7 @@
     },
     {
       "key": "anna",
-      "email": "a.kim@atelie-nord.ru",
+      "email": "a.kim@severny-veter.test",
       "fullName": "Анна Ким",
       "role": "ADMIN",
       "positionTitle": "Администратор",
@@ -59,7 +59,7 @@
     },
     {
       "key": "svetlana",
-      "email": "s.petrova@atelie-nord.ru",
+      "email": "s.petrova@severny-veter.test",
       "fullName": "Светлана Петрова",
       "role": "EMPLOYEE",
       "positionTitle": "Оператор",
@@ -74,7 +74,7 @@
     },
     {
       "key": "igor",
-      "email": "i.saveliev@atelie-nord.ru",
+      "email": "i.saveliev@severny-veter.test",
       "fullName": "Игорь Савельев",
       "role": "EMPLOYEE",
       "positionTitle": "Специалист поддержки",
@@ -88,7 +88,7 @@
     },
     {
       "key": "kirill",
-      "email": "k.volkov@atelie-nord.ru",
+      "email": "k.volkov@severny-veter.test",
       "fullName": "Кирилл Волков",
       "role": "EMPLOYEE",
       "positionTitle": "Менеджер VIP-клиентов",
@@ -103,7 +103,7 @@
     },
     {
       "key": "natalia",
-      "email": "n.frolova@atelie-nord.ru",
+      "email": "n.frolova@severny-veter.test",
       "fullName": "Наталья Фролова",
       "role": "EMPLOYEE",
       "positionTitle": "Оператор (уволена)",
@@ -119,13 +119,13 @@
   ],
   "invitations": [
     {
-      "email": "v.kotova@atelie-nord.ru",
+      "email": "v.kotova@severny-veter.test",
       "role": "EMPLOYEE",
       "createdBy": "elena",
       "expiresInDays": 6
     },
     {
-      "email": "old.invite@atelie-nord.ru",
+      "email": "old.invite@severny-veter.test",
       "role": "EMPLOYEE",
       "createdBy": "elena",
       "expiresInDays": -2

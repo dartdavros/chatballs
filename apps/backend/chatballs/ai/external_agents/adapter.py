@@ -2,6 +2,7 @@
 
 from urllib.parse import urlsplit
 
+from chatballs.identity.demo_seed.north_wind.executor_transport import send_external
 from chatballs.integrations.adapters.auth import BearerAuth, OutboundRequest
 from chatballs.integrations.adapters.contracts import (
     AdapterDescriptor,
@@ -10,7 +11,7 @@ from chatballs.integrations.adapters.contracts import (
     Presentation,
 )
 from chatballs.integrations.adapters.schema import TypeSpec
-from chatballs.integrations.adapters.transport import GuardedTransport, TransportError
+from chatballs.integrations.adapters.transport import TransportError
 from chatballs.integrations.outbound import OutboundUrlRejected, clean_config_url
 
 PROFILE = "external_agent_v1"
@@ -39,7 +40,7 @@ def check_capabilities(address, credential):
                               headers={"Accept": "application/json"})
     request = BearerAuth().prepare(request, {"token": credential}, {})
     try:
-        response = GuardedTransport().send(request, limits=Limits(
+        response = send_external(request, limits=Limits(
             timeout_seconds=10, max_response_bytes=262144, max_file_bytes=262144,
         ))
     except (OutboundUrlRejected, OSError) as error:

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "_comment": "English demo set for «Nord Atelier». Same cast and keys as data/ru: avatars, voice recordings and cross-file references are shared, only the prose differs. Installed into the installer's own organization — neither the organization nor its owner is created here. All demo employees share one password, see demoPassword.",
+  "_comment": "English demo set for «North Wind». Same cast and keys as data/ru: avatars, voice recordings and cross-file references are shared, only the prose differs. Installed into the installer's own organization — neither the organization nor its owner is created here. All demo employees share one password, see demoPassword.",
   "demoPassword": "Chatballs-Demo-2026",
   "showcaseAccounts": [
     "elena",
@@ -27,7 +27,7 @@
   "accounts": [
     {
       "key": "elena",
-      "email": "e.kuznetsova@nord-atelier.com",
+      "email": "e.kuznetsova@severny-veter.test",
       "fullName": "Elena Kuznetsova",
       "role": "ADMIN",
       "positionTitle": "Administrator",
@@ -43,7 +43,7 @@
     },
     {
       "key": "anna",
-      "email": "a.kim@nord-atelier.com",
+      "email": "a.kim@severny-veter.test",
       "fullName": "Anna Kim",
       "role": "ADMIN",
       "positionTitle": "Administrator",
@@ -59,7 +59,7 @@
     },
     {
       "key": "svetlana",
-      "email": "s.petrova@nord-atelier.com",
+      "email": "s.petrova@severny-veter.test",
       "fullName": "Svetlana Petrova",
       "role": "EMPLOYEE",
       "positionTitle": "Operator",
@@ -74,7 +74,7 @@
     },
     {
       "key": "igor",
-      "email": "i.saveliev@nord-atelier.com",
+      "email": "i.saveliev@severny-veter.test",
       "fullName": "Igor Saveliev",
       "role": "EMPLOYEE",
       "positionTitle": "Support specialist",
@@ -88,7 +88,7 @@
     },
     {
       "key": "kirill",
-      "email": "k.volkov@nord-atelier.com",
+      "email": "k.volkov@severny-veter.test",
       "fullName": "Kirill Volkov",
       "role": "EMPLOYEE",
       "positionTitle": "VIP client manager",
@@ -103,7 +103,7 @@
     },
     {
       "key": "natalia",
-      "email": "n.frolova@nord-atelier.com",
+      "email": "n.frolova@severny-veter.test",
       "fullName": "Natalia Frolova",
       "role": "EMPLOYEE",
       "positionTitle": "Operator (left the company)",
@@ -119,13 +119,13 @@
   ],
   "invitations": [
     {
-      "email": "v.kotova@nord-atelier.com",
+      "email": "v.kotova@severny-veter.test",
       "role": "EMPLOYEE",
       "createdBy": "elena",
       "expiresInDays": 6
     },
     {
-      "email": "old.invite@nord-atelier.com",
+      "email": "old.invite@severny-veter.test",
       "role": "EMPLOYEE",
       "createdBy": "elena",
       "expiresInDays": -2

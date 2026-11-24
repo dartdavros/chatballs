@@ -1,4 +1,4 @@
-"""Демо-данные «Ателье Норд» из командной строки (для разработки и CI).
+"""Демо-данные «Северный ветер» из командной строки (для разработки и CI).
 
 Штатный путь — мастер первого запуска и карточка «Демо-данные» в «Настройках».
 Команда делает то же самое синхронно: ``--apply`` ставит набор в организацию
@@ -17,7 +17,7 @@ from chatballs.tenancy.lookup import organization_by_slug
 
 
 class Command(BaseCommand):
-    help = "Installs or removes the «Ателье Норд» demo dataset for an organization."
+    help = "Installs or removes the North Wind demo dataset for an organization."
 
     def add_arguments(self, parser) -> None:
         parser.add_argument("--organization", required=True, help="Organization slug")

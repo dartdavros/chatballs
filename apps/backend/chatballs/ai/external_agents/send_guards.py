@@ -12,6 +12,7 @@ from chatballs.ai.external_agents.normalization import current as content_curren
 from chatballs.ai.external_agents.request_models import ExternalAgentRequest
 from chatballs.ai.external_agents.state import applicable, lock_conversation
 from chatballs.ai.provider.base import ProviderRejected
+from chatballs.identity.demo_seed.north_wind.executor_scope import execution_enabled
 from chatballs.tenancy.database import tenant_atomic
 
 
@@ -72,7 +73,7 @@ def cancel_handoff(context, connection_id, versions):
     with tenant_atomic(context):
         organization = lock_organization(context.organization_id)
         connection = ExternalAgentConnection.objects.select_related("integration").filter(pk=connection_id).first()
-        if (connection is None or not organization.external_execution_enabled or not connection.enabled
+        if (connection is None or not execution_enabled(organization, connection) or not connection.enabled
                 or not connection.integration.is_active or connection.revision != versions["configuration"]
                 or connection.credential_version != versions["credential"]
                 or connection.integration.runtime_revision != versions["integration"]):

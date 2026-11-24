@@ -11,6 +11,10 @@ from chatballs.ai.external_agents.payloads import open_payload, seal, utc
 from chatballs.ai.external_agents.public_messages import history_messages, trigger_payload
 from chatballs.conversations.models import Contact
 from chatballs.i18n import DEFAULT_LANGUAGE, customer_language
+from chatballs.identity.demo_seed.north_wind.executor_scope import (
+    EXECUTOR_ORIGIN,
+    is_local_executor,
+)
 from chatballs.identity.instance_settings import public_base_url
 
 
@@ -51,7 +55,7 @@ def prepare(row):
     if any(size(page(row, [item], position)) > 262144
            for position, item in enumerate(history)):
         raise ValueError("payload_too_large")
-    base = public_base_url().rstrip("/")
+    base = EXECUTOR_ORIGIN if is_local_executor(row.session.connection) else public_base_url().rstrip("/")
     if not base.startswith("https://"):
         raise ValueError("channel_restricted")
     route = f"{base}/api/v1/external-agent/connections/{row.session.connection_id}"

@@ -3,10 +3,14 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from chatballs.ai.external_agents.adapter import PROFILE
+from chatballs.identity.demo_seed.north_wind.executor_scope import (
+    execution_enabled,
+    uses_external_execution,
+)
 
 
-def require_builtin(agent, *, assistance=False):
-    if agent.execution_mode != "builtin" and not (
+def require_builtin(agent, *, assistance=False, conversation=None):
+    if uses_external_execution(agent, conversation=conversation) and not (
         assistance and agent.assistance_enabled and agent.provider_integration_id is not None
     ):
         from chatballs.i18n import t
@@ -36,7 +40,7 @@ def ready(agent, organization):
     if stale_grants(binding)["customFields"]:
         return False
     return bool(
-        organization.external_execution_enabled and agent.execution_mode == "external"
+        execution_enabled(organization, connection, agent_id=agent.pk) and agent.execution_mode == "external"
         and agent.organization_id == organization.pk
         and binding.organization_id == organization.pk and binding.enabled
         and binding.external_agent_id and binding.policy_accepted

@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "contacts": [
+    {
+      "key": "maria",
+      "name": "Maria Sokolova",
+      "phone": "+44 7700 900140",
+      "avatar": "maria-sokolova.jpg",
+      "description": "Order 4471 — ski suit. Customer since August, prefers Telegram.",
+      "createdDaysAgo": 34
+    },
+    {
+      "key": "maria-duplicate",
+      "name": "Maria S.",
+      "phone": "+44 7700 900140",
+      "description": "Duplicate: came in from the website, not yet recognised by phone number.",
+      "createdDaysAgo": 12
+    },
+    {
+      "key": "irina",
+      "name": "Irina Levina",
+      "phone": "",
+      "avatar": "irina-levina.jpg",
+      "description": "Textile buyer for a hotel. Asked us to write by e-mail rather than call.",
+      "company": "The Riverside Hotel",
+      "createdDaysAgo": 60
+    },
+    {
+      "key": "artem",
+      "name": "Artem Gusev",
+      "phone": "",
+      "createdDaysAgo": 3
+    },
+    {
+      "key": "olga",
+      "name": "Olga Melnik",
+      "phone": "+44 7700 900731",
+      "avatar": "olga-melnik.jpg",
+      "createdDaysAgo": 12
+    },
+    {
+      "key": "sergey",
+      "name": "Sergey Krylov",
+      "phone": "+44 7700 900912",
+      "avatar": "sergey-krylov.jpg",
+      "city": "Kazan",
+      "createdDaysAgo": 9
+    },
+    {
+      "key": "viktor",
+      "name": "Viktor Panov",
+      "phone": "+44 20 7946 0210",
+      "company": "Summit Ski School",
+      "city": "Kazan",
+      "description": "Wholesale customer: a 46-room hotel. Handled by Kirill Volkov.",
+      "createdDaysAgo": 90
+    },
+    {
+      "key": "polina",
+      "name": "Polina Rakitina",
+      "phone": "",
+      "createdDaysAgo": 1
+    },
+    {
+      "key": "spammer",
+      "name": "",
+      "phone": "",
+      "createdDaysAgo": 0
+    }
+  ],
+  "connectionIdentities": [
+    {
+      "key": "maria_tg",
+      "contact": "maria",
+      "connection": "tg",
+      "externalUserId": "482913001",
+      "displayName": "Maria Sokolova",
+      "username": "maria_s"
+    },
+    {
+      "key": "irina_email",
+      "contact": "irina",
+      "connection": "email",
+      "externalUserId": "irina@summit-school.test",
+      "displayName": "Irina Levina"
+    },
+    {
+      "key": "artem_max",
+      "contact": "artem",
+      "connection": "max",
+      "externalUserId": "58102277",
+      "displayName": "Artem Gusev"
+    },
+    {
+      "key": "olga_tg",
+      "contact": "olga",
+      "connection": "tg",
+      "externalUserId": "482913004",
+      "displayName": "Olga Melnik",
+      "username": "olga_s"
+    },
+    {
+      "key": "sergey_tg",
+      "contact": "sergey",
+      "connection": "tg",
+      "externalUserId": "482913007",
+      "displayName": "Sergey Krylov",
+      "username": "sergey_s"
+    },
+    {
+      "key": "sergey_web",
+      "contact": "sergey",
+      "connection": "web_help",
+      "externalUserId": "web-sess-4402a",
+      "displayName": "Sergey Krylov"
+    },
+    {
+      "key": "viktor_tg",
+      "contact": "viktor",
+      "connection": "tg",
+      "externalUserId": "482913006",
+      "displayName": "Viktor Panov",
+      "username": "v_panov"
+    },
+    {
+      "key": "polina_email",
+      "contact": "polina",
+      "connection": "email",
+      "externalUserId": "polina.rakitina@example.com",
+      "displayName": "Polina Rakitina"
+    },
+    {
+      "key": "spam_tg",
+      "contact": "spammer",
+      "connection": "tg",
+      "externalUserId": "900000001",
+      "displayName": "Instant Credit",
+      "username": "credit_fast_24"
+    }
+  ],
+  "labels": [
+    {
+      "key": "delivery",
+      "name": "delivery",
+      "color": "#1677ff"
+    },
+    {
+      "key": "return",
+      "name": "returns",
+      "color": "#eb2f96"
+    },
+    {
+      "key": "account",
+      "name": "account",
+      "color": "#13c2c2"
+    },
+    {
+      "key": "address",
+      "name": "address",
+      "color": "#fa8c16"
+    },
+    {
+      "key": "mail",
+      "name": "mail",
+      "color": "#722ed1"
+    },
+    {
+      "key": "order4390",
+      "name": "order 4390",
+      "color": "#52c41a"
+    },
+    {
+      "key": "urgent",
+      "name": "urgent",
+      "color": "#f5222d"
+    },
+    {
+      "key": "vip",
+      "name": "vip",
+      "color": "#b8860b"
+    },
+    {
+      "key": "wholesale",
+      "name": "wholesale",
+      "color": "#0f9d58"
+    },
+    {
+      "key": "pickup",
+      "name": "pickup",
+      "color": "#1677ff"
+    },
+    {
+      "key": "order",
+      "name": "order",
+      "color": "#52c41a"
+    },
+    {
+      "key": "loyalty",
+      "name": "rewards",
+      "color": "#722ed1"
+    },
+    {
+      "key": "fitting",
+      "name": "fitting",
+      "color": "#13c2c2"
+    },
+    {
+      "key": "exchange",
+      "name": "exchange",
+      "color": "#eb2f96"
+    },
+    {
+      "key": "defect",
+      "name": "defect",
+      "color": "#f5222d"
+    }
+  ],
+  "replyTemplates": [
+    {
+      "title": "Consultant greeting",
+      "text": "Hello! I am {{operator_name}} from North Wind. Tell me your size and budget."
+    },
+    {
+      "title": "Pickup in Kazan",
+      "text": "We offer pickup at Centre and Gorki. I’ll check stock and collection times."
+    },
+    {
+      "title": "DPD delivery",
+      "text": "We send by DPD to a pickup point or to your door, 3–5 working days. The tracking number arrives by e-mail on the day of dispatch, by 19:00."
+    },
+    {
+      "title": "Moving a delivery",
+      "text": "We have moved your delivery to {date}, slot {slot}. The courier will call an hour ahead. Please confirm that the slot works for you."
+    },
+    {
+      "title": "Returns — asking for photos",
+      "text": "I am sorry this happened. Please send the order number and photographs of the item in daylight — I will raise a claim for a remake or an exchange."
+    },
+    {
+      "title": "Ski suit catalogue",
+      "text": "Tell me the size and insulation you need. I’ll suggest models from our catalogue."
+    },
+    {
+      "title": "Closing a dialog",
+      "text": "Glad to have helped! If anything else comes up, write to us — I answer during working hours, 10:00 to 20:00."
+    }
+  ],
+  "contactMerges": [
+    {
+      "target": "maria",
+      "source": "maria-duplicate",
+      "reason": "The same person: the phone number matched and it was confirmed in the dialog",
+      "actor": "elena"
+    }
+  ]
+}

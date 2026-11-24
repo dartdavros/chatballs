@@ -18,7 +18,9 @@ function scrollFeedToLatest(event: SyntheticEvent<HTMLImageElement>) {
   if (node && node.scrollHeight - node.scrollTop - node.clientHeight < 400) node.scrollTop = node.scrollHeight;
 }
 
-export function FileMessage({ message, syntax = "markdown" }: { message: ApiMessage; syntax?: ConversationTextSyntax }) {
+export function FileMessage({ message, syntax = "markdown", caption = true }: {
+  message: ApiMessage; syntax?: ConversationTextSyntax; caption?: boolean;
+}) {
   const [lightbox, setLightbox] = useState(false);
   const url = message.attachmentUrl ? resolveApiUrl(message.attachmentUrl) : "";
   const name = message.attachmentName || t("conversations.file");
@@ -47,7 +49,7 @@ export function FileMessage({ message, syntax = "markdown" }: { message: ApiMess
             <a className="link" href={url} download={name}>{t("common.download")}</a>
           </div>
         )}
-      {message.text && <div className="file-message-caption"><ConversationText text={message.text} syntax={syntax} /></div>}
+      {caption && message.text && <div className="file-message-caption"><ConversationText text={message.text} syntax={syntax} /></div>}
     </div>
   );
 }

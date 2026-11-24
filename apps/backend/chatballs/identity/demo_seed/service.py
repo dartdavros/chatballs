@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import logging
+from uuid import uuid4
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -18,6 +19,12 @@ from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
+from chatballs.identity.demo_seed.north_wind.executor_reset import (
+    enqueue_executor_reset,
+    executor_reset_scope,
+)
+from chatballs.identity.demo_seed.north_wind.local_access import local_demo_enabled
+from chatballs.identity.demo_seed.north_wind.state import initial_state
 from chatballs.identity.demo_seed.orchestrator import run_demo_seed
 from chatballs.identity.demo_seed.registry import recording, remove_records
 from chatballs.identity.models import HumanUser, Organization
@@ -77,8 +84,22 @@ def demo_status(organization: Organization) -> dict[str, object]:
             "startedAt": None,
             "finishedAt": None,
             "accounts": [],
+            "generation": None,
+            "reinstallRequestId": None,
+            "reinstall": None,
+            "northWind": False,
+            "localDemoEnabled": local_demo_enabled(),
         }
-    installed = dataset.status == DemoDatasetStatus.INSTALLED
+    installed = dataset.status in (DemoDatasetStatus.INSTALLED, DemoDatasetStatus.REINSTALLING)
+    reinstall = None
+    if dataset.reinstall_request_id:
+        reinstall = {
+            "status": (
+                "RUNNING" if dataset.status == DemoDatasetStatus.REINSTALLING
+                else "FAILED" if dataset.reinstall_error else "SUCCEEDED"
+            ),
+            "errorCode": dataset.reinstall_error,
+        }
     return {
         "status": dataset.status,
         "recordsCount": dataset.records_count,
@@ -86,12 +107,18 @@ def demo_status(organization: Organization) -> dict[str, object]:
         "startedAt": dataset.started_at.isoformat(),
         "finishedAt": dataset.finished_at.isoformat() if dataset.finished_at else None,
         "accounts": showcase_accounts(organization.id) if installed else [],
+        "generation": dataset.generation,
+        "reinstallRequestId": dataset.reinstall_request_id,
+        "reinstall": reinstall,
+        "northWind": dataset.shop_state.get("datasetName") == "north-wind" or bool(dataset.shop_state.get("localTools")),
+        "localDemoEnabled": local_demo_enabled(),
     }
 
 
 def _busy(dataset: DemoDataset | None) -> bool:
     return dataset is not None and dataset.status in (
         DemoDatasetStatus.INSTALLING,
+        DemoDatasetStatus.REINSTALLING,
         DemoDatasetStatus.REMOVING,
     )
 
@@ -173,15 +200,22 @@ def request_remove(*, context: TenantContext, actor: HumanUser | None) -> DemoDa
 
 def install(*, context: TenantContext, dataset: DemoDataset) -> DemoDataset:
     """Выполняет сид под записью в реестр. Вызывается внутри tenant_atomic."""
+    recorder = None
     try:
         # Savepoint: при сбое откатываются и данные, и их записи в реестре —
         # набор либо полный, либо отсутствует.
         with transaction.atomic(), recording(dataset) as recorder:
+            dataset.generation = uuid4()
+            dataset.shop_state = initial_state()
+            dataset.save(update_fields=["generation", "shop_state"])
             run_demo_seed(context, recorder=recorder)
         dataset.records_count = dataset.records.count()
         dataset.status = DemoDatasetStatus.INSTALLED
         dataset.error = ""
     except Exception as error:  # noqa: BLE001 — статус ошибки должен дойти до UI
+        if recorder is not None:
+            recorder.discard_new_files()
+        dataset.refresh_from_db(fields=["generation", "shop_state"])
         logger.exception("Demo install failed for organization %s", context.organization_id)
         dataset.records_count = 0
         dataset.status = DemoDatasetStatus.FAILED
@@ -201,6 +235,12 @@ def install(*, context: TenantContext, dataset: DemoDataset) -> DemoDataset:
 
 def remove(*, context: TenantContext, dataset: DemoDataset) -> None:
     """Удаляет записи по реестру и сам дата-сет. Вызывается внутри tenant_atomic."""
+    if dataset.status != DemoDatasetStatus.REMOVING:
+        if _busy(dataset):
+            raise DemoBusy({"demo": "Демо-данные сейчас устанавливаются или удаляются"})
+        dataset.status = DemoDatasetStatus.REMOVING
+        dataset.save(update_fields=["status"])
+    previous_executor = executor_reset_scope(dataset)
     removed = remove_records(dataset)
     record_audit_event(
         organization=context.organization,
@@ -211,3 +251,4 @@ def remove(*, context: TenantContext, dataset: DemoDataset) -> None:
         payload={"recordsCount": removed},
     )
     dataset.delete()
+    enqueue_executor_reset(context, previous_executor)

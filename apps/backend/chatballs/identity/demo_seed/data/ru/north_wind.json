@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "externalExecutor": {
+    "service": "Локальный исполнитель"
+  },
+  "entries": [
+    {"key":"pickup","customer":"Мария Волкова","responsible":"svetlana","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["pickup","order"]},
+    {"key":"loyalty","customer":"Михаил Серов","responsible":"svetlana","group":"operators","priority":"LOW","awaiting":"CUSTOMER","labels":["loyalty","order"]},
+    {"key":"fitting","customer":"Ольга Миронова","responsible":"anna","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["fitting"]},
+    {"key":"exchange","customer":"Андрей Ковалёв","orderNumber":2042,"responsible":"anna","group":"support","priority":"HIGH","awaiting":"OPERATOR","labels":["exchange","defect"]},
+    {"key":"proposal","customer":"Горнолыжная школа «Высота»","responsible":"elena","group":"operators","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["wholesale","mail"]},
+    {"key":"team","customer":"Ирина Белова","question":"На Ridge Motion размера M сломалась молния. Прикладываю фото. Завтра уезжаю, можно заменить костюм в «Горках»?","responsible":"anna","group":"support","priority":"HIGH","awaiting":"OPERATOR","labels":["defect","urgent"]},
+    {"key":"delivery","customer":"Павел Орлов","responsible":"igor","group":"delivery","priority":"HIGH","awaiting":"OPERATOR","labels":["delivery","urgent"]},
+    {"key":"formatted","customer":"Екатерина Лебедева","responsible":"igor","group":"support","priority":"LOW","awaiting":"CUSTOMER","labels":["pickup","order"]},
+    {"key":"formatted-external","customer":"Дмитрий Климов","orderNumber":2045,"responsible":"igor","group":"support","priority":"HIGH","awaiting":"OPERATOR","labels":["delivery","order"]},
+    {"key":"exchange-refund","customer":"Наталья Фролова","orderNumber":2047,"responsible":"elena","group":"support","priority":"MEDIUM","awaiting":"CUSTOMER","labels":["return"]}
+  ],
+  "deliveryAutomation": {
+    "connection": "Служба доставки",
+    "group": "Доставка",
+    "label": "Доставка на контроле",
+    "delay": "Доставка · Обработать задержку",
+    "schedule": "Доставка · Проверить статус",
+    "manual": "Доставка · Запросить уточнение"
+  },
+  "teamComments": [
+    "Молния повреждена у основания. Можно оформить замену.",
+    "В «Горках» есть костюм того же размера. Можем отложить до завтра."
+  ]
+}

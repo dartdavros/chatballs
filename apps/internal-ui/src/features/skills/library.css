@@ -45,6 +45,9 @@
 .skills-table-row > * {
   min-width: 0;
 }
+.skills-table-row > .row-menu-button {
+  justify-self: end;
+}
 .skill-identity {
   display: flex;
   align-items: flex-start;
@@ -99,8 +102,18 @@
   overflow-wrap: anywhere;
 }
 .skill-chip.is-agent {
-  background: color-mix(in srgb, var(--ai) 9%, var(--surface-card));
-  color: var(--ai);
+  font-weight: 600;
+}
+.skill-chips > .link {
+  min-width: 0;
+  max-width: 100%;
+}
+.skill-chip.is-agent > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skill-chip.is-agent > svg {
+  flex: none;
 }
 .skills-table small {
   font-size: 12px;

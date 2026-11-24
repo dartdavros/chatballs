@@ -25,9 +25,10 @@ from chatballs.ai.external_agents.state import (
     schedule,
 )
 from chatballs.ai.provider.base import ProviderRejected
+from chatballs.identity.demo_seed.north_wind.executor_transport import send_external
 from chatballs.integrations.adapters.auth import BearerAuth, OutboundRequest
 from chatballs.integrations.adapters.contracts import Limits
-from chatballs.integrations.adapters.transport import GuardedTransport, TransportError
+from chatballs.integrations.adapters.transport import TransportError
 from chatballs.integrations.outbound import OutboundUrlRejected
 from chatballs.integrations.service_connections.binding import load_credentials
 from chatballs.tenancy.database import tenant_atomic
@@ -191,7 +192,7 @@ def run(context, conversation_id):
     if work is not None:
         try:
             with execution_guard(lambda: request_current(work, context)):
-                response = GuardedTransport().send(work.request, limits=Limits(
+                response = send_external(work.request, limits=Limits(
                     timeout_seconds=work.timeout, max_response_bytes=262144, max_file_bytes=262144,
                 ))
         except (ProviderRejected, TransportError, OutboundUrlRejected, OSError, http.client.HTTPException):

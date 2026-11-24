@@ -159,19 +159,29 @@ class DemoProvider(LLMProvider):
         params: dict | None = None,
         tools: list[ToolSpec] | None = None,
     ) -> ChatResult:
-        from chatballs.ai.provider import demo_tools
+        from chatballs.ai.provider import (
+            demo_catalog_turn,
+            demo_shop_turn,
+            demo_tools,
+        )
 
         prompt_tokens = sum(_count_tokens(message.content) for message in messages)
         # Результаты инструментов уже пришли — отвечаем по ним; иначе вызываем
         # подходящие к вопросу; не подошёл ни один — отвечаем по знаниям.
         tool_calls: tuple[ToolCall, ...] = ()
-        text = demo_tools.reply_from_results(messages)
-        if text is None:
-            tool_calls = demo_tools.plan_calls(messages, tools or [])
-        if text is None and not tool_calls:
-            text, handoff = compose_reply(messages)
-            if handoff:
-                text = f"{text}\n{HANDOFF_TOKEN}"
+        order_turn = demo_shop_turn.plan_order_turn(messages, tools or [])
+        if order_turn is None:
+            order_turn = demo_catalog_turn.plan_catalog_turn(messages, tools or [])
+        if order_turn is not None:
+            text, tool_calls = order_turn
+        else:
+            text = demo_tools.reply_from_results(messages)
+            if text is None:
+                tool_calls = demo_tools.plan_calls(messages, tools or [])
+            if text is None and not tool_calls:
+                text, handoff = compose_reply(messages)
+                if handoff:
+                    text = f"{text}\n{HANDOFF_TOKEN}"
         text = text or ""
         return ChatResult(
             text=text,

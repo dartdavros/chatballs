@@ -64,7 +64,9 @@ def request_ai_turn(
     if agent is None or not autonomous_allowed(conversation.channel, organization=organization,
                               connection=conversation.connection, conversation=conversation):
         return
-    if agent.execution_mode == "external":
+    from chatballs.identity.demo_seed.north_wind.executor_scope import uses_external_execution
+
+    if uses_external_execution(agent, conversation=conversation):
         from chatballs.ai.external_agents.state import enqueue
 
         enqueue(message, user_id, context)

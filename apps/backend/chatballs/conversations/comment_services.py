@@ -11,6 +11,7 @@ from chatballs.conversations.comment_access import comment_conversation
 from chatballs.conversations.comment_models import ConversationComment
 from chatballs.conversations.realtime import notify_comments_changed
 from chatballs.i18n import t
+from chatballs.identity.demo_seed.north_wind.support_artifacts import record_demo_support_operation
 from chatballs.tenancy.database import tenant_atomic
 
 MAX_COMMENT_LENGTH = 10_000
@@ -37,6 +38,7 @@ def validate_comment(*, audience, text, operation_id):
     return text.strip(), operation_id
 
 
+@record_demo_support_operation
 def create_comment(*, context, conversation_id, audience, text, operation_id):
     text, operation_id = validate_comment(audience=audience, text=text, operation_id=operation_id)
     with tenant_atomic(context):

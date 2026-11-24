@@ -1,4 +1,4 @@
-"""Оркестратор демо-сида «Северная Верфь».
+"""Оркестратор демонстрационного набора организации.
 
 Создаёт полный, взаимосвязанный набор выдуманных данных одной организации,
 будто система уже работает. Запускается строго в порядке FK-зависимостей:
@@ -13,7 +13,7 @@ from chatballs.identity.demo_seed.loaders import (
     channels_ai as channels_ai_loader,
 )
 from chatballs.identity.demo_seed.loaders import (
-    conversations as conversations_loader,
+    contacts as contacts_loader,
 )
 from chatballs.identity.demo_seed.loaders import (
     foundation as foundation_loader,
@@ -24,9 +24,9 @@ from chatballs.identity.demo_seed.loaders import (
 from chatballs.identity.demo_seed.loaders import (
     support as support_loader,
 )
-from chatballs.identity.demo_seed.loaders import (
-    webchat as webchat_loader,
-)
+from chatballs.identity.demo_seed.north_wind.seed_entries import load_entries
+from chatballs.identity.demo_seed.north_wind.seed_executor import load_executor
+from chatballs.identity.demo_seed.north_wind.seed_tools import load_local_tools
 from chatballs.identity.demo_seed.refs import DemoRefs
 from chatballs.tenancy.context import TenantContext
 
@@ -52,9 +52,11 @@ def run_demo_seed(
 
     foundation_loader.load(context, refs)
     channels_ai_loader.load(context, refs)
+    load_local_tools(refs)
     # Поддержка раньше диалогов: статьи портала привязываются к агентам.
     support_loader.load(context, refs)
-    conversations_loader.load(context, refs)
-    webchat_loader.load(context, refs)
-    operations_loader.load(context, refs)
+    contacts_loader.load(refs)
+    operations_loader.load(refs)
+    load_executor(refs)
+    load_entries(refs)
     return refs

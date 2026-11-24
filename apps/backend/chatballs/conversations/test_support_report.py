@@ -30,6 +30,7 @@ from chatballs.conversations.support_report_test_base import SupportReportTestBa
 from chatballs.identity.group_models import EmployeeGroupMember
 from chatballs.identity.models import HumanUser, OrganizationMembership
 from chatballs.identity.supervision_models import EmployeeGroupSupervision
+from chatballs.integrations.models import Integration
 from chatballs.testing import TenantAPIClient
 
 
@@ -173,7 +174,13 @@ class SupportReportTests(SupportReportTestBase):
 
     def test_human_return_to_ai_records_end_without_queue_and_replays_once(self):
         from chatballs.ai.models import AIAgent
-        AIAgent.objects.create(organization=self.organization, channel=self.conversation.channel,
+
+        channel = self.conversation.channel
+        provider = Integration.objects.create(organization=self.organization, kind="LLM_PROVIDER",
+                                              provider="DEMO", name="Demo", secret="test-provider")
+        self.connection.channel = channel
+        self.connection.save(update_fields=["channel"])
+        AIAgent.objects.create(organization=self.organization, channel=channel, provider_integration=provider,
                                name="Agent", status="ACTIVE")
         claim_conversation(context=self.context, conversation_id=self.conversation.pk)
         operation = uuid4()

@@ -202,6 +202,9 @@ AUDIT_ACTION_LABELS: dict[str, str] = {
     "demo.installed_accounts": "audit.action_demo_installed_accounts",
     "demo.remove_requested": "audit.action_demo_remove_requested",
     "demo.removed": "audit.action_demo_removed",
+    "demo.reinstall_requested": "audit.action_demo_reinstall_requested",
+    "demo.reinstalled": "audit.action_demo_reinstalled",
+    "demo.reinstall_failed": "audit.action_demo_reinstall_failed",
 }
 
 def audit_result_label(result: str) -> str:

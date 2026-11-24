@@ -2,6 +2,8 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 
+from chatballs.identity.demo_seed.north_wind.executor_scope import execution_enabled
+
 
 def external_disclosure(widget):
     try:
@@ -10,7 +12,7 @@ def external_disclosure(widget):
     except (ObjectDoesNotExist, AttributeError):
         return None
     organization = widget.organization
-    if agent.execution_mode != "external" or not organization.external_execution_enabled:
+    if agent.execution_mode != "external" or not execution_enabled(organization, binding.connection, agent_id=agent.pk):
         return None
     from chatballs.ai.external_agents.custom_field_revisions import fingerprint
 

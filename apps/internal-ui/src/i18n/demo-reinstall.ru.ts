@@ -1,0 +1,15 @@
+export const demoReinstallRu = {
+  "settings.demo_north_wind": "«Северный ветер»",
+  "settings.demo_north_wind_contents": "Диалоги, сотрудники, агенты и сценарии магазина горнолыжной одежды.",
+  "settings.demo_reinstall": "Переустановить",
+  "settings.demo_reinstall_title": "Переустановить демо-данные?",
+  "settings.demo_reinstall_description": "Изменения в демо-диалогах и данные, созданные во время показа, будут удалены. Магазин «Северный ветер» и сценарии вернутся в исходное состояние. Рабочие данные сохранятся.",
+  "settings.demo_reinstall_running": "Переустанавливаем демо-данные",
+  "settings.demo_reinstall_preparing": "Готовим исходные данные магазина и диалоги.",
+  "settings.demo_reinstall_succeeded": "Демо-данные переустановлены",
+  "settings.demo_reinstall_repeat": "Можно повторить сценарии магазина с начала.",
+  "settings.demo_reinstall_failed": "Не удалось переустановить демо-данные",
+  "settings.demo_reinstall_retry": "Данные магазина не загрузились. Текущий набор доступен. Попробуйте ещё раз.",
+  "settings.demo_reinstall_conflict": "С демо-данными связана рабочая запись. Уберите связь перед повтором.",
+  "settings.demo_reinstall_conflict_conversation": "С демо-данными связан рабочий диалог. Откройте его и снимите связь перед повтором.",
+};

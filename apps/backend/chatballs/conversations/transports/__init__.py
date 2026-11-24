@@ -70,7 +70,7 @@ def poll(integration):
     состояния. Курсор при сбое не двигается.
     """
 
-    if backoff.should_skip(integration.id):
+    if integration.config.get("demoSeed") or backoff.should_skip(integration.id):
         return [], integration.poll_marker
     try:
         result = _POLL[integration.provider](integration)
@@ -82,18 +82,26 @@ def poll(integration):
 
 
 def send_reply(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    if _local_demo(integration):
+        return _mock_send(integration, "text", chat_id, text)
     return observed_send(_SEND[integration.provider], integration, chat_id=chat_id, user_id=user_id, text=text)
 
 
 def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    if _local_demo(integration):
+        return _mock_send(integration, "contact_request", chat_id, text)
     return observed_send(_CONTACT_REQUEST[integration.provider], integration, chat_id=chat_id, user_id=user_id, text=text)
 
 
 def send_contact_ack(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    if _local_demo(integration):
+        return _mock_send(integration, "contact_ack", chat_id, text)
     return _CONTACT_ACK[integration.provider](integration, chat_id=chat_id, user_id=user_id, text=text)
 
 
 def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url: str) -> bool:
+    if _local_demo(integration):
+        return _mock_send(integration, "call", chat_id, text, url=url)
     sender = _CALL_INVITE.get(integration.provider)
     if sender is None:
         return False
@@ -138,6 +146,8 @@ _FILE_SEND = {
 def download_file(integration, inbound_file) -> tuple[bytes, str]:
     if inbound_file.content:
         return inbound_file.content, inbound_file.content_type or "application/octet-stream"
+    if _local_demo(integration):
+        raise ValueError(t("conversations.file_download_unsupported"))
     if integration.provider == IntegrationProvider.TELEGRAM and inbound_file.file_id:
         content, guessed = _telegram.download_file(integration, inbound_file.file_id)
         return content, inbound_file.content_type or guessed
@@ -153,6 +163,8 @@ def supports_file_send(integration) -> bool:
 
 
 def send_file(integration, *, chat_id: str, user_id: str, content: bytes, filename: str, content_type: str, caption: str = "") -> bool:
+    if _local_demo(integration):
+        return _mock_send(integration, "attachment", chat_id, caption, filename=filename, size=len(content))
     sender = _FILE_SEND.get(integration.provider)
     if sender is None:
         return False
@@ -185,6 +197,8 @@ def avatar_source(integration, inbound) -> str:
 
 def download_avatar(integration, inbound) -> tuple[bytes, str] | None:
     """Фото отправителя: (байты, ключ источника). None — фото у провайдера нет."""
+    if _local_demo(integration):
+        return None
     source = avatar_source(integration, inbound)
     if not source:
         return None
@@ -203,6 +217,8 @@ def download_avatar(integration, inbound) -> tuple[bytes, str] | None:
 def download_voice(integration, inbound) -> tuple[bytes, str]:
     if inbound.voice_content:
         return inbound.voice_content, inbound.voice_mime or "audio/webm"
+    if _local_demo(integration):
+        raise ValueError(t("conversations.voice_download_unsupported"))
     if integration.provider == IntegrationProvider.TELEGRAM and inbound.voice_file_id:
         return _telegram.download_voice(integration, inbound.voice_file_id)
     if integration.provider == IntegrationProvider.MAX and inbound.voice_url:
@@ -217,6 +233,8 @@ def supports_voice_send(integration) -> bool:
 
 
 def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
+    if _local_demo(integration):
+        return _mock_send(integration, "voice", chat_id, "", duration=duration, size=len(content))
     sender = _VOICE_SEND.get(integration.provider)
     if sender is None:
         return False
@@ -228,3 +246,13 @@ def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, conte
         content_type=content_type,
         duration=duration,
     )
+
+
+def _local_demo(integration):
+    return integration.provider != IntegrationProvider.WEB and integration.config.get("demoSeed")
+
+
+def _mock_send(integration, kind, chat_id, text, **details):
+    from chatballs.identity.demo_seed.north_wind.mock_channels import deliver
+
+    return deliver(integration, kind=kind, target=chat_id, text=text, **details)

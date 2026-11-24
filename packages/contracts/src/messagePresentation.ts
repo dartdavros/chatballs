@@ -10,5 +10,5 @@ export type MessagePresentation = {
     srcDoc: string;
   };
   deliveryRepresentation?: "html" | "text";
-  template?: { skillId: string; skillRevision: number; id: string; name: string };
+  template?: { skillId: string; skillRevision: number; id: string; name: string; documentPath?: string };
 };

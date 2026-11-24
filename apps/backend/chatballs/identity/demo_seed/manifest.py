@@ -28,9 +28,11 @@ SCHEMA_VERSION = 1
 MANIFEST_FILES: tuple[str, ...] = (
     "organization",
     "channels_ai",
-    "conversations",
+    "contacts",
     "support",
     "operations",
+    "north_wind",
+    "north_wind_history",
 )
 
 

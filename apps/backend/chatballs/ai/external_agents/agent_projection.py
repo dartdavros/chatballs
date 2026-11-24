@@ -5,6 +5,7 @@ from copy import copy
 from django.core.exceptions import ObjectDoesNotExist
 
 from chatballs.ai.external_agents.readiness import ready
+from chatballs.identity.demo_seed.north_wind.executor_scope import is_local_executor
 
 
 def execution_projection(agent, organization):
@@ -17,7 +18,7 @@ def execution_projection(agent, organization):
     candidate = copy(agent)
     candidate.execution_mode = "external"
     available = ready(candidate, organization)
-    if not organization.external_execution_enabled:
+    if not organization.external_execution_enabled and not is_local_executor(connection):
         reason = "disabled"
     elif not connection.enabled or not integration.is_active:
         reason = "connectionDisabled"

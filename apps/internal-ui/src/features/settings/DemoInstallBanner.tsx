@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "../../api/client";
 import { Icon, LogoSpinner } from "../../shared/icons";
-import type { DemoState } from "./DemoDataCard";
+import type { DemoState } from "./useDemoData";
 import { t } from "../../i18n";
 
 // Полоса поверх рабочей области, пока worker ставит демо-данные. Без неё

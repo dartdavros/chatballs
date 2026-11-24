@@ -12,6 +12,10 @@ from chatballs.ai.external_agents.config_access import (
     owner,
 )
 from chatballs.ai.external_agents.config_policy import invalid
+from chatballs.identity.demo_seed.north_wind.executor_scope import (
+    execution_enabled,
+    is_local_executor,
+)
 from chatballs.integrations.adapters.transport import TransportError
 from chatballs.integrations.service_connections.binding import load_credentials
 from chatballs.tenancy.database import tenant_atomic
@@ -20,8 +24,9 @@ from chatballs.tenancy.database import tenant_atomic
 def check_connection(context, connection_id):
     with tenant_atomic(context):
         organization = owner(context)
-        require_enabled(organization)
         row = connection_for(context, connection_id)
+        if not execution_enabled(organization, row):
+            require_enabled(organization)
         if not row.enabled:
             invalid()
         version = (organization.external_execution_version, row.revision)
@@ -45,8 +50,9 @@ def check_connection(context, connection_id):
         raise
     with tenant_atomic(context):
         organization = owner(context)
-        require_enabled(organization)
         row = connection_for(context, connection_id, lock=True)
+        if not execution_enabled(organization, row):
+            require_enabled(organization)
         if version != (organization.external_execution_version, row.revision):
             invalid()
         row.capabilities, row.checked_at = capabilities, timezone.now()
@@ -68,6 +74,8 @@ def change_key(context, connection_id, *, revoke=False):
         row = connection_for(context, connection_id, lock=True)
         if not revoke:
             require_enabled(organization)
+            if is_local_executor(row):
+                invalid()
         token = None if revoke else secrets.token_urlsafe(48)
         row.inbound_key_hash = None if token is None else key_hash(token)
         row.save(update_fields=["inbound_key_hash"])
