@@ -8,8 +8,8 @@
 #
 # Запрос принимается только на официальный релиз: версия проверяется по
 # формату, compose.yaml скачивается только со страницы релизов репозитория
-# продукта, а все образы в нём обязаны быть закреплены по digest. Больше
-# ничего этот сервис делать не умеет, что бы ни лежало в запросе.
+# продукта, а все образы в нём обязаны быть закреплены по digest. После успешной
+# установки её сценарий очищает неиспользуемые образы старых релизов.
 #
 # Сам сервис тоже входит в проект и пересоздаётся при обновлении, поэтому
 # работу выполняет отдельный контейнер вне проекта (chatballs-updater-apply.sh):
@@ -94,6 +94,7 @@ start_helper() {
       -e CHATBALLS_UPDATE_REPO="$REPO" \
       -e CHATBALLS_PROJECT="$PROJECT" \
       -e CHATBALLS_WORKDIR="$WORKDIR" \
+      -e CHATBALLS_PREVIOUS_COMPOSE="${CONFIG_FILES%%,*}" \
       -e CHATBALLS_OVERRIDE_FILES="$OVERRIDE_FILES" \
       -e CHATBALLS_UPDATES_VOLUME="$UPDATES_VOLUME" \
       -e CHATBALLS_UPDATER_IMAGE="$SELF_IMAGE" \

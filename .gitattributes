@@ -3,6 +3,7 @@
 # Shell-скрипты исполняются в Linux-контейнерах и на серверах: CRLF в шебанге
 # ломает exec (например, postgres init-runtime-roles.sh на Windows-чекауте).
 *.sh text eol=lf
+*.awk text eol=lf
 chatballs text eol=lf
 
 # Python читают и переписывают линуксовые инструменты (ruff в контейнере, CI).

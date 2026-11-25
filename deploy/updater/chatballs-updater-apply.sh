@@ -17,6 +17,7 @@ STATUS="$DIR/status.json"
 LOG="$DIR/apply.log"
 FILE="$DIR/compose.$VERSION.yaml"
 . "$(dirname "$0")/chatballs-updater-compose.sh"
+. "$(dirname "$0")/chatballs-updater-images.sh"
 
 log() { echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) apply $VERSION: $*" | tee -a "$LOG"; }
 
@@ -59,6 +60,11 @@ if ! compose $PROFILE_ARGS config -q >>"$LOG" 2>&1; then
   fail "compose.yaml не прошёл проверку"
 fi
 
+retained_images=""
+if ! retained_images=$(updater_retained_images 2>>"$LOG"); then
+  log "очистка образов пропущена: не удалось определить образы двух релизов"
+fi
+
 write_status running "pulling"
 log "загрузка образов"
 if ! compose $PROFILE_ARGS pull >>"$LOG" 2>&1; then
@@ -82,7 +88,12 @@ if [ -n "$WORKDIR" ]; then
     log "compose.yaml в $WORKDIR обновлён"
   else
     log "предупреждение: не удалось обновить compose.yaml в $WORKDIR"
+    retained_images=""
   fi
+fi
+
+if [ -n "$retained_images" ] && ! updater_cleanup_images "$retained_images"; then
+  log "предупреждение: очистка старых образов завершилась с ошибкой"
 fi
 
 write_status done "updated"
