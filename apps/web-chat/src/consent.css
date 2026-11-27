@@ -3,4 +3,4 @@
 :where(.cb-consent :is(b, strong)) { font-weight: 600; color: var(--cb-field-text); }
 :where(.cb-consent :is(ul, ol)) { margin: 2px 0 0; padding-left: 18px; }
 :where(.cb-consent p) { margin: 0; }
-:where(.cb-consent-revision) { margin-top: 6px; color: var(--cb-muted); font-size: 11.5px; }
+:where(.cb-pre-chat-consent + .cb-consent) { padding: 0 4px; }

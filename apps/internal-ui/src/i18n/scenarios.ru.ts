@@ -49,6 +49,7 @@ export const scenariosRu = {
   "scenarios.title": "Сценарии",
   "scenarios.lead": "Сценарий выполняет за сотрудника несколько действий в Chatballs и подключённых сервисах.",
   "scenarios.create": "Создать сценарий",
+  "scenarios.list_empty": "Сценариев пока нет",
   "scenarios.new_name": "Новый сценарий",
   "scenarios.name": "Название сценария",
   "scenarios.launch": "Запуск",

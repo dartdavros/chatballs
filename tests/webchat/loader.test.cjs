@@ -7,7 +7,7 @@ const vm = require("node:vm");
 const assets = join(__dirname, "../../apps/backend/chatballs/webchat/loader_assets");
 function loaderSource() {
   let source = readFileSync(join(assets, "runtime.js"), "utf8");
-  for (const module of ["site_fields", "observations", "appearance", "launcher", "genie"]) {
+  for (const module of ["site_fields", "observations", "appearance", "launcher", "site_events", "site_invitation", "genie"]) {
     source = source.replace(`/*__${module.toUpperCase()}__*/`, () => readFileSync(join(assets, `${module}.js`), "utf8"));
   }
   return source;
@@ -98,7 +98,7 @@ test("public loader delegates only microphone to the iframe src before mounting"
   let mountedFrames = 0;
   function element(tagName) {
     return {
-      tagName, children: [], style: {},
+      tagName, children: [], dataset: {}, style: { setProperty() {}, removeProperty() {} },
       setAttribute(name, value) { this[name] = value; },
       addEventListener() {},
       appendChild(child) {
@@ -134,6 +134,8 @@ test("public loader delegates only microphone to the iframe src before mounting"
     },
     window: {
       addEventListener() {},
+      clearTimeout() {},
+      setTimeout() {},
       matchMedia: () => ({ matches: false, addEventListener() {} }),
     },
     Audio: function () {},

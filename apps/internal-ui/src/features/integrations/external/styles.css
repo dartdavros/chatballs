@@ -16,13 +16,14 @@
 .server-enabled small { display: block; margin-top: 3px; color: var(--n-4); font-size: 12px; }
 .server-form .server-enabled { padding: 14px 0 0; background: transparent; border: 0; border-top: 1px solid var(--n-9); border-radius: 0; }
 .server-two-fields { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
-.server-request-fields { display: flex; align-items: flex-start; gap: 8px; }
+.server-request-fields { display: flex; gap: 8px; }
 .server-method-label { display: block; margin-bottom: 6px; color: var(--n-2); font-size: 12.5px; font-weight: 600; }
-.server-methods { flex: none; font-family: var(--font-mono); }
-.server-methods button { height: 32px; padding: 0 13px; font-size: 12.5px; }
+.server-request-fields > .select-like { flex: 0 0 7rem; }
+.server-request-fields > .select-like > span:first-child { display: none; }
 .server-template-field { position: relative; flex: 1; min-width: 0; height: 36px; font-family: var(--font-mono); font-size: 13px; }
-.server-template-field input { width: 100%; height: 36px; padding: 0 11px; border: 1px solid var(--n-7); border-radius: 8px; background: var(--surface-card); color: var(--n-1); outline: none; font: inherit; }
+.server-template-field input { width: 100%; height: 100%; padding: 0 11px; border: 1px solid var(--n-7); border-radius: 8px; background: var(--surface-card); color: var(--n-1); outline: none; font: inherit; }
 .server-template-field input:not(:focus) { color: transparent; }
+.server-template-field input::placeholder { color: var(--n-5); }
 .server-template-field input:focus { border-color: var(--primary); }
 .server-template-field.is-invalid input { border-color: var(--error-border); }
 .server-template-field > div { position: absolute; inset: 1px 11px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; pointer-events: none; color: var(--n-1); }
@@ -79,6 +80,7 @@
 .server-page-loading > div { display: flex; flex: 1; align-items: center; justify-content: center; gap: 8px; color: var(--n-4); font-size: 13px; }
 .server-page-loading > div svg { color: var(--primary); }
 @media (max-width: 900px) {
+  .server-template-field { height: 44px; }
   .server-header-row { grid-template-columns: 130px minmax(0,1fr) 30px; }
   .server-two-fields { grid-template-columns: 1fr; }
   .server-actions { flex-wrap: wrap; }

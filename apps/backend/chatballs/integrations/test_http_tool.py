@@ -37,6 +37,19 @@ class HttpToolTestCase(ExternalServerTestCase):
 
 
 class BuildRequestTests(HttpToolTestCase):
+    def test_write_methods_preserve_method_and_encode_json(self):
+        for method in ("POST", "PUT", "PATCH", "DELETE"):
+            with self.subTest(method=method):
+                response = self._create("HTTP", order_status(
+                    method=method, url="https://shop.example.test/api/orders",
+                    parameters=[{"name": "state", "type": "string", "required": True, "location": "body"}],
+                ), name=f"Change {method}")
+                self.assertEqual(response.status_code, 201, response.content)
+                tool = Integration.objects.get(id=response.json()["integration"]["id"])
+                request = build_request(tool, {"state": "cancelled"}, {})
+                self.assertEqual(request.method, method)
+                self.assertEqual(json.loads(request.body), {"state": "cancelled"})
+
     def test_arguments_go_to_the_path_and_the_query(self) -> None:
         request = build_request(
             self._tool(), {"order_number": "A 10/482?x=1#y", "include_items": True}, {}

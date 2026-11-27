@@ -8,7 +8,7 @@
     siteInvitation.style.display = open ? "none" : "";
     siteInvitation.style.left = appearance.position === "left" ? "24px" : "";
     siteInvitation.style.right = appearance.position === "right" ? "24px" : "";
-    siteInvitation.style.bottom = (appearance.size + 36) + "px";
+    siteInvitation.style.bottom = (launcherHeight() + 36) + "px";
     siteInvitation.style.setProperty("--cb-accent", appearance.accent);
   }
   function renderSiteInvitation(copy) {

@@ -82,7 +82,7 @@
   // самим iframe (transition в его стилях).
   var PANEL_WIDTH = { normal: "min(440px,calc(100vw - 32px))", expanded: "min(820px,calc(100vw - 32px))" };
   function panelHeight() {
-    return "min(" + (expanded ? 820 : 720) + "px,calc(100vh - " + (appearance.size + 60) + "px))";
+    return "min(" + (expanded ? 820 : 720) + "px,calc(100vh - " + (launcherHeight() + 60) + "px))";
   }
 
   // На телефоне плавающее окно не помещается: панель занимает весь экран,
@@ -97,7 +97,7 @@
     shell.style.top = full ? "0" : "";
     shell.style.left = full ? "0" : appearance.position === "left" ? "24px" : "";
     shell.style.right = full ? "0" : appearance.position === "right" ? "24px" : "";
-    shell.style.bottom = full ? "0" : (appearance.size + 36) + "px";
+    shell.style.bottom = full ? "0" : (launcherHeight() + 36) + "px";
     shell.style.width = full ? "100%" : expanded ? PANEL_WIDTH.expanded : PANEL_WIDTH.normal;
     shell.style.height = full ? "100%" : panelHeight();
     frame.style.borderRadius = panelRadius() + "px";
@@ -115,7 +115,8 @@
   // Пока панель на весь экран, кнопка висела бы поверх поля ввода.
   function showLauncher() {
     var hidden = open && mobile.matches;
-    btn.style.opacity = hidden ? "0" : "1";
+    if (hidden) btn.style.setProperty("opacity", "0", "important");
+    else btn.style.removeProperty("opacity");
     btn.style.pointerEvents = hidden ? "none" : "";
   }
 
@@ -156,7 +157,7 @@
     if (!next) notifySiteEvent("cancel");
     notifyVisitor(next ? "widget_open" : "widget_close");
     animating = true;
-    btn.style.opacity = "0";
+    btn.style.setProperty("opacity", "0", "important");
     btn.style.pointerEvents = "none";
     if (open) {
       // Контейнер раскладывается до расчёта: силуэт строится по настоящим

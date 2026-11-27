@@ -1,6 +1,9 @@
 export const widgetAppearanceRu = {
   "widget_appearance.description": "Цвет, иконки и кнопка виджета на сайте. Предпросмотр справа обновляется сразу.",
   "widget_appearance.color": "Цвет",
+  "widget_appearance.theme": "Тема",
+  "widget_appearance.theme_light": "Светлая",
+  "widget_appearance.theme_dark": "Тёмная",
   "widget_appearance.blue": "Синий",
   "widget_appearance.indigo": "Индиго",
   "widget_appearance.teal": "Бирюза",
@@ -39,7 +42,7 @@ export const widgetAppearanceRu = {
   "widget_appearance.square": "Квадрат",
   "widget_appearance.css": "Свои CSS-стили",
   "widget_appearance.classes": "Классы виджета ↗",
-  "widget_appearance.css_hint": "Применяются внутри окна чата, на сайт не влияют. @import и внешние url() отбрасываются. Если стили сломают виджет — «Сбросить» вернёт стандартный вид.",
+  "widget_appearance.css_hint": "Для кнопки открытия используйте .cb-launcher. Правила действуют только в виджете. @import и внешние url() отбрасываются. «Сбросить» возвращает стандартный вид.",
   "widget_appearance.save": "Сохранить оформление",
   "widget_appearance.reset": "Сбросить",
   "widget_appearance.unsaved": "есть несохранённые изменения",

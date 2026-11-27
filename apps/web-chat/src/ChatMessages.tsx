@@ -14,8 +14,8 @@ import type { AnswerPlaybackControl } from "./speech/useAnswerPlayback";
 
 export function SystemMessage({ text, neutral = false }: { text: string; neutral?: boolean }) {
   return <div style={{ textAlign: "center", margin: "12px 0" }}><span style={neutral
-    ? { display: "inline-block", maxWidth: "92%", padding: "4px 11px", borderRadius: 12, background: "#eceef2", fontSize: 11.5, color: "#8c8c8c", lineHeight: 1.4 }
-    : { display: "inline-block", padding: "4px 12px", borderRadius: 20, background: "#e6f4ff", border: "1px solid #91caff", fontSize: 11.5, color: "#0958d9" }}>{text}</span></div>;
+    ? { display: "inline-block", maxWidth: "92%", padding: "4px 11px", borderRadius: 12, background: "var(--cb-neutral-bg, #eceef2)", fontSize: 11.5, color: "var(--cb-neutral-text, #8c8c8c)", lineHeight: 1.4 }
+    : { display: "inline-block", padding: "4px 12px", borderRadius: 20, background: "var(--cb-info-bg, #e6f4ff)", border: "1px solid var(--cb-info-border, #91caff)", fontSize: 11.5, color: "var(--cb-info-text, #0958d9)" }}>{text}</span></div>;
 }
 
 /** Строка автора над пузырём: аватар и имя — как на утверждённом образце. */
@@ -26,7 +26,7 @@ function AuthorRow({ accent, name, operator, avatarUrl }: { accent: string; name
       {operator
         ? <span style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", background: accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flex: "none", fontSize: 11, fontWeight: 600 }}>{avatarUrl && avatarUrl !== failedAvatar ? <img src={avatarUrl} alt="" onError={() => setFailedAvatar(avatarUrl)} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : t("chat.operator_initial")}</span>
         : <BotAvatar size={32} accent={accent} />}
-      <span style={{ fontSize: 12.5, fontWeight: 600, color: "#595959" }}>{name}</span>
+      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--cb-secondary, #595959)" }}>{name}</span>
     </div>
   );
 }
@@ -69,7 +69,7 @@ export function Typing({ accent, authorName }: { accent: string; authorName: str
     <div style={{ marginBottom: 6 }}>
       <AuthorRow accent={accent} name={authorName} operator={false} />
       <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "#fff", border: "1px solid #eee", borderRadius: "4px 16px 16px 16px", padding: "11px 15px" }}>
-        <span style={{ fontSize: 12.5, color: "#8c8c8c" }}>{t("chat.typing")}</span>
+        <span style={{ fontSize: 12.5, color: "var(--cb-neutral-text, #8c8c8c)" }}>{t("chat.typing")}</span>
         <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
           {[0, 0.2, 0.4].map((delay) => <span key={delay} style={{ width: 6, height: 6, borderRadius: "50%", background: accent, animation: `wcTyping 1.2s infinite ease-in-out ${delay}s` }} />)}
         </span>

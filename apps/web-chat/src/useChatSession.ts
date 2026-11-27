@@ -46,6 +46,7 @@ export function useChatSession() {
   const siteEvent = useSiteEvents({ config, token, accepted, consentReady, widgetKey: WIDGET_KEY, hostOrigin: HOST_ORIGIN });
   useVisitorSignals(accepted ? token : null, HOST_ORIGIN);
   const [messages, setMessages] = useState<WebMessage[]>([]);
+  const [greeting, setGreeting] = useState<string>();
   const [ratingRequests, setRatingRequests] = useState<RatingRequest[]>([]);
   const [pending, setPending] = useState<string[]>([]);
   const [state, setState] = useState<"ai" | "operator" | "waiting">("ai");
@@ -105,6 +106,7 @@ export function useChatSession() {
       setContactSent(false);
     }
     setState(data.state);
+    setGreeting(data.greeting ?? "");
     if (data.playback) setConfig(previous => previous && previous.speech
       && (previous.speech.ttsRevision !== data.playback!.ttsRevision || previous.speech.playbackAvailable !== data.playback!.playbackAvailable)
       ? { ...previous, speech: { ...previous.speech, ...data.playback } } : previous);
@@ -128,6 +130,7 @@ export function useChatSession() {
 
   function forgetSession() {
     playback.clear();
+    setGreeting(undefined);
     setRatingRequests([]);
     forgetConsent();
     lastId.current = 0;
@@ -191,5 +194,5 @@ export function useChatSession() {
   const showPhoneForm = lastContactRequestId > 0 && !(contactSent || messages.some((message) => message.kind === "contact"));
   const unavailable = config !== null && !config.available;
 
-  return { playback, config, state, accepted, siteValues, siteEvent, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
+  return { playback, config, greeting, state, accepted, siteValues, siteEvent, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
 }

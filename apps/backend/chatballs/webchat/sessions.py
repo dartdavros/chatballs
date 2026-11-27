@@ -128,8 +128,13 @@ def _create_session(*, context, widget, integration, fields, pre_chat_fields, co
         save_site_fields(session, values)
     if consent_version is not None:
         from chatballs.webchat.consent import record_acceptance
+        from chatballs.webchat.greetings import render_greeting
 
         record_acceptance(session, version=consent_version, fields=pre_chat_fields)
+        greeting = render_greeting(session)
+        if greeting:
+            session.greeting = greeting
+            session.save(update_fields=["greeting"])
     return {"token": token, "sessionId": session_id}
 
 

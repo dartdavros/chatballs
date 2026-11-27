@@ -2,12 +2,14 @@ import type { MessageKey } from "../../../i18n";
 
 export type WidgetAppearance = {
   accent: string;
+  theme: "light" | "dark";
   launcherIcon: string;
   headerIcon: string | null;
   launcherPosition: "left" | "right";
   launcherSize: 48 | 56 | 64;
   launcherShape: "circle" | "rounded" | "square";
   customCss: string;
+  launcherCss?: string;
 };
 
 export const COLOR_PRESETS: ReadonlyArray<{ hex: string; label: MessageKey }> = [
@@ -23,6 +25,7 @@ export const COLOR_PRESETS: ReadonlyArray<{ hex: string; label: MessageKey }> = 
 
 export const DEFAULT_APPEARANCE: WidgetAppearance = {
   accent: COLOR_PRESETS[0].hex,
+  theme: "light",
   launcherIcon: "",
   headerIcon: "",
   launcherPosition: "right",

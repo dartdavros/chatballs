@@ -2,6 +2,7 @@ import type { ChannelRoute } from "../../shared/ChannelNavigationMenu";
 import type { EmployeeGroup } from "../../types";
 import { AgentSkillsCard } from "../skills/AgentSkillsCard";
 import { AgentActionsCard } from "./actions/AgentActionsCard";
+import { AgentGreetingCard } from "./AgentGreetingCard";
 import { AgentToolsCard } from "./AgentToolsCard";
 import { InstructionsCard } from "./InstructionsCard";
 import { KnowledgeCard } from "./KnowledgeCard";
@@ -33,6 +34,7 @@ export function AgentConfiguration({ card, state, groups, canManage, canManageCo
         <ModelCard card={card} providers={providers} canManage={canManage} busy={busy} toolsUnsupported={toolsUnsupported} apply={apply} />
         {canManage && <AgentSkillsCard card={card} />}
         <KnowledgeCard card={card} canManage={canManage} openKnowledge={openKnowledge} reload={reload} /></>}
+    <AgentGreetingCard key={card.id} card={card} canManage={canManage} busy={busy} apply={apply} />
   </div><div className="agent-column">
     {!external && canManage && <AgentActionsCard key={`actions-${card.id}`} agent={card.id} />}
     <AssignmentCard card={card} groups={groups} canManage={canManage} busy={busy} apply={apply} />

@@ -139,6 +139,12 @@ def update_agent_card(
     )
     channel = update_channel(context=context, channel=channel, update=update)
 
+    if "greeting" in body:
+        from chatballs.webchat.greetings import validate_greeting
+
+        agent.greeting = validate_greeting(channel, body["greeting"])
+        agent.save(update_fields=["greeting", "updated_at"])
+
     ai_fields = {
         "providerIntegrationId",
         "transcriptionIntegrationId",

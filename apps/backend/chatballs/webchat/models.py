@@ -86,6 +86,7 @@ class WebSession(TenantRelationModel):
     consent_version = models.CharField(max_length=255, blank=True, default="")
     consent_accepted_at = models.DateTimeField(null=True, blank=True)
     consent_form_revision = models.CharField(max_length=64, blank=True, default="")
+    greeting = models.TextField(blank=True, default="")
 
     def __str__(self) -> str:
         return f"websession:{self.identity_id}"

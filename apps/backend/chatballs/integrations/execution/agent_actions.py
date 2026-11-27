@@ -8,6 +8,7 @@ from chatballs.api.permissions import HasCapability
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.operation_modes import lock_organization
+from chatballs.integrations.adapters.legacy import bridge_descriptor, is_bridged, operation_title
 from chatballs.integrations.adapters.registry import default_registry
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.models import Integration, IntegrationKind
@@ -20,14 +21,20 @@ def catalog(organization_id, agent):
     grants = {(g.integration_id, g.operation_key, g.scenario_id): g for g in policies if not g.native_key}
     rows = []
     registry = default_registry()
-    for connection in Integration.objects.filter(organization_id=organization_id, kind=IntegrationKind.SERVICE).select_related("service_settings"):
-        settings = getattr(connection, "service_settings", None)
-        adapter = registry.adapter(settings.adapter_key) if settings else None
-        if adapter is None or adapter.contract_version != settings.adapter_version:
-            continue
+    kinds = (IntegrationKind.SERVICE, IntegrationKind.EXTERNAL_SERVER)
+    for connection in Integration.objects.filter(organization_id=organization_id, kind__in=kinds).select_related("service_settings"):
+        bridged = is_bridged(connection)
+        if bridged:
+            adapter = bridge_descriptor(connection)
+        else:
+            settings = getattr(connection, "service_settings", None)
+            adapter = registry.adapter(settings.adapter_key) if settings else None
+            if adapter is None or adapter.contract_version != settings.adapter_version:
+                continue
         for operation in adapter.operations:
             grant = grants.get((connection.pk, operation.key, None))
-            rows.append({"id": f"operation:{connection.pk}:{operation.key}", "title": t(operation.title_key),
+            title = operation_title(operation) if bridged else t(operation.title_key)
+            rows.append({"id": f"operation:{connection.pk}:{operation.key}", "title": title,
                 "subtitle": connection.name, "mode": grant.mode if grant else "off", "revision": grant.revision if grant else 0,
                 "available": connection.is_active and connection.status == "OK", "writes": operation.effect != "read",
                 "integration": connection.pk, "operation": operation.key, "scenario": None})

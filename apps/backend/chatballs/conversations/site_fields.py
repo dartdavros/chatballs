@@ -5,11 +5,11 @@ from chatballs.i18n import t
 from chatballs.integrations.models import IntegrationProvider
 
 
-def field_display(definition: dict, value: object) -> str:
+def field_display(definition: dict, value: object, *, language: str | None = None) -> str:
     if value is None:
-        return t("conversations.site_fields.empty")
+        return t("conversations.site_fields.empty", language=language)
     if definition["type"] == "boolean":
-        return t("conversations.site_fields.yes" if value else "conversations.site_fields.no")
+        return t("conversations.site_fields.yes" if value else "conversations.site_fields.no", language=language)
     if definition["type"] == "enum":
         option = next((item for item in definition.get("options", []) if item["value"] == value), None)
         return option["label"] if option else str(value)

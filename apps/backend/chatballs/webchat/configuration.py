@@ -46,10 +46,11 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
     consent_text = clean_consent_html(str(consent.get("consent_text") or "")) or t("webchat.default_consent", language=language)
     from chatballs.ai.external_agents.consent import disclosure_html
     from chatballs.webchat.consent import current_version
+    from chatballs.webchat.greetings import agent_greeting
 
-    consent_text += disclosure_html(widget, language=language)
+    disclosure = disclosure_html(widget, language=language)
     if integration.config.get("answerPlaybackEnabled", False):
-        consent_text += "<p>" + t("speech.consent_disclosure", language=language) + "</p>"
+        disclosure += "<p>" + t("speech.consent_disclosure", language=language) + "</p>"
     return {
         "available": True,
         "autonomous": _autonomous(integration),
@@ -65,10 +66,12 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         "accent": appearance["accent"],
         "appearance": appearance,
         "greeting": cfg.get("greeting") or t("webchat.default_greeting", language=language),
+        "hasAgentGreeting": bool(agent_greeting(channel)),
         "consent": {
             # Запись могла сохраниться до очистки — наружу уходит только
             # безопасная разметка (SPEC-0020 R-15).
             "text": consent_text,
+            **({"disclosure": disclosure} if disclosure else {}),
             "version": current_version(widget),
         },
         "quickReplies": cfg.get("quick_replies") or [],

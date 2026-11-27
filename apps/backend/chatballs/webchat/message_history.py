@@ -63,6 +63,7 @@ def messages_payload(session: WebSession, since: int) -> dict:
     from chatballs.webchat.consent import has_current_consent
 
     consent_current = has_current_consent(session)
+    greeting = session.greeting if consent_current else ""
     if not consent_current:
         playback = {"playbackAvailable": False, "ttsRevision": ""}
     playback["consentCurrent"] = consent_current
@@ -76,6 +77,7 @@ def messages_payload(session: WebSession, since: int) -> dict:
             "autonomous": _autonomous_session(session),
             "lifecycle": LifecycleState.OPEN,
             "messages": [],
+            "greeting": greeting,
             "call": None,
             "reset": reset,
             "thinking": site_event in ("pending", "running"),
@@ -93,6 +95,7 @@ def messages_payload(session: WebSession, since: int) -> dict:
         "autonomous": _autonomous_session(session),
         "state": _STATE.get(conversation.control_mode, "ai"),
         "lifecycle": conversation.lifecycle,
+        "greeting": greeting,
         # Ответ уже считается: виджет показывает клиенту, что агент печатает.
         "thinking": conversation_is_thinking(conversation.id) or site_event in ("pending", "running"),
         "siteEvent": site_event,

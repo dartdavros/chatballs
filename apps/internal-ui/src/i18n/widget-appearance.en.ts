@@ -3,6 +3,9 @@ import type { widgetAppearanceRu } from "./widget-appearance.ru";
 export const widgetAppearanceEn: Record<keyof typeof widgetAppearanceRu, string> = {
   "widget_appearance.description": "The widget color, icons and launcher on your website. The preview on the right updates immediately.",
   "widget_appearance.color": "Color",
+  "widget_appearance.theme": "Theme",
+  "widget_appearance.theme_light": "Light",
+  "widget_appearance.theme_dark": "Dark",
   "widget_appearance.blue": "Blue",
   "widget_appearance.indigo": "Indigo",
   "widget_appearance.teal": "Teal",
@@ -41,7 +44,7 @@ export const widgetAppearanceEn: Record<keyof typeof widgetAppearanceRu, string>
   "widget_appearance.square": "Square",
   "widget_appearance.css": "Custom CSS styles",
   "widget_appearance.classes": "Widget classes ↗",
-  "widget_appearance.css_hint": "Applied inside the chat window, without affecting the website. @import and external url() are discarded. If styles break the widget, Reset restores its default look.",
+  "widget_appearance.css_hint": "Use .cb-launcher to style the launcher. Rules apply only to the widget. @import and external url() are discarded. Reset restores the default look.",
   "widget_appearance.save": "Save appearance",
   "widget_appearance.reset": "Reset",
   "widget_appearance.unsaved": "unsaved changes",

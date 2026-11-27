@@ -26,6 +26,7 @@ from chatballs.integrations.external_parameters import (
     parameters_payload,
     submitted_names,
 )
+from chatballs.integrations.http_methods import METHODS
 from chatballs.integrations.models import (
     PROVIDER_KIND,
     Integration,
@@ -35,7 +36,6 @@ from chatballs.integrations.models import (
 from chatballs.integrations.tool_network import ToolAddressRejected, check_tool_url
 
 TOOL_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,39}$")
-METHODS = ("GET", "POST")
 _PLACEHOLDER = re.compile(r"\{([^{}]*)\}")
 
 

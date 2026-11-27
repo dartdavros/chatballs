@@ -27,10 +27,14 @@ function form(text: string): string {
 describe("consent text", () => {
   beforeAll(() => applyWidgetLanguage("ru"));
 
-  it("shows text without tags as before, with the revision at the end of the line", () => {
-    expect(screen(PLAIN)).toContain(`${PLAIN}</span> · ред. v3</div>`);
-    expect(form(PLAIN)).toContain(`${PLAIN}</span> · редакция v3</div>`);
-    for (const html of [screen(PLAIN), form(PLAIN)]) expect(html).not.toContain(classes.consentRevision);
+  it("renders the configured text without a revision label", () => {
+    for (const text of [PLAIN, RICH]) {
+      for (const html of [screen(text), form(text)]) {
+        expect(html).toContain(text);
+        expect(html).not.toContain("v3");
+        expect(html).not.toContain("consent-revision");
+      }
+    }
   });
 
   it("renders sanitized markup on the consent screen and in the pre-chat form", () => {
@@ -41,19 +45,14 @@ describe("consent text", () => {
     }
   });
 
-  it("keeps the revision inline for one line and moves it below paragraphs, breaks and lists", () => {
-    const inline = `Вы принимаете ${LINK} и <strong>запись чата</strong>`;
-    expect(screen(inline)).toContain("</strong></span> · ред. v3</div>");
-    expect(screen(RICH)).toContain(`</ul></div><div class="${classes.consentRevision}">Ред. v3</div>`);
-    expect(form(RICH)).toContain(`</ul></div><div class="${classes.consentRevision}">Редакция v3</div>`);
-    for (const text of ["Первая<br>вторая", "<p>Абзац</p>", "<ol><li>Пункт</li></ol>"]) {
-      expect(screen(text)).toContain(`class="${classes.consentRevision}"`);
-      expect(screen(text)).not.toContain(" · ");
-    }
+  it("renders extra disclosures independently of the configured text", () => {
+    const consent = { text: PLAIN, version: "v3", disclosure: "<p>Disclosure</p>" };
+    const html = renderToStaticMarkup(<ConsentText consent={consent} />);
+    expect(html).toBe(`<div class="${classes.consent}">${PLAIN}</div><div class="${classes.consent}"><p>Disclosure</p></div>`);
   });
 
   it("goes through one shared component with the form's own spacing hook", () => {
-    const shared = renderToStaticMarkup(<ConsentText consent={config(RICH).consent} place="screen" />);
+    const shared = renderToStaticMarkup(<ConsentText consent={config(RICH).consent} />);
     expect(screen(RICH)).toContain(shared);
     expect(form(RICH)).toContain(`class="${classes.consent} ${classes.preChatConsent}"`);
   });

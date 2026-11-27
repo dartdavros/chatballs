@@ -4,11 +4,11 @@ articles:
       - "ИИ-агенты"
     locale: "ru"
     title: "Инструменты агента"
-    summary: "Как подключить MCP-сервер или HTTP-запрос, привязать параметры к данным клиента и защитить сведения о чужих заказах."
+    summary: "Как подключить MCP-сервер или HTTP-запрос, разрешить запись и привязать параметры к данным клиента."
     content: |
-      Инструменты позволяют агенту получать сведения из систем вашей организации во время диалога. Например, на вопрос «Где мой заказ 10482?» агент запрашивает статус заказа у вашего API и отвечает по результату. Заказы остаются в вашей системе.
+      Инструменты позволяют агенту получать сведения из систем вашей организации и выполнять разрешённые операции записи. Например, на вопрос «Где мой заказ 10482?» агент запрашивает статус заказа у вашего API и отвечает по результату.
 
-      Подключать внешние серверы и настраивать инструменты могут владелец и администратор организации. Инструменты только читают: создание заказа, изменение адреса и другие действия, меняющие данные, подключать нельзя.
+      Подключать внешние серверы и настраивать инструменты могут владелец и администратор организации. Для записи откройте блок **Действия** в карточке агента и отдельно разрешите нужную операцию MCP или HTTP. Для каждой операции выберите самостоятельное выполнение или подтверждение сотрудником. HTTP поддерживает GET, HEAD, OPTIONS, POST, PUT, PATCH и DELETE. Отметку **Только чтение** используйте для POST-запросов, которые получают данные.
 
       ## MCP-сервер: «Статус заказа»
 
@@ -78,7 +78,7 @@ articles:
 
       Имя инструмента начинается со строчной латинской буквы, содержит только строчные латинские буквы, цифры и подчёркивания, не длиннее 40 символов. Описание для AI объясняет, какие сведения возвращает запрос и когда его вызывать.
 
-      Параметры можно передавать в пути, строке запроса или теле JSON. Тело доступно только для **POST**. POST допускается только для получения данных: установите **Только чтение: запрос ничего не меняет**, предварительно проверив поведение API. Без этой отметки POST-инструмент агенту включить нельзя.
+      Параметры можно передавать в пути, строке запроса или теле JSON. Тело доступно для **POST**, **PUT**, **PATCH** и **DELETE**. Если POST-запрос получает данные, проверьте поведение API и установите **Только чтение: запрос ничего не меняет**. Для POST, меняющего данные, оставьте флажок снятым и разрешите операцию в блоке **Действия**.
 
       Проверка HTTP-подключения не отправляет запрос к вашему API. Реальный вызов проверяйте через **Проверить агента**.
 
@@ -119,11 +119,11 @@ articles:
       - "ИИ-агенты"
     locale: "en"
     title: "Agent tools"
-    summary: "Connect an MCP server or HTTP request, bind parameters to customer data, and protect other customers’ orders."
+    summary: "Connect an MCP server or HTTP request, grant write access, and bind parameters to customer data."
     content: |
-      Tools let an agent retrieve information from your organization's systems during a conversation. For example, when a customer asks “Where is my order 10482?”, the agent requests the order status from your API and answers using the result. Orders stay in your system.
+      Tools let an agent retrieve information from your organization's systems and perform authorized writes. For example, when a customer asks “Where is my order 10482?”, the agent requests the order status from your API and answers using the result.
 
-      Organization owners and administrators can connect external servers and configure tools. Tools only read data: do not connect actions that create orders, change addresses, or modify other data.
+      Organization owners and administrators can connect external servers and configure tools. To write data, open **Actions** in the agent card and grant access to the specific MCP or HTTP operation. Choose autonomous execution or employee approval for each operation. HTTP supports GET, HEAD, OPTIONS, POST, PUT, PATCH and DELETE. Mark POST requests as **Read only** when they retrieve data.
 
       ## MCP server: “Order status”
 
@@ -195,7 +195,7 @@ articles:
 
       Tool names start with a lowercase Latin letter, contain only lowercase Latin letters, digits, and underscores, and are at most 40 characters long. The AI description explains what information the request returns and when to call it.
 
-      Parameters can be sent in the path, query string, or JSON body. A body is available only for **POST**. POST is allowed only for retrieving data: select **Read only: this request changes nothing** after checking the API's behavior. Without this confirmation, the POST tool cannot be enabled for an agent.
+      Parameters can be sent in the path, query string, or JSON body. A body is available for **POST**, **PUT**, **PATCH**, and **DELETE**. For a POST request that retrieves data, check the API's behavior and select **Read only: this request changes nothing**. For a POST that changes data, leave the checkbox clear and grant access to the operation under **Actions**.
 
       Testing an HTTP connection does not send a request to your API. Use **Test agent** to check an actual call.
 

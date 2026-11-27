@@ -14,7 +14,7 @@ export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, h
   const [starting, setStarting] = useState(false);
   const [proof, setProof] = useState<{ token: string; policy: string } | null>(null);
   const [checked, setChecked] = useState<{ token: string; policy: string } | null>(null);
-  const policy = JSON.stringify([config?.consent?.version, config?.consent?.text, config?.preChat, config?.fields]);
+  const policy = JSON.stringify([config?.consent, config?.preChat, config?.fields]);
   const accepted = consentMatches(token, version, config?.consent?.version)
     && proof?.token === token && proof?.policy === policy;
   const siteFields = useSiteFields(accepted ? token : null, hostOrigin);

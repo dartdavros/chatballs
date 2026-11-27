@@ -25,15 +25,16 @@ def clean_value(spec, value, secrets, depth=0):
 
 def run_payload(run, *, detail=False, tenant=None):
     member = run.initiator
+    operation_title = run.structure.get("operationTitleText") or t(run.structure.get("operationTitle") or "runs.operation")
     payload = {"id": str(run.public_id), "number": run.pk,
-        "name": run.structure.get("name") or t(run.structure.get("operationTitle") or "runs.operation"),
+        "name": run.structure.get("name") or operation_title,
         "connection": run.structure.get("connection", ""), "state": run.state,
         "stateLabel": t(f"runs.state_{run.state}"), "initiator": member.user.full_name if member else "",
         "conversationId": run.conversation_id, "createdAt": run.created_at.isoformat(),
         "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
         "cancelRequested": run.cancel_requested_at is not None, "dataCleared": run.data_cleared_at is not None,
         "revision": run.revision, "definitionUpdatedAt": run.structure.get("definitionUpdatedAt"),
-        "progress": [{"title": t(run.structure.get("operationTitle") or "runs.operation"), "state": step.state,
+        "progress": [{"title": operation_title, "state": step.state,
                       "stateLabel": t(f"runs.state_{step.state}")} for step in run.steps.all()]}
     payload["ai"] = bool(run.structure.get("agentName"))
     if payload["ai"]:

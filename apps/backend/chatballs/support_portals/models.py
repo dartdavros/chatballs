@@ -116,10 +116,15 @@ class PortalCategory(TenantRelationModel):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=500, blank=True)
     sort_order = models.PositiveIntegerField(default=0)
+    is_system = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["sort_order", "name", "id"]
         constraints = [
+            models.UniqueConstraint(
+                fields=["portal"], condition=models.Q(is_system=True),
+                name="uniq_support_portal_system_category",
+            ),
             models.UniqueConstraint(
                 fields=["portal", "slug"],
                 name="uniq_support_portal_category_slug",

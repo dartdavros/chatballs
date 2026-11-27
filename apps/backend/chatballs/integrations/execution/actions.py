@@ -1,5 +1,6 @@
 """Resolve exactly the saved adapter contract, never the latest substitute."""
 
+from chatballs.integrations.adapters.legacy import bridge_descriptor, is_bridged
 from chatballs.integrations.adapters.registry import default_registry
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.models import Integration, IntegrationStatus
@@ -23,7 +24,12 @@ def resolve_action(organization_id, connection_id, target, *, registry=None, exp
     if not recovering and (not integration.is_active or integration.status != IntegrationStatus.OK):
         raise ExecutionDenied("connection_paused")
     try:
-        row, adapter, method = resolve(integration, registry)
+        if is_bridged(integration):
+            row, adapter, method = None, bridge_descriptor(integration), None
+        else:
+            if not hasattr(integration, "service_settings"):
+                raise ExecutionDenied("operation_unavailable")
+            row, adapter, method = resolve(integration, registry)
     except ServiceUnavailable as error:
         raise ExecutionDenied(error.code) from None
     if expected and (adapter.key, adapter.contract_version) != expected:

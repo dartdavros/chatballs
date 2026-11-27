@@ -60,6 +60,7 @@ MESSAGES = {
     "native.portal_fields.updatedAt": "Изменено",
     "native.portal_fields.categoryCount": "Количество категорий",
     "native.portal_fields.articleCount": "Количество статей",
+    "native.portal_fields.system": "Системный раздел",
     "native.portal_fields.creation": "Создание портала",
     "native.portal_fields.available": "Доступно",
     "native.portal_fields.canCreate": "Можно создать",

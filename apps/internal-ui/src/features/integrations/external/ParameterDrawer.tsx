@@ -1,3 +1,4 @@
+import { hasRequestBody } from "./httpMethods";
 import { Drawer } from "antd";
 import { useState } from "react";
 import { t } from "../../../i18n";
@@ -46,9 +47,9 @@ export function ParameterDrawer({ initial, index, name, server, integrations, on
         </div>
       </div>
       <div><TextAreaField label={t("servers.ai_description")} value={bound ? t("servers.bound_description") : parameter.description} disabled={bound} onChange={(description) => setParameter({ ...parameter, description })} /><small>{t("servers.parameter_description_hint")}</small></div>
-      <div><strong>{t("servers.parameter_location")}</strong><Segmented value={inPath ? "path" : parameter.location}
+      <div className="server-parameter-location"><strong>{t("servers.parameter_location")}</strong><Segmented className="is-content-width" value={inPath ? "path" : parameter.location}
         items={[["path", t("servers.path")], ["query", t("servers.query")], ["body", t("servers.body")]]}
-        disabledKeys={inPath ? ["path", "query", "body"] : server.method === "POST" ? [] : ["body"]}
+        disabledKeys={inPath ? ["path", "query", "body"] : hasRequestBody(server.method) ? [] : ["body"]}
         setValue={(location) => setParameter({ ...parameter, location })} /><small>{t("servers.path_hint")}</small></div>
       <div className="server-enabled"><span><strong>{t("servers.parameter_required")}</strong><small>{t("servers.required_hint")}</small></span>
         <SwitchButton className="ui-switch" label={t("servers.parameter_required")} checked={inPath || parameter.required} disabled={inPath} onClick={() => setParameter({ ...parameter, required: !parameter.required })} /></div>

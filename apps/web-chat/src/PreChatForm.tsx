@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme } from "antd";
 import type { SiteFields, WebConfig } from "./api";
 import { BotAvatar } from "./BotIcon";
 import { ConsentText } from "./ConsentText";
@@ -24,7 +24,7 @@ export function PreChatForm({ config, accent, title, siteValues, starting, onAcc
   const valid = fields.every((field) => validField(field, values[field.key]));
 
   return (
-    <ConfigProvider theme={{ token: { colorPrimary: accent } }}>
+    <ConfigProvider theme={{ algorithm: config.appearance?.theme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm, token: { colorPrimary: accent } }}>
       <form className={classes.preChat} noValidate onSubmit={(event) => {
         event.preventDefault();
         if (valid && !starting) void onAccept(formPayload(fields, values));
@@ -40,7 +40,7 @@ export function PreChatForm({ config, accent, title, siteValues, starting, onAcc
               fromSite={Object.hasOwn(siteValues, field.key) && siteValues[field.key] != null && siteValues[field.key] !== ""}
               onChange={(value) => setEdits((previous) => ({ ...previous, [field.key]: value }))} />)}
           </div>
-          <ConsentText consent={config.consent} place="form" className={classes.preChatConsent} />
+          <ConsentText consent={config.consent} className={classes.preChatConsent} />
         </div>
         <div className={classes.startFooter}>
           <button type="submit" className={classes.startButton} disabled={!valid || starting}>

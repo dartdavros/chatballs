@@ -6,7 +6,12 @@ from time import monotonic
 from django.db import connection
 from django.utils import timezone
 
-from chatballs.integrations.adapters.contracts import READ_EFFECTS, OperationResult, ResultState
+from chatballs.integrations.adapters.contracts import (
+    READ_EFFECTS,
+    OperationContext,
+    OperationResult,
+    ResultState,
+)
 from chatballs.integrations.adapters.files import file_store
 from chatballs.integrations.adapters.schema import validate_value
 from chatballs.integrations.execution import checkpoints, recovery
@@ -57,7 +62,7 @@ def _prepare(tenant, token, registry):
                 handler = "reconcile" if operation.handlers.reconcile else None
         if handler not in {None, "reconcile"}:
             try:
-                actor, _conversation = authorize_run(actor, run)
+                actor, conversation = authorize_run(actor, run)
             except ExecutionDenied:
                 if token.recovering and operation.handlers.reconcile:
                     handler = "reconcile"
@@ -85,7 +90,14 @@ def _prepare(tenant, token, registry):
         if integration is None and handler == "execute":
             from chatballs.integrations.execution.native import preflight
             preflight(actor, run, operation, arguments, registry=registry)
-        return run, step, actor, resolved, handler, arguments
+        bound = {}
+        if integration is not None and row is None and handler == "execute":
+            from chatballs.integrations.adapters.legacy import bound_inputs
+
+            bound = bound_inputs(integration, conversation, run.definition.get("ai", {}).get("testContext", {}).get("contact"))
+            if bound is None:
+                raise ExecutionDenied("arguments")
+        return run, step, resolved, handler, arguments, bound
 
 
 def _send_marker(tenant, token, handler, registry=None):
@@ -201,12 +213,11 @@ def run_one(tenant, public_id, *, registry=None, token=None):
         prepared = _prepare(tenant, token, registry)
         if prepared is None:
             return
-        run, step, actor, resolved, handler, arguments = prepared
+        run, step, resolved, handler, arguments, bound = prepared
         integration, row, adapter, method, operation = resolved
-        if integration is None:
-            from chatballs.integrations.adapters.contracts import OperationContext
-            context = OperationContext(organization_id=tenant.organization_id, connection=None,
-                settings={}, credentials={}, effect_key=str(step.effect_key))
+        if row is None:
+            context = OperationContext(organization_id=tenant.organization_id, connection=integration,
+                settings={"bound": bound} if integration else {}, credentials={}, effect_key=str(step.effect_key))
         else:
             credentials = fresh_credentials(tenant=tenant, integration=integration, row=row, method=method)
             context = build_context(tenant=tenant, integration=integration, method=method, settings=row.settings,

@@ -46,9 +46,9 @@ export function ChatComposer({ accent, input, placeholder, onInput, onSend, voic
       <div className={classes.composer} style={{ "--cb-accent": accent } as React.CSSProperties}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 44, boxSizing: "border-box" }}>
           <button className={`wc-icon-button ${classes.composerButton}`} onClick={voice.cancel} disabled={sending} aria-label={t("chat.cancel_recording")}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f5222d", flex: "none", animation: "wcTyping 1.2s infinite ease-in-out" }} />
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: "#f5222d", fontVariantNumeric: "tabular-nums" }}>{formatSeconds(voice.seconds)}</span>
-          <span style={{ flex: 1, fontSize: 12.5, color: "#8c8c8c" }}>{sending ? t("chat.sending") : voice.state === "permission" ? t("speech.permission") : t("chat.recording")}</span>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--cb-recording, #f5222d)", flex: "none", animation: "wcTyping 1.2s infinite ease-in-out" }} />
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--cb-recording, #f5222d)", fontVariantNumeric: "tabular-nums" }}>{formatSeconds(voice.seconds)}</span>
+          <span style={{ flex: 1, fontSize: 12.5, color: "var(--cb-muted, #8c8c8c)" }}>{sending ? t("chat.sending") : voice.state === "permission" ? t("speech.permission") : t("chat.recording")}</span>
           <button className={`wc-icon-button ${classes.composerButton} ${classes.sendButton}`} onClick={voice.stopAndSend} disabled={sending} aria-label={t("chat.send_voice")}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></svg></button>
         </div>
       </div>
@@ -58,14 +58,14 @@ export function ChatComposer({ accent, input, placeholder, onInput, onSend, voic
   return (
     <div className={classes.composer} style={{ "--cb-accent": accent } as React.CSSProperties}>
       {dictation && <DictationStatus dictation={dictation} tooLong={input.trim().length > 4000} />}
-      {voice?.errorText && <div style={{ marginBottom: 8, fontSize: 12, color: "#cf1322" }}>{voice.errorText}</div>}
-      {attachment?.errorText && <div style={{ marginBottom: 8, fontSize: 12, color: "#cf1322" }}>{attachment.errorText}</div>}
+      {voice?.errorText && <div style={{ marginBottom: 8, fontSize: 12, color: "var(--cb-required, #cf1322)" }}>{voice.errorText}</div>}
+      {attachment?.errorText && <div style={{ marginBottom: 8, fontSize: 12, color: "var(--cb-required, #cf1322)" }}>{attachment.errorText}</div>}
       {attachment?.file && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, padding: "6px 8px 6px 10px", border: "1px solid #e8e8e8", borderRadius: 10, background: "#fafafa", fontSize: 12.5, color: "#434343" }}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8c8c8c" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, padding: "6px 8px 6px 10px", border: "1px solid var(--cb-attachment-border, #e8e8e8)", borderRadius: 10, background: "var(--cb-attachment-surface, #fafafa)", fontSize: 12.5, color: "var(--cb-label, #434343)" }}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--cb-muted, #8c8c8c)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
           <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>{attachment.file.name}</span>
-          <span style={{ color: "#8c8c8c", fontSize: 11.5, flex: "none" }}>{formatBytes(attachment.file.size)}</span>
-          <button onClick={attachment.clear} aria-label={t("chat.remove_file")} style={{ border: "none", background: "transparent", padding: 0, display: "flex", cursor: "pointer", color: "#8c8c8c", flex: "none" }}><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6M9 9l6 6" /></svg></button>
+          <span style={{ color: "var(--cb-muted, #8c8c8c)", fontSize: 11.5, flex: "none" }}>{formatBytes(attachment.file.size)}</span>
+          <button onClick={attachment.clear} aria-label={t("chat.remove_file")} style={{ border: "none", background: "transparent", padding: 0, display: "flex", cursor: "pointer", color: "var(--cb-muted, #8c8c8c)", flex: "none" }}><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6M9 9l6 6" /></svg></button>
         </div>
       )}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>

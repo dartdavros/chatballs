@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from chatballs.integrations.action_catalog.schema import enum, obj
 from chatballs.integrations.adapters.schema import TypeSpec
+from chatballs.integrations.http_methods import METHODS
 from chatballs.integrations.models import IntegrationProvider
 
 
@@ -37,7 +38,7 @@ CONFIG = obj(**CONFIG_FIELDS, siteEventAvailable=field("siteEventAvailable", "bo
 HEADER = obj(name=field("name"), secret=field("isSecret", "boolean"), value=field("value", secret=True))
 EXTERNAL_INPUT = obj(description=field("description"), url=field("url"),
     headers=field("headers", "array", items=HEADER), toolName=field("toolName"),
-    method=named("method", enum(("GET", "POST"), "native.connection_method")),
+    method=named("method", enum(METHODS, "native.connection_method")),
     readOnly=field("readOnly", "boolean"), parameters=field("parameters", "array", items=TypeSpec("json")))
 EDIT = dict(name=field("name"), secret=field("secret", secret=True),
     config=named("config", obj(**{**CONFIG_FIELDS, "proxyUrl": field("proxyUrl", secret=True)})),

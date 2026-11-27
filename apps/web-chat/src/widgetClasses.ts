@@ -1,5 +1,6 @@
 /** Public CSS hooks. Keep this registry as the single list for widget help. */
 export const widgetClasses = {
+  launcher: "cb-launcher",
   root: "cb-widget",
   header: "cb-header",
   headerIcon: "cb-header-icon",
@@ -34,6 +35,5 @@ export const widgetClasses = {
   preChatInput: "cb-pre-chat-input",
   preChatConsent: "cb-pre-chat-consent",
   consent: "cb-consent",
-  consentRevision: "cb-consent-revision",
   brand: "cb-brand",
 } as const;

@@ -50,6 +50,7 @@
 .server-source-radio.is-selected { background: var(--primary-bg); border-color: var(--primary); }
 .server-parameter-drawer .server-two-fields { grid-template-columns: minmax(0,1fr) 150px; gap: 12px; }
 .server-parameter-drawer .server-form .readonly-field textarea { height: 96px; min-height: 96px; }
+.server-parameter-location > strong { display: block; margin-bottom: 8px; }
 .server-parameter-drawer .server-enabled { padding: 12px 14px; border: 1px solid var(--n-8); border-radius: 10px; }
 .server-source-radio .server-drawer-web-warning { color: var(--warning-text); }
 .server-drawer-web-warning { display: flex !important; gap: 6px; }

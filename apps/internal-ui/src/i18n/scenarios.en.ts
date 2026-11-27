@@ -49,6 +49,7 @@ export const scenariosEn = {
   "scenarios.title": "Scenarios",
   "scenarios.lead": "A scenario performs several actions for an employee in Chatballs and connected services.",
   "scenarios.create": "Create scenario",
+  "scenarios.list_empty": "No scenarios yet",
   "scenarios.new_name": "New scenario",
   "scenarios.name": "Scenario name",
   "scenarios.launch": "Launch",

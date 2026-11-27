@@ -65,6 +65,28 @@ class LegacyBridgeTests(AgentToolsTestCase):
         self.assertEqual(reading.effect, Effect.READ)
         self.assertEqual(writing.effect, Effect.CREATE)
 
+    def test_agent_actions_separately_grant_a_write_and_drop_it_after_retargeting(self):
+        server = self._http("Изменить заказ", method="PATCH")
+        checked = self.client.post(f"/api/v1/integrations/{server['id']}/test/")
+        self.assertEqual(checked.status_code, 200, checked.content)
+        path = f"/api/v1/integrations/agent-actions/{self.agent['id']}/"
+        action_prefix = f"operation:{server['id']}:"
+        catalog = self.client.get(path).json()["items"]
+        target = next(row for row in catalog if row["id"].startswith(action_prefix))
+        self.assertTrue(target["writes"])
+        self.assertEqual(target["mode"], "off")
+        response = self.client.put(path, {"items": [
+            {"id": target["id"], "revision": target["revision"], "mode": "ask"},
+        ]}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(next(row["mode"] for row in response.json()["items"] if row["id"] == target["id"]), "ask")
+        external = {**server["externalServer"], "method": "DELETE"}
+        self._patch_server(server, externalServer=external)
+        updated = self.client.get(path).json()["items"]
+        current = next(row for row in updated if row["id"].startswith(action_prefix))
+        self.assertNotEqual(current["id"], target["id"])
+        self.assertEqual(current["mode"], "off")
+
     def test_bridge_call_uses_the_stored_server(self) -> None:
         server = self._integration(self.http)
         operation = bridge_descriptor(server).operations[0]
@@ -82,7 +104,7 @@ class LegacyBridgeTests(AgentToolsTestCase):
 
         result = operation.handlers.execute(context, operation, {"order_number": "A-1"})
 
-        self.assertEqual((result.state, result.data), (ResultState.COMPLETED, "Заказ в пути"))
+        self.assertEqual((result.state, result.data), (ResultState.COMPLETED, {"value": "Заказ в пути"}))
         self.assertFalse(ToolReadOnlyConfirmation.objects.exists())
         # Сервер требует исходный секретный заголовок: вызов прошёл с ним, хотя
         # его никуда не копировали.

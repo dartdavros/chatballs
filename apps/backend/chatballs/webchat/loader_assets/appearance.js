@@ -27,12 +27,23 @@
       position: choice(raw.launcherPosition, ["left", "right"], "right"),
       size: choice(raw.launcherSize, [48, 56, 64], 56),
       shape: choice(raw.launcherShape, ["circle", "rounded", "square"], "circle"),
+      theme: raw.theme === "dark" ? "dark" : "light",
+      css: typeof raw.launcherCss === "string" ? raw.launcherCss : "",
       icon: icon
     };
   }
 
   function launcherRadius() {
+    if (typeof btn !== "undefined" && typeof window !== "undefined" && window.getComputedStyle) {
+      var corner = window.getComputedStyle(btn).borderTopLeftRadius;
+      var radius = parseFloat(corner);
+      if (Number.isFinite(radius)) return corner.indexOf("%") >= 0 ? btn.offsetWidth * radius / 100 : radius;
+    }
     return appearance.shape === "square" ? 10 : appearance.size * (appearance.shape === "rounded" ? 0.3 : 0.5);
+  }
+
+  function launcherHeight() {
+    return btn.offsetHeight || appearance.size;
   }
 
   function renderLauncher() {
@@ -54,14 +65,14 @@
     btn.style.setProperty("--chatballs-accent-rgb", next.rgb.join(","));
     btn.style.left = next.position === "left" ? "24px" : "";
     btn.style.right = next.position === "right" ? "24px" : "";
-    btn.style.width = btn.style.height = next.size + "px";
-    btn.style.borderRadius = next.shape === "square" ? "10px" : next.shape === "rounded" ? "30%" : "50%";
+    btn.style.setProperty("--chatballs-launcher-size", next.size + "px");
+    btn.style.setProperty("--chatballs-launcher-radius", next.shape === "square" ? "10px" : next.shape === "rounded" ? "30%" : "50%");
+    applyLauncherCss(next.css);
     layoutShell();
     if (!next.icon) return;
     // Загружаем как изображение, не вставляем SVG/URL в HTML страницы хоста.
     var image = document.createElement("img");
     image.alt = "";
-    image.style.cssText = "width:30px;height:30px;object-fit:contain;flex:none;";
     image.onload = function () {
       launcherIcon = image;
       renderLauncher();

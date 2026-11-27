@@ -26,6 +26,7 @@ export function PortalCategoryManagement({
         parentId: item.parentId,
         sortOrder: item.sortOrder,
         count: item.articleCount,
+        isSystem: item.isSystem,
       }))}
       createLabel={t("portals.create_section")}
       deleteDescription={t("portals.section_can_only_deleted_once")}

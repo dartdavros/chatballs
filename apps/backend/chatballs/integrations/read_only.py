@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from chatballs.i18n import t
 from chatballs.identity.models import HumanUser
+from chatballs.integrations.http_methods import READ_METHODS
 from chatballs.integrations.models import (
     Integration,
     IntegrationProvider,
@@ -49,7 +50,8 @@ def server_tools(integration: Integration) -> list[ServerTool]:
                 name=str(config.get("tool_name", "")),
                 title=integration.name,
                 description=str(config.get("description", "")),
-                read_only=config.get("method", "GET") == "GET" or bool(config.get("read_only")),
+                read_only=(config.get("method", "GET") in READ_METHODS
+                           or config.get("method") == "POST" and bool(config.get("read_only"))),
             )
         ]
     confirmed = active_confirmations(integration)

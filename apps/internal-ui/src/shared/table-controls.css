@@ -7,6 +7,12 @@
   border-radius: 8px;
 }
 
+.segmented.is-content-width {
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
 .segmented button {
   height: 30px;
   padding: 0 13px;

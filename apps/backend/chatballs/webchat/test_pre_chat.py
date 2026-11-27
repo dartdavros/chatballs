@@ -3,6 +3,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 
+from chatballs.ai.agent_card import ensure_channel_agent
 from chatballs.channels.models import Channel
 from chatballs.conversations.models import ContactFieldValue, Conversation
 from chatballs.identity.models import Organization
@@ -35,6 +36,24 @@ class PreChatSessionTests(TestCase):
 
     def _values(self, session):
         return dict(ContactFieldValue.objects.filter(contact=session.identity.contact).values_list("key", "value"))
+
+    def test_agent_greeting_uses_saved_fields_without_active_ai(self):
+        agent = ensure_channel_agent(self.widget.integration.channel)
+        agent.greeting = "Здравствуйте, {{name}}! Заказ {{order_id}}."
+        agent.save(update_fields=["greeting"])
+        response = self.client.post("/api/v1/webchat/session/", {
+            "widgetKey": self.widget.public_key,
+            "consentVersion": "v1",
+            "fields": {"name": "С сайта", "order_id": "42"},
+            "preChatFields": {"name": "Андрей"},
+        }, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.json()['token']}")
+        for _ in range(2):
+            payload = self.client.get("/api/v1/webchat/messages/").json()
+            self.assertEqual(payload["greeting"], "Здравствуйте, Андрей! Заказ 42.")
+            self.assertFalse(payload["autonomous"])
+        self.assertFalse(Conversation.objects.exists())
 
     def test_form_values_override_site_values_and_write_contact_and_custom_fields(self):
         session = self._session(

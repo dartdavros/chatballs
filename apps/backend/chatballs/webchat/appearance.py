@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 
 from chatballs.i18n import t
 from chatballs.webchat.custom_css import sanitize_custom_css
+from chatballs.webchat.launcher_css import launcher_css
 
 DEFAULT_ACCENT = "#1677ff"
 POSITIONS = ("left", "right")
@@ -21,6 +22,7 @@ MAX_ICON_URL_LENGTH = 2048
 
 DEFAULTS = {
     "accent": "",
+    "theme": "light",
     "launcherIcon": "",
     "headerIcon": "",
     "launcherPosition": "right",
@@ -102,6 +104,8 @@ def normalize_appearance(config: dict, previous: dict | None = None) -> dict:
         raise _invalid("settings.appearance")
     return {
         "accent": _accent(raw["accent"] if "accent" in raw else config.get("accent")),
+        "theme": _choice(raw.get("theme", stored_appearance(previous)["theme"]),
+                         ("light", "dark"), "settings.appearance_theme"),
         "launcherIcon": _icon(raw.get("launcherIcon"), nullable=False),
         "headerIcon": _icon(raw.get("headerIcon", ""), nullable=True),
         "launcherPosition": _choice(
@@ -123,9 +127,18 @@ def normalize_appearance(config: dict, previous: dict | None = None) -> dict:
     }
 
 
+def appearance_payload(config: dict) -> dict:
+    appearance = stored_appearance(config)
+    appearance.pop("launcherCss", None)
+    styles = launcher_css(appearance["customCss"])
+    if styles:
+        appearance["launcherCss"] = styles
+    return appearance
+
+
 def public_appearance(presentation: dict) -> dict:
     """Оформление для виджета: умолчания подставлены, иконка шапки разрешена."""
-    appearance = stored_appearance(presentation)
+    appearance = appearance_payload(presentation)
     appearance["accent"] = appearance["accent"] or DEFAULT_ACCENT
     if appearance["headerIcon"] == "":
         appearance["headerIcon"] = appearance["launcherIcon"]

@@ -58,6 +58,7 @@ def fetch(
     method: str = "GET",
     headers: dict[str, str] | None = None,
     body: bytes | None = None,
+    same_origin_only: bool = False,
 ) -> ToolResponse:
     """Выполнить запрос инструмента.
 
@@ -82,7 +83,7 @@ def fetch(
             response = connection.getresponse()
             location = response.headers.get("Location") if response.status in _REDIRECT_STATUSES else None
             if not location:
-                return _accept(response, connection, deadline, url)
+                return _accept(response, connection, deadline, url, head=method == "HEAD")
             if local_target is not None:
                 raise ToolResponseRejected("demo_redirect")
             status = response.status
@@ -90,8 +91,10 @@ def fetch(
             connection.close()
         next_url = urljoin(url, location)
         if _origin(next_url) != _origin(url):
+            if same_origin_only:
+                raise ToolResponseRejected("redirect_origin")
             headers = {k: v for k, v in headers.items() if k.lower() in _ORIGIN_NEUTRAL_HEADERS}
-        if status == 303 or (status in (301, 302) and method != "GET"):
+        if (status == 303 and method not in {"GET", "HEAD"}) or (status in (301, 302) and method == "POST"):
             method, body = "GET", None
             headers = {k: v for k, v in headers.items() if k.lower() != "content-type"}
         url = next_url
@@ -114,9 +117,12 @@ def _remaining(deadline: float) -> float:
     return left
 
 
-def _accept(response, connection, deadline: float, url: str) -> ToolResponse:
+def _accept(response, connection, deadline: float, url: str, *, head: bool = False) -> ToolResponse:
     has_type = bool(response.headers.get("Content-Type"))
     content_type = response.headers.get_content_type() if has_type else ""
+    if head:
+        return ToolResponse(response.status, content_type, b"", url,
+                            {name.lower(): value for name, value in response.headers.items()})
     # Тип проверяется до чтения: чужой файл незачем и скачивать.
     if has_type and not _is_text(content_type):
         raise ToolResponseRejected("content_type")

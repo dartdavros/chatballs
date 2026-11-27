@@ -80,6 +80,7 @@ class AIAgent(TenantRelationModel):
     persona = models.TextField(blank=True)  # кто он и что он
     tone = models.TextField(blank=True)  # как он должен говорить
     instructions = models.TextField(blank=True)  # правила работы
+    greeting = models.CharField(max_length=4000, blank=True, default="")
     # Выбор знаний из библиотеки организации.
     knowledge_items = models.ManyToManyField("ai.Knowledge", blank=True, related_name="agents")
     # Статьи портала поддержки остаются в support_portals: агент ссылается на

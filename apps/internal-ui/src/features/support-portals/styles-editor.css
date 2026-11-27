@@ -129,19 +129,6 @@
   padding: 18px 22px 10px;
 }
 
-.portal-editor-title > input {
-  width: 100%;
-  padding: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: var(--n-1);
-  font-family: inherit;
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
 .portal-editor-slug {
   display: flex;
   align-items: center;
@@ -241,14 +228,20 @@
   max-width: 900px;
   height: 100%;
   padding: 16px 22px;
-  border: 0;
-  outline: 0;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
   resize: none;
-  background: transparent;
+  background: var(--surface-card);
   color: var(--n-2);
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.75;
+}
+
+.portal-editor-text textarea:focus {
+  border-color: var(--primary);
+  outline: 1px solid var(--primary);
+  outline-offset: -2px;
 }
 
 .portal-editor-drop {

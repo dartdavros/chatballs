@@ -55,3 +55,25 @@
 .widget-preview-composer > span { flex: 1; color: var(--preview-placeholder); font-size: 13px; }
 .widget-preview-composer i { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: var(--widget-accent); color: var(--preview-card); }
 .widget-preview-launcher { position: absolute; bottom: 16px; display: flex; align-items: center; justify-content: center; background: var(--widget-accent); color: var(--preview-card); box-shadow: 0 6px 18px rgb(0 0 0 / 22%); }
+.widget-preview-panel[data-widget-theme="dark"] {
+  --preview-card: #1e2025;
+  --preview-body: #15161a;
+  --preview-border: #37393f;
+  --preview-bubble-border: #37393f;
+  --preview-ink: #d6d7db;
+  --preview-placeholder: #a6a8ae;
+}
+[data-widget-theme="dark"] .widget-preview-header {
+  background: color-mix(in srgb, var(--widget-accent) 66%, #101113);
+  color: #fff;
+}
+[data-widget-theme="dark"] .widget-preview-header i { background: rgb(255 255 255 / 14%); }
+[data-widget-theme="dark"] .widget-preview-bubble.is-client {
+  background: color-mix(in srgb, var(--widget-accent) 60%, #15161a);
+  color: #fff;
+}
+[data-widget-theme="dark"] .widget-preview-composer { background: #181a1d; }
+[data-widget-theme="dark"] .widget-preview-composer i {
+  background: color-mix(in srgb, var(--widget-accent) 78%, #101113);
+  color: #fff;
+}

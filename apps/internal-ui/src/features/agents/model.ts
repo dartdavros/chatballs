@@ -65,6 +65,8 @@ export type AgentCard = {
   persona: string;
   tone: string;
   instructions: string;
+  greeting?: string;
+  greetingVariables?: { key: string; token: string; label: string; type: string; connectionName?: string; required?: boolean }[];
   knowledge: AgentKnowledgeRef[];
   portalArticles: AgentPortalArticleRef[];
   // Сколько всего материалов можно выбрать: «4 из 18» в шапке блока «Знания».
@@ -97,6 +99,7 @@ export type AgentPatch = Partial<{
   persona: string;
   tone: string;
   instructions: string;
+  greeting: string;
   knowledgeIds: number[];
   tools: AgentToolRef[];
 }>;

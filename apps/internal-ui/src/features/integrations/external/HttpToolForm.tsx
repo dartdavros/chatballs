@@ -1,6 +1,7 @@
+import { useId } from "react";
 import { t } from "../../../i18n";
-import { FormField, TextAreaField } from "../../../shared/form-controls";
-import { Segmented } from "../../../shared/ui";
+import { FormField, SelectField, TextAreaField } from "../../../shared/form-controls";
+import { HTTP_METHODS, type HttpMethod } from "./httpMethods";
 import { ServerHeaders } from "./ServerHeaders";
 import { ServerEnabled, ServerErrors, ServerSaveActions } from "./ServerFormParts";
 import { ServerWarning } from "./ServerWarning";
@@ -8,6 +9,7 @@ import type { ServerEditor } from "./useServerEditor";
 import { TemplateAddressField } from "./TemplateAddressField";
 
 export function HttpToolForm({ editor }: { editor: ServerEditor }) {
+  const requestLabelId = useId();
   const { draft, change, busy, errors } = editor;
   const server = draft.externalServer;
   const update = (next: Partial<typeof server>) => change({ ...draft, externalServer: { ...server, ...next } });
@@ -25,10 +27,11 @@ export function HttpToolForm({ editor }: { editor: ServerEditor }) {
     <div className="portal-settings-card server-form">
       <strong>{t("servers.request")}</strong>
       <div>
-        <label className="server-method-label">{t("servers.method_address")}</label>
-        <div className="server-request-fields">
-          <Segmented className="server-methods" value={server.method ?? "GET"} items={[["GET", "GET"], ["POST", "POST"]]}
-            disabledKeys={busy ? ["GET", "POST"] : []} setValue={(method) => update({ method })} />
+        <span className="server-method-label" id={requestLabelId}>{t("servers.method_address")}</span>
+        <div className="server-request-fields" role="group" aria-labelledby={requestLabelId}>
+          <SelectField label={t("servers.http_method")} value={server.method ?? "GET"} disabled={busy}
+            options={HTTP_METHODS.map(method => [method, method])}
+            onChange={(method) => update({ method: method as HttpMethod, readOnly: method === "POST" && server.readOnly })} />
           <TemplateAddressField label={t("servers.request_url")} value={server.url} disabled={busy} invalid={Boolean(errors.url?.length)} onBlur={() => editor.blur("url")} onChange={(url) => update({ url })} />
         </div>
         {!errors.url?.length && <small>{t("servers.url_hint")}</small>}

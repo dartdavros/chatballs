@@ -84,6 +84,7 @@ def agent_card_payload(
     from chatballs.ai import tool_support
     from chatballs.ai.agent_tools import agent_tools_payload
     from chatballs.ai.external_agents.agent_projection import execution_projection
+    from chatballs.webchat.greetings import greeting_variables
 
     agent: AIAgent = channel.ai_agent
     external = execution_projection(agent, channel.organization)
@@ -134,6 +135,8 @@ def agent_card_payload(
         "persona": agent.persona,
         "tone": agent.tone,
         "instructions": agent.instructions,
+        "greeting": agent.greeting,
+        "greetingVariables": greeting_variables(channel),
         "knowledge": [
             {
                 "id": item.id,

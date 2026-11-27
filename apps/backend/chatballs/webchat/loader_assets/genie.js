@@ -66,12 +66,13 @@
 
   function paintGenie(p, panel, icon) {
     var g = shapeAt(p, panel, icon);
+    var surface = appearance.theme === "dark" ? [21, 22, 26] : [255, 255, 255];
     geniePath.setAttribute("d", pathOf(g, 0, 0));
     geniePath.setAttribute(
       "fill",
-      "rgb(" + Math.round(mix(255, appearance.rgb[0], g.fill)) + "," +
-        Math.round(mix(255, appearance.rgb[1], g.fill)) + "," +
-        Math.round(mix(255, appearance.rgb[2], g.fill)) + ")"
+      "rgb(" + Math.round(mix(surface[0], appearance.rgb[0], g.fill)) + "," +
+        Math.round(mix(surface[1], appearance.rgb[1], g.fill)) + "," +
+        Math.round(mix(surface[2], appearance.rgb[2], g.fill)) + ")"
     );
     // Контур режет контейнер. Его собственная геометрия не меняется, поэтому
     // координаты контура честно переводятся в его систему простым сдвигом.

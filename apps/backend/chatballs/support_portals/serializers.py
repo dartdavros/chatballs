@@ -75,6 +75,7 @@ def category_payload(
         "description": category.description,
         "parentId": category.parent_id,
         "sortOrder": category.sort_order,
+        "isSystem": category.is_system,
     }
     if article_count is not None:
         payload["articleCount"] = article_count

@@ -29,6 +29,7 @@ EDIT = dict(name=field("name"), groupId=field("groupId", "integer", nullable=Tru
     synthesisIntegrationId=field("synthesisIntegrationId", "integer", nullable=True),
     synthesisModel=field("synthesisModel"), synthesisVoice=field("synthesisVoice"),
     **{key: field(key) for key in ("model", "transcriptionModel", "persona", "tone", "instructions")},
+    greeting=field("greeting", control="textarea@1"),
     modelParams=field("modelParams", "object", open=True),
     answerLanguage=choice("answerLanguage", ("MIRROR", "ORGANIZATION", "ru", "en")),
     historyLimit=field("historyLimit", "integer"), assistanceEnabled=field("assistanceEnabled", "boolean"),
@@ -59,6 +60,7 @@ CARD = obj(**{key: value for key, value in EDIT.items() if key not in {"knowledg
     knowledge=field("knowledge", "array", items=KNOWLEDGE), knowledgeTotal=field("knowledgeTotal", "integer"),
     portalArticles=field("portalArticles", "array", items=ARTICLE),
     connections=field("connections", "array", items=CONNECTION), tools=TOOLS,
+    greetingVariables=field("greetingVariables", "array", items=TypeSpec("object", open=True)),
     counters=field("counters", "object", properties=obj(openConversations=field("openConversations", "integer"),
         connections=field("connections", "integer")).properties),
     createdAt=field("createdAt", "datetime"), updatedAt=field("updatedAt", "datetime"))

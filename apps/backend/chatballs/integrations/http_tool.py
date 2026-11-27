@@ -24,6 +24,7 @@ from chatballs.i18n import t
 from chatballs.integrations.external_headers import request_headers
 from chatballs.integrations.external_parameters import CONTACT_FIELDS
 from chatballs.integrations.external_server import template_probe_url
+from chatballs.integrations.http_methods import BODY_METHODS, READ_METHODS
 from chatballs.integrations.models import Integration
 from chatballs.integrations.tool_client import ToolResponse, fetch
 from chatballs.integrations.tool_network import ToolAddressRejected
@@ -215,7 +216,7 @@ def build_request(
     parts = urlsplit(url)
     if query:
         parts = parts._replace(query="&".join(filter(None, [parts.query, urlencode(query)])))
-    with_body = method == "POST"
+    with_body = method in BODY_METHODS and (method != "DELETE" or bool(body))
     return HttpToolRequest(
         method=method,
         url=parts._replace(fragment="").geturl(),
@@ -233,10 +234,12 @@ def call_http_tool(
 ) -> ToolResponse:
     """Выполнить запрос инструмента; отказы и сетевые ошибки — как у ``fetch``."""
     request = build_request(integration, arguments, bound)
+    reads = request.method in READ_METHODS or request.method == "POST" and integration.config.get("read_only")
     return fetch(
         request.url,
         timeout=timeout,
         method=request.method,
         headers=request.headers,
         body=request.body,
+        **({"same_origin_only": True} if not reads else {}),
     )

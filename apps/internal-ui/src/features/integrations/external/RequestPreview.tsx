@@ -1,3 +1,4 @@
+import { hasRequestBody } from "./httpMethods";
 import { t } from "../../../i18n";
 import type { Integration } from "../model";
 import { sourceKey, sourceLabel } from "./model";
@@ -32,7 +33,7 @@ export function RequestPreview({ server, integrations, compact = false }: { serv
     <div className="server-preview-code"><code>{server.method ?? "GET"}{" "}{pathParts}
       {query.map((p, i) => <span key={p.name}>{i === 0 && !server.url.includes("?") ? "?" : "&"}{encodeURIComponent(p.name)}={part(p, encodeURIComponent(String(parameterExample(p))))}</span>)}
     </code>
-      {server.method === "POST" && body.length > 0 && <pre>{"{"}{body.map((p, i) => <span key={p.name}>{i > 0 ? ", " : ""}{JSON.stringify(p.name)}: {part(p, JSON.stringify(parameterExample(p)))}</span>)}{"}"}</pre>}
+      {hasRequestBody(server.method) && body.length > 0 && <pre>{"{"}{body.map((p, i) => <span key={p.name}>{i > 0 ? ", " : ""}{JSON.stringify(p.name)}: {part(p, JSON.stringify(parameterExample(p)))}</span>)}{"}"}</pre>}
     </div>
     <div className="server-preview-legend">{legend.map((p) => <span key={sourceKey(p.source)} className={p.source.type === "ai" ? "is-ai" : "is-system"}>{!compact && <i />}{p.source.type === "ai" ? t("servers.preview_ai") : compact
       ? t("servers.parameter_example", { field: sourceLabel(p.source, integrations) })

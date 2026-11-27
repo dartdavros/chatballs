@@ -3,7 +3,7 @@ from urllib.parse import urlsplit, urlunsplit
 from chatballs.integrations.external_server import external_server_payload, is_external_server
 from chatballs.integrations.external_tools import tools_payload
 from chatballs.integrations.models import Integration, IntegrationProvider
-from chatballs.webchat.appearance import stored_appearance
+from chatballs.webchat.appearance import appearance_payload
 from chatballs.webchat.consent_html import clean_consent_html
 from chatballs.webchat.field_schema import fields_payload
 from chatballs.webchat.pre_chat import pre_chat_payload
@@ -96,7 +96,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
             # Свои поля веб-подключения (SPEC-0019).
             "fields": fields_payload(integration.config.get("fields", [])),
             "appearance": (
-                stored_appearance(integration.config)
+                appearance_payload(integration.config)
                 if integration.provider == IntegrationProvider.WEB
                 else None
             ),

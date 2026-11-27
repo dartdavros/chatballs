@@ -12,7 +12,7 @@ REVISION = obj(**REVISION_FIELDS, id=field("revision", "integer"), revision=fiel
     authorName=field("authorName"))
 FILE = obj(id=field("file", "integer"), name=field("name"), contentType=field("contentType"),
     size=field("size", "integer"), path=field("path"), url=field("publicUrl"), createdAt=field("createdAt", "datetime"))
-EDIT = dict(categoryId=field("category", "integer"), slug=field("slug"), locale=field("locale"),
+EDIT = dict(categoryId=field("category", "integer", nullable=True), slug=field("slug"), locale=field("locale"),
     sortOrder=field("sortOrder", "integer"), relatedArticleIds=field("relatedArticles", "array", items=TypeSpec("integer")))
 ARTICLE = obj(id=field("article", "integer"), slug=EDIT["slug"], locale=EDIT["locale"],
     sortOrder=EDIT["sortOrder"], relatedArticleIds=EDIT["relatedArticleIds"], status=STATUS,

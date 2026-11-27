@@ -11,6 +11,7 @@ import re
 
 from chatballs.identity.models import Organization
 from chatballs.integrations.external_errors import SettingsErrors
+from chatballs.integrations.http_methods import BODY_METHODS
 from chatballs.integrations.models import Integration, IntegrationProvider
 
 MAX_PARAMETERS = 20
@@ -97,7 +98,7 @@ def normalize_parameters(
             errors.add("parameters", "integrations.tool_parameter_invalid", name=name)
         elif location == "path" and not in_url:
             errors.add("parameters", "integrations.tool_parameter_not_in_url", name=name)
-        elif location == "body" and method != "POST":
+        elif location == "body" and method not in BODY_METHODS:
             errors.add("parameters", "integrations.tool_parameter_body_post_only", name=name)
         elif source is None:
             errors.add("parameters", source_error, name=name)

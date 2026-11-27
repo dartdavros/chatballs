@@ -5,6 +5,28 @@ from chatballs.webchat.testing import create_web_widget
 
 
 class SupportPortalContentManagementTests(SupportPortalTestCase):
+    def test_article_can_be_saved_and_published_in_the_system_category(self):
+        portal_id = self.create_portal().json()["portal"]["id"]
+        base = f"/api/v1/support/portals/{portal_id}"
+        for slug in ("first", "second"):
+            result = self.client.post(f"{base}/articles/", {
+                "slug": slug, "title": slug, "content": "Content",
+            }, format="json")
+            self.assertEqual(result.status_code, 201, result.content)
+            article = result.json()["article"]
+            if slug == "first":
+                category = article["category"]
+            self.assertEqual(article["category"]["id"], category["id"])
+        self.assertTrue(category["isSystem"])
+        self.assertEqual(category["name"], "Без раздела")
+        revision_id = article["revisions"][0]["id"]
+        response = self.client.post(f"{base}/articles/{article['id']}/publish/",
+                                    {"revisionId": revision_id}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["article"]["category"]["id"], category["id"])
+        response = self.client.patch(f"{base}/categories/{category['id']}/", {"name": "Renamed"}, format="json")
+        self.assertEqual(response.status_code, 400, response.content)
+
     def test_article_revisions_are_preserved_and_selected_for_publish(self) -> None:
         portal_id = self.create_portal().json()["portal"]["id"]
         category = self.client.post(

@@ -7,9 +7,22 @@ from chatballs.integrations.models import Integration, IntegrationProvider
 from chatballs.integrations.services import IntegrationInput, create_integration
 from chatballs.testing import system_tenant_context
 from chatballs.webchat.custom_css import sanitize_custom_css
+from chatballs.webchat.launcher_css import launcher_css
 
 
 class CustomCssSanitizingTests(SimpleTestCase):
+    def test_launcher_css_only_exports_button_rules_and_rejects_host_resources(self):
+        css = """.cb-launcher, body{border-radius:12px; background-image:image-set("https://example.org/a.png" 1x)}
+        .chatballs-chat-launcher:hover > svg{color:red}
+        .cb-launcher{background:url(/private);box-shadow:0 4px 8px #123}
+        .cb-launcher + input{color:yellow}"""
+        result = launcher_css(css)
+        self.assertIn(".cb-launcher{border-radius:12px;}", result)
+        self.assertIn(".chatballs-chat-launcher:hover > svg{color:red;}", result)
+        self.assertIn("box-shadow:", result)
+        for forbidden in ("body", "image-set", "/private", "input"):
+            self.assertNotIn(forbidden, result)
+
     def test_import_is_cut(self) -> None:
         for css in (
             '@import "https://evil.example/x.css";',
@@ -105,6 +118,7 @@ class WebAppearanceApiTests(TestCase):
     def test_valid_appearance_is_saved_and_published(self) -> None:
         appearance = {
             "accent": "#FFD400",
+            "theme": "dark",
             "launcherIcon": "/media/organizations/x/webchat/icon.svg",
             "headerIcon": None,
             "launcherPosition": "left",
@@ -128,6 +142,7 @@ class WebAppearanceApiTests(TestCase):
             public["appearance"],
             {
                 "accent": "#ffd400",
+                "theme": "dark",
                 "launcherIcon": "/media/organizations/x/webchat/icon.svg",
                 "headerIcon": None,
                 "launcherPosition": "left",
@@ -141,6 +156,7 @@ class WebAppearanceApiTests(TestCase):
         for appearance in (
             {"accent": "blue"},
             {"accent": "#12345"},
+            {"theme": "system"},
             {"launcherPosition": "top"},
             {"launcherSize": 50},
             {"launcherSize": True},

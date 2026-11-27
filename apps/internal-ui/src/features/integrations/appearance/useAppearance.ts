@@ -52,6 +52,7 @@ export function useAppearance(integration: Integration, onSaved: (integration: I
 
   return {
     appearance, custom, customHex, dirty, busy: busy || uploading, error, change, pickPreset, changeHex, save,
+    launcherPreviewCss: appearance.customCss === saved.customCss ? saved.launcherCss ?? "" : "",
     uploadBusy: (key: string, value: boolean) => setUploads((current) => ({ ...current, [key]: value })),
   };
 }

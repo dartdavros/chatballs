@@ -1,3 +1,4 @@
+import { hasRequestBody } from "./httpMethods";
 import { Dropdown } from "antd";
 import { useState } from "react";
 import { t } from "../../../i18n";
@@ -23,7 +24,7 @@ export function ParameterRow({ parameter, integrations, disabled, method, inPath
     <SwitchButton className="ui-switch is-compact" label={`${parameter.name}: ${t("servers.parameter_required")}`}
       checked={parameter.required || inPath} disabled={disabled || inPath} onClick={() => onChange({ ...parameter, required: !parameter.required })} />
     <SelectField label={`${parameter.name}: ${t("servers.parameter_location")}`} value={inPath ? "path" : parameter.location} disabled={disabled || inPath}
-      options={[["path", t("servers.path")], ["query", t("servers.query")], ...(method === "POST" ? [["body", t("servers.body")] as [string, string]] : [])]}
+      options={[["path", t("servers.path")], ["query", t("servers.query")], ...(hasRequestBody(method) ? [["body", t("servers.body")] as [string, string]] : [])]}
       onChange={(location) => onChange({ ...parameter, location: location as ToolParameter["location"] })} />
     <ParameterSourceSelect label={`${parameter.name}: ${t("servers.parameter_source")}`} source={parameter.source} integrations={integrations} disabled={disabled}
       onChange={(source) => onChange({ ...parameter, source })} />

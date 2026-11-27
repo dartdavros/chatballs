@@ -1,3 +1,5 @@
+import type { HttpMethod } from "./httpMethods";
+
 export type ServerKind = "mcp" | "http";
 export type ParameterSource = { type: "ai" } | { type: "contact"; field: "name" | "email" | "phone" }
   | { type: "web_field"; integrationId: number; key: string };
@@ -24,7 +26,7 @@ export type ExternalServer = {
   description: string;
   headers: ServerHeader[];
   toolName?: string;
-  method?: "GET" | "POST";
+  method?: HttpMethod;
   readOnly?: boolean;
   parameters?: ToolParameter[];
   tools?: McpTool[];

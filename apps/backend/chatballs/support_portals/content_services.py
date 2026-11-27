@@ -4,22 +4,35 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.db.models import Max
 from django.utils import timezone
-from django.utils.text import slugify
 
 from chatballs.ai.indexing import reindex_portal_article
 from chatballs.conversations.transports.base import guess_content_type, safe_filename
 from chatballs.i18n import t
 from chatballs.support_portals.article_curation import apply_article_curation
+from chatballs.support_portals.categories import (
+    article_category,
+)
+from chatballs.support_portals.categories import (
+    create_category as create_category,
+)
+from chatballs.support_portals.categories import (
+    delete_category as delete_category,
+)
+from chatballs.support_portals.categories import (
+    ensure_portal_editable as ensure_portal_editable,
+)
+from chatballs.support_portals.categories import (
+    update_category as update_category,
+)
 from chatballs.support_portals.content_markdown import normalize_file_links
 from chatballs.support_portals.models import (
     PortalArticle,
     PortalArticleFeedback,
     PortalArticleFile,
     PortalArticleRevision,
-    PortalCategory,
     SupportPortal,
 )
-from chatballs.support_portals.statuses import ArticleStatus, PortalStatus
+from chatballs.support_portals.statuses import ArticleStatus
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.storage import adjust_storage_usage
 from chatballs.tenancy.storage_quota import (
@@ -32,73 +45,12 @@ from chatballs.tenancy.storage_quota import (
 MAX_ARTICLE_FILE_BYTES = 25 * 1024 * 1024
 
 
-def create_category(
-    *, context: TenantContext, portal: SupportPortal, data: dict
-) -> PortalCategory:
-    ensure_portal_editable(portal)
-    parent = _category(portal, data.get("parentId")) if data.get("parentId") else None
-    name = str(data.get("name", "")).strip()
-    category = PortalCategory(
-        organization=context.organization,
-        portal=portal,
-        parent=parent,
-        slug=str(data.get("slug", "")).strip().lower() or _category_slug(portal, name),
-        name=name,
-        description=str(data.get("description", "")).strip(),
-        sort_order=int(data.get("sortOrder", 0)),
-    )
-    category.full_clean()
-    category.save()
-    return category
-
-
-def _category_slug(portal: SupportPortal, name: str) -> str:
-    base = slugify(name)[:54] or "category"
-    slug = base
-    suffix = 2
-    while portal.categories.filter(slug=slug).exists():
-        slug = f"{base[: 63 - len(str(suffix)) - 1]}-{suffix}"
-        suffix += 1
-    return slug
-
-
-def update_category(
-    *, portal: SupportPortal, category: PortalCategory, data: dict
-) -> PortalCategory:
-    ensure_portal_editable(portal)
-    category.parent = (
-        _category(portal, data.get("parentId")) if data.get("parentId") else None
-    )
-    category.slug = str(data.get("slug", category.slug)).strip().lower()
-    category.name = str(data.get("name", category.name)).strip()
-    category.description = str(
-        data.get("description", category.description)
-    ).strip()
-    category.sort_order = int(data.get("sortOrder", category.sort_order))
-    category.full_clean()
-    category.save()
-    return category
-
-
-def delete_category(*, portal: SupportPortal, category: PortalCategory) -> None:
-    ensure_portal_editable(portal)
-    if category.children.exists():
-        raise ValidationError(
-            {"category": t("portals.move_nested_sections_first")}
-        )
-    if category.articles.exists():
-        raise ValidationError(
-            {"category": t("portals.move_articles_first")}
-        )
-    category.delete()
-
-
 @transaction.atomic
 def create_article(
     *, context: TenantContext, portal: SupportPortal, data: dict
 ) -> PortalArticle:
     ensure_portal_editable(portal)
-    category = _category(portal, data.get("categoryId"))
+    category = article_category(portal, data.get("categoryId"))
     article = PortalArticle(
         organization=context.organization,
         portal=portal,
@@ -140,7 +92,7 @@ def update_article(
     ensure_portal_editable(article.portal)
     if article.status == ArticleStatus.ARCHIVED:
         raise ValidationError({"article": t("portals.archived_article_readonly")})
-    article.category = _category(
+    article.category = article_category(
         article.portal, data.get("categoryId", article.category_id)
     )
     article.slug = str(data.get("slug", article.slug)).strip().lower()
@@ -194,19 +146,6 @@ def record_feedback(article: PortalArticle, helpful: bool) -> None:
         helpful=helpful,
     )
 
-
-def _category(portal: SupportPortal, category_id) -> PortalCategory:
-    try:
-        return portal.categories.get(id=int(category_id))
-    except (PortalCategory.DoesNotExist, TypeError, ValueError) as error:
-        raise ValidationError({"categoryId": t("portals.section_not_found")}) from error
-
-
-def ensure_portal_editable(portal: SupportPortal) -> None:
-    if portal.status == PortalStatus.ARCHIVED:
-        raise ValidationError(
-            {"portal": t("portals.restore_to_edit_content")}
-        )
 
 
 # Типы, которые файловый endpoint портала отдаёт inline: в статью их вставляют

@@ -12,6 +12,10 @@
   pointer-events: none;
 }
 
+.template-variable-button {
+  align-self: flex-start;
+}
+
 .template-form-editor {
   min-height: 110px;
   max-height: 260px;

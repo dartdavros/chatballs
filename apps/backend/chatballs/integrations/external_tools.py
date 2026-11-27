@@ -47,6 +47,7 @@ def tools_snapshot(raw_tools: list[dict]) -> list[dict]:
                 "input_schema": schema if isinstance(schema, dict) else dict(_EMPTY_SCHEMA),
                 # Отметку ставит только явное true: её отсутствие — «может изменять».
                 "read_only_hint": annotations.get("readOnlyHint") is True,
+                **({"annotations": {"destructiveHint": True}} if annotations.get("destructiveHint") is True else {}),
             }
         )
     return snapshot

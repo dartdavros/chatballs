@@ -41,6 +41,8 @@ MESSAGES = {
     "native.agent_fields.persona": "Роль агента",
     "native.agent_fields.tone": "Тон ответа",
     "native.agent_fields.instructions": "Инструкции",
+    "native.agent_fields.greeting": "Приветствие",
+    "native.agent_fields.greetingVariables": "Переменные приветствия",
     "native.agent_fields.answerLanguage": "Язык ответа",
     "native.agent_fields.historyLimit": "Сообщений в истории",
     "native.agent_fields.assistanceEnabled": "Подсказки сотруднику",

@@ -32,8 +32,8 @@ export function BrandFooter({ accent }: { accent: string }) {
           transition: "color .18s ease",
         }}
       >
-        <span style={{ fontWeight: 400, color: hover ? accent : "#8c8c8c", transition: "color .18s ease" }}>{t("chat.powered_by")}</span>
-        <span style={{ fontWeight: 700, color: hover ? accent : "#262626", transition: "color .18s ease" }}>Chatballs</span>
+        <span style={{ fontWeight: 400, color: hover ? accent : "var(--cb-muted, #8c8c8c)", transition: "color .18s ease" }}>{t("chat.powered_by")}</span>
+        <span style={{ fontWeight: 700, color: hover ? accent : "var(--cb-field-text, #262626)", transition: "color .18s ease" }}>Chatballs</span>
       </a>
     </div>
   );

@@ -139,6 +139,10 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
     run.definition = data
     run.structure = {"name": scenario.name if scenario else "", "operationTitle": operation.title_key,
                      "connection": (integration.name if integration else ""), "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else None}
+    if operation.protocol.get("legacy"):
+        from chatballs.integrations.adapters.legacy import operation_title
+
+        run.structure = {**run.structure, "operationTitleText": operation_title(operation)}
     if ai_binding:
         from chatballs.ai.models import AIAgent
         run.structure = {**run.structure, "agentName": AIAgent.objects.get(pk=ai_binding["agent"]).channel.name,

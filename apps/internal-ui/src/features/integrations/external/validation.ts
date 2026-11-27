@@ -1,3 +1,4 @@
+import { hasRequestBody } from "./httpMethods";
 import { t } from "../../../i18n";
 import type { FieldErrors, ServerDraft, ToolParameter } from "./types";
 
@@ -15,7 +16,7 @@ export function parameterError(parameter: ToolParameter, parameters: ToolParamet
   if (!/^[A-Za-z_][A-Za-z0-9_]{0,39}$/.test(parameter.name)
     || parameters.some((p, i) => i !== index && p.name === parameter.name)) return t("servers.parameter_invalid");
   if (parameter.location === "path" && !placeholders(url).includes(parameter.name)) return t("servers.path_missing");
-  if (!placeholders(url).includes(parameter.name) && parameter.location === "body" && method !== "POST") return t("servers.body_post");
+  if (!placeholders(url).includes(parameter.name) && parameter.location === "body" && !hasRequestBody(method)) return t("servers.body_post");
   return "";
 }
 

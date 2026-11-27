@@ -41,6 +41,8 @@ MESSAGES = {
     "native.agent_fields.persona": "Agent role",
     "native.agent_fields.tone": "Reply tone",
     "native.agent_fields.instructions": "Instructions",
+    "native.agent_fields.greeting": "Greeting",
+    "native.agent_fields.greetingVariables": "Greeting variables",
     "native.agent_fields.answerLanguage": "Reply language",
     "native.agent_fields.historyLimit": "History message limit",
     "native.agent_fields.assistanceEnabled": "Employee assistance",

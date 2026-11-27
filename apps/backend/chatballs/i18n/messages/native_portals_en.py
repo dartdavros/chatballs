@@ -60,6 +60,7 @@ MESSAGES = {
     "native.portal_fields.updatedAt": "Updated at",
     "native.portal_fields.categoryCount": "Category count",
     "native.portal_fields.articleCount": "Article count",
+    "native.portal_fields.system": "System section",
     "native.portal_fields.creation": "Portal creation",
     "native.portal_fields.available": "Available",
     "native.portal_fields.canCreate": "Can create",

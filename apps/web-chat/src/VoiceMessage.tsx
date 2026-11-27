@@ -63,7 +63,7 @@ export function VoiceMessage({ messageId, url, durationSeconds, accent, light }:
     setPlaying(true);
   }
 
-  const idle = light ? "rgba(255,255,255,0.45)" : "#d9d9d9";
+  const idle = light ? "rgba(255,255,255,0.45)" : "var(--cb-field-border, #d9d9d9)";
   const done = light ? "#ffffff" : accent;
   return (
     <div style={{ minWidth: 216 }}>
@@ -107,11 +107,11 @@ export function VoiceMessage({ messageId, url, durationSeconds, accent, light }:
           fontSize: 12,
           fontWeight: 500,
           fontVariantNumeric: "tabular-nums",
-          color: light ? "rgba(255,255,255,0.8)" : "#8c8c8c",
+          color: light ? "rgba(255,255,255,0.8)" : "var(--cb-muted, #8c8c8c)",
         }}>{formatSeconds(durationSeconds ?? 0)}</span>
       </div>
       {failed && (
-        <div style={{ marginTop: 6, fontSize: 11.5, color: light ? "rgba(255,255,255,0.9)" : "#cf1322" }}>
+        <div style={{ marginTop: 6, fontSize: 11.5, color: light ? "rgba(255,255,255,0.9)" : "var(--cb-required, #cf1322)" }}>
           {t("chat.could_not_play")}
         </div>
       )}

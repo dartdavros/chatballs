@@ -7,6 +7,12 @@ from dataclasses import dataclass, replace
 from chatballs.ai.execution_version import configuration_version
 from chatballs.ai.provider.base import ToolSpec
 from chatballs.ai.tool_support import cached_tool_support
+from chatballs.integrations.adapters.legacy import (
+    bound_inputs,
+    is_bridged,
+    operation_description,
+    operation_title,
+)
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.ai_launch import launch_ai
 from chatballs.integrations.execution.ai_policy import authorize_ai, bind, current
@@ -122,8 +128,9 @@ def plan_actions(agent, conversation, *, preview=False, registry=None, test_tena
             if grant.scenario_id:
                 spec = read_type(grant.scenario.definition["parameters"])
                 title = grant.scenario.name
+                description = title
             else:
-                _, _, _, _, operation = resolve_action(agent.organization_id,
+                integration, _, _, _, operation = resolve_action(agent.organization_id,
                     "chatballs" if grant.native_key else grant.integration_id,
                     f"chatballs:{grant.native_key}" if grant.native_key else f"service:{grant.operation_key}", registry=registry)
                 spec = operation.input
@@ -131,9 +138,16 @@ def plan_actions(agent, conversation, *, preview=False, registry=None, test_tena
                     spec = replace(spec, properties=tuple((name, child) for name, child in spec.properties
                         if name != "conversation_id" or not child.required))
                 from chatballs.i18n import t
-                title = t(operation.title_key)
+                if integration is not None and is_bridged(integration):
+                    if bound_inputs(integration, conversation, binding.get("testContext", {}).get("contact")) is None:
+                        continue
+                    title = operation_title(operation)
+                    description = operation_description(operation) or title
+                else:
+                    title = t(operation.title_key)
+                    description = title
             tools.append(AgentActionTool(ToolSpec(name=tool_name(f"chatballs_action_{grant.pk}"),
-                description=title, parameters=schema(spec)), title, agent.organization_id, binding, preview=preview))
+                description=description, parameters=schema(spec)), title, agent.organization_id, binding, preview=preview))
         except (ExecutionDenied, ValueError):
             continue
     if tools:

@@ -53,6 +53,7 @@ export type PortalCategory = {
   parentId: number | null;
   sortOrder: number;
   articleCount: number;
+  isSystem?: boolean;
 };
 
 export type ArticleRevision = {

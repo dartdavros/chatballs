@@ -13,7 +13,9 @@
 from __future__ import annotations
 
 import http.client
+import json
 from dataclasses import replace
+from hashlib import sha256
 from typing import Any
 
 from chatballs.integrations import http_tool, mcp_client
@@ -73,11 +75,38 @@ def bridge_descriptor(integration: Integration) -> AdapterDescriptor:
     )
 
 
+def _fingerprint(*values) -> str:
+    """Grants belong to an operation contract and destination, not a list position."""
+    return sha256(json.dumps(values, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:24]
+
+
+def operation_title(operation):
+    return operation.protocol["legacy"]["title"]
+
+
+def operation_description(operation):
+    return operation.protocol["legacy"]["description"]
+
+
 def _mcp_operations(integration: Integration) -> tuple[OperationDescriptor, ...]:
     read_only = {tool.name for tool in server_tools(integration) if tool.read_only}
     operations = operations_from_tools(integration.tools, read_only=read_only)
-    # Вызов идёт через сохранённый сервер со своими заголовками.
-    return tuple(_with_execute(operation, _execute_legacy_mcp) for operation in operations)
+    tools = {tool["name"]: tool for tool in integration.tools}
+    result = []
+    for operation in operations:
+        name = operation.protocol["mcp"]["tool"]
+        tool = tools[name]
+        key = _fingerprint(integration.config.get("url"), integration.config.get("headers"),
+                           name, tool.get("input_schema"), operation.effect)
+        result.append(replace(
+            operation,
+            key=f"tool.m{key}",
+            title_key="services.legacy_title",
+            protocol={**operation.protocol, "legacy": {"title": tool.get("title") or name,
+                                                       "description": tool.get("description") or ""}},
+            handlers=OperationHandlers(execute=_execute_legacy_mcp),
+        ))
+    return tuple(result)
 
 
 def _http_operation(integration: Integration) -> OperationDescriptor:
@@ -85,15 +114,18 @@ def _http_operation(integration: Integration) -> OperationDescriptor:
     method = str(config.get("method", "GET")).upper()
     read_only = server_tools(integration)[0].read_only
     effect = Effect.READ if read_only else _METHOD_EFFECT.get(method, Effect.OTHER)
+    key = _fingerprint(method, effect, config.get("url"), config.get("headers"), config.get("parameters"))
     return OperationDescriptor(
-        key="request",
-        title_key="",
+        key=f"request.{method.lower()}_{key}",
+        title_key="services.legacy_title",
         effect=effect,
         input=_http_input(config),
         output=TypeSpec("object", open=True, nullable=True),
         handlers=OperationHandlers(execute=_execute_legacy_http),
         retry=RetryStrategy.SAFE_READ if effect in READ_EFFECTS else RetryStrategy.NONE,
-        protocol={"legacy": {"method": method}},
+        protocol={"legacy": {"method": method,
+                             "title": str(config.get("tool_name") or integration.name),
+                             "description": str(config.get("description") or "")}},
     )
 
 
@@ -102,46 +134,62 @@ def _http_input(config: dict[str, Any]) -> TypeSpec:
     properties = tuple(
         (str(parameter["name"]), TypeSpec(kinds.get(parameter.get("type"), "string"), required=bool(parameter.get("required"))))
         for parameter in config.get("parameters") or []
-        if isinstance(parameter, dict) and parameter.get("name")
+        if isinstance(parameter, dict) and parameter.get("name") and parameter.get("source", {}).get("type") == "ai"
     )
     return TypeSpec("object", properties=properties)
 
 
-def _with_execute(operation: OperationDescriptor, execute) -> OperationDescriptor:
-    return replace(operation, handlers=OperationHandlers(execute=execute))
+def bound_inputs(integration, conversation, test_contact=None):
+    if integration.provider != IntegrationProvider.HTTP:
+        return {}
+    from chatballs.ai.tool_bindings import conversation_client_data
+
+    client = http_tool.ClientData(**test_contact) if test_contact else conversation_client_data(conversation)
+    return http_tool.bound_arguments(integration.config, client)
+
+
+def _result(text: str):
+    if not text:
+        return None
+    value = parse_text_result(text)
+    return value if isinstance(value, dict) or value is None else {"value": value}
+
+
+def _timeout(context):
+    return min(check_timeout(), context.deadline_seconds or 30)
 
 
 def _execute_legacy_mcp(context: OperationContext, operation: OperationDescriptor, arguments: dict[str, Any]) -> OperationResult:
     try:
-        result = call_tool(context.connection, operation.protocol["mcp"]["tool"], arguments, timeout=check_timeout())
+        result = call_tool(context.connection, operation.protocol["mcp"]["tool"], arguments, timeout=_timeout(context))
     except mcp_client.McpError as error:
         state = ResultState.FAILED if operation.effect in READ_EFFECTS else ResultState.UNKNOWN
         return OperationResult(state, error_code=error.code)
     if result.is_error:
         return OperationResult(ResultState.FAILED, error_code="tool_error")
-    return OperationResult(ResultState.COMPLETED, data=parse_text_result(result.text))
+    return OperationResult(ResultState.COMPLETED, data=_result(result.text))
 
 
 def _execute_legacy_http(context: OperationContext, operation: OperationDescriptor, arguments: dict[str, Any]) -> OperationResult:
-    config = context.connection.config
-    bound_names = {
-        parameter["name"]
-        for parameter in config.get("parameters") or []
-        if isinstance(parameter, dict) and parameter.get("source", {}).get("type") != "ai"
-    }
-    model = {name: value for name, value in arguments.items() if name not in bound_names}
-    bound = {name: value for name, value in arguments.items() if name in bound_names}
     try:
-        response = http_tool.call_http_tool(context.connection, model, bound, timeout=check_timeout())
+        response = http_tool.call_http_tool(
+            context.connection, arguments, context.settings.get("bound", {}), timeout=_timeout(context),
+        )
     except http_tool.ToolArgumentsRejected:
         return OperationResult(ResultState.FAILED, error_code="arguments")
     except ToolAddressRejected as error:
         return OperationResult(ResultState.FAILED, error_code=f"address_{error.code}")
     except ToolResponseRejected as error:
-        return OperationResult(ResultState.FAILED, error_code=error.code)
+        state = ResultState.FAILED if operation.effect in READ_EFFECTS else ResultState.UNKNOWN
+        return OperationResult(state, error_code=error.code)
     except (OSError, http.client.HTTPException):
         state = ResultState.FAILED if operation.effect in READ_EFFECTS else ResultState.UNKNOWN
         return OperationResult(state, error_code="no_response")
     if 200 <= response.status < 300:
-        return OperationResult(ResultState.COMPLETED, data=parse_text_result(response.body.decode("utf-8", "replace")))
+        data = _result(response.body.decode("utf-8", "replace"))
+        method = operation.protocol["legacy"]["method"]
+        if method in {"HEAD", "OPTIONS"}:
+            keys = ("allow", "content-type", "content-length", "etag", "last-modified")
+            data = {**(data or {}), "headers": {key: response.headers[key] for key in keys if key in response.headers}}
+        return OperationResult(ResultState.COMPLETED, data=data)
     return OperationResult(ResultState.FAILED, error_code="rejected")

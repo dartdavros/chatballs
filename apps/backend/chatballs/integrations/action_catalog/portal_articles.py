@@ -67,7 +67,7 @@ TARGET = dict(portal_id=ID, article_id=schema.ARTICLE_ID)
 for key, method, route, view, inputs, outputs, service, effect, execution in (
     ("portals.articles.get", "GET", "", "ArticleListView", schema.FILTERS, schema.PAGE, listing, Effect.READ, "local"),
     ("portals.articles.post", "POST", "", "ArticleListView",
-        obj(portal_id=ID, **{key: required(value) if key in {"slug", "categoryId"} else value
+        obj(portal_id=ID, **{key: required(value) if key == "slug" else value
             for key, value in schema.EDIT.items() if key not in {"sortOrder", "relatedArticleIds"}}, **schema.REVISION_FIELDS),
         schema.OUTPUT, create, Effect.CREATE, "local"),
     ("portals.article.get", "GET", "<int:article_id>/", "ArticleDetailView", obj(**TARGET), schema.OUTPUT, detail, Effect.READ, "local"),

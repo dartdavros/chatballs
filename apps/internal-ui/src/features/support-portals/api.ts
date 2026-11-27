@@ -141,7 +141,7 @@ export function listPortalArticles(
 export function createPortalArticle(
   portalId: number,
   input: {
-    categoryId: number;
+    categoryId?: number | null;
     slug: string;
     locale: string;
     title: string;
@@ -165,7 +165,7 @@ export function loadPortalArticle(
 export function updatePortalArticle(
   portalId: number,
   articleId: number,
-  input: { categoryId: number; locale: string; slug: string },
+  input: { categoryId?: number | null; locale: string; slug: string },
 ): Promise<{ article: PortalArticle }> {
   return api(`/api/v1/support/portals/${portalId}/articles/${articleId}/`, {
     method: "PATCH",

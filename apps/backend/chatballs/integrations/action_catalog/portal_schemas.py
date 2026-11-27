@@ -47,5 +47,6 @@ WIDGET = obj(id=field("widget", "integer"), code=field("code"), publicKey=field(
     status=STATUS, channel=named("agent", obj(id=field("agent", "integer"), code=field("agentCode"), name=field("name")), nullable=True))
 CATEGORY_EDIT = dict(name=field("name"), slug=field("slug"), description=field("description"),
     parentId=field("parent", "integer", nullable=True), sortOrder=field("sortOrder", "integer"))
-CATEGORY = obj(**CATEGORY_EDIT, id=field("category", "integer"), articleCount=field("articleCount", "integer"))
+CATEGORY = obj(**CATEGORY_EDIT, id=field("category", "integer"), articleCount=field("articleCount", "integer"),
+    isSystem=field("system", "boolean"))
 CATEGORY_ID = field("category", "integer", required=True)
